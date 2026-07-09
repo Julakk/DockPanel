@@ -56,10 +56,14 @@ cp .env.example .env
 php artisan key:generate
 
 # nyalain mysql & redis dulu, buat database `dockpanel`
-php artisan migrate
+php artisan migrate --seed
 
 php artisan serve
 ```
+
+Akun admin pertama otomatis dibuat lewat seeder:
+- Email: `admin@ahmadstore.id`
+- Password: `changeme123` (**ganti setelah login pertama!**)
 
 ### 3. Testing Wings (Docker control)
 
