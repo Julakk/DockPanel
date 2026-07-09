@@ -1,6 +1,6 @@
 <?php
 
-use Monolog\Handler\StreamHandler;
+use Monolog\Handler\NullHandler;
 
 return [
     'default' => env('LOG_CHANNEL', 'stack'),
@@ -24,7 +24,7 @@ return [
 
         'null' => [
             'driver' => 'monolog',
-            'handler' => \Monolog\Handler\NullHandler::class,
+            'handler' => NullHandler::class,
         ],
     ],
 ];

@@ -56,7 +56,7 @@ class Egg extends Model
 
         foreach ($server->serverVariables()->with('eggVariable')->get() as $sv) {
             $command = str_replace(
-                '{{' . $sv->eggVariable->env_variable . '}}',
+                '{{'.$sv->eggVariable->env_variable.'}}',
                 $sv->variable_value ?? $sv->eggVariable->default_value,
                 $command
             );

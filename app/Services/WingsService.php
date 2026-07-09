@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 class WingsService
 {
     protected string $baseUrl;
+
     protected string $daemonToken;
 
     public function __construct(protected Server $server)
