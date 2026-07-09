@@ -41,7 +41,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, bcmath, xml, curl, zip, intl, pdo_mysql, redis
+          extensions: mbstring, bcmath, xml, curl, zip, intl, pdo_mysql, pdo_sqlite, sqlite3, redis
           coverage: none
 
       - name: Copy .env
