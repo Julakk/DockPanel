@@ -1,4 +1,4 @@
-,{
+{
     "name": "julakk/dockpanel",
     "type": "project",
     "description": "DockPanel - self-hosted game server management panel (Pterodactyl-like), Panel side built in Laravel.",
