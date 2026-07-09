@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Middleware\EnsureRootAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,12 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(prepend: [
-            HandleCors::class,
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
         $middleware->alias([
-            'root_admin' => EnsureRootAdmin::class,
+            'root_admin' => \App\Http\Middleware\EnsureRootAdmin::class,
         ]);
+
+        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/dashboard');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
