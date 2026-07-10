@@ -28,6 +28,7 @@
         .success { background: #14532d; color: #86efac; padding: 0.7rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.9rem; }
         .muted { color: #64748b; font-size: 0.85rem; }
         .actions form { display: inline; }
+        code { background: #0f172a; padding: 0.1rem 0.4rem; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -39,9 +40,10 @@
         </h1>
         <nav>
             <a href="/dashboard">Dashboard</a>
-            <a href="/nodes" class="{{ request()->is('nodes*') ? 'active' : '' }}">Nodes</a>
+            <a href="{{ route('nodes.index') }}" class="{{ request()->is('nodes*') ? 'active' : '' }}">Nodes</a>
+            <a href="{{ route('nests.index') }}" class="{{ request()->is('nests*') ? 'active' : '' }}">Nests</a>
+            <a href="{{ route('eggs.index') }}" class="{{ request()->is('eggs*') ? 'active' : '' }}">Eggs</a>
             <a href="#">Servers</a>
-            <a href="#">Eggs</a>
         </nav>
         <form method="POST" action="/logout">
             @csrf
