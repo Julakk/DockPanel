@@ -2,6 +2,21 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.3.1] - 2026-07-11
+
+> "Akhirnya nyala di browser beneran, bukan cuma centang hijau di CI." 🐧
+
+### 🐛 Diperbaiki
+- Fix `ParseError` di halaman Egg (`create.blade.php` & `edit.blade.php`) — literal `{{VAR_NAME}}` di teks bantuan salah escape, bikin Blade compiler bingung. Diganti pakai sintaks `@{{ }}` yang benar.
+- Default `.env.example` diganti ke driver `file`/`sync` (bukan `redis`) — biar development lokal di Termux nggak wajib nyalain Redis server dulu.
+
+### 📝 Catatan
+- Panel pertama kali berhasil dites langsung di browser (`php artisan serve` dari Termux) — login, dashboard, navbar, semua fitur CRUD sejauh ini kekonfirmasi jalan
+- Sempat ada kendala environment: folder kerja pindah dari `~/storage/downloads/DockPanel` ke `~/DockPanel` (home Termux) buat hindari masalah permission shared storage yang berulang kali muncul
+- Repo Wings direncanakan dipisah jadi repo sendiri (`Julakk/DockWings`) nanti pas ada VPS — konsisten sama pola Pterodactyl asli (Panel dan Wings repo terpisah)
+
+---
+
 ## [0.3.0] - 2026-07-10
 
 > "Node, Nest, Egg — tiga elemen udah lengkap. Tinggal nyatuin jadi Server." 🐧
@@ -72,8 +87,10 @@ Semua perubahan penting di project ini dicatat di sini.
 ---
 
 ## Roadmap Selanjutnya
-- [ ] CRUD Server (admin + user-facing)
-- [ ] WebSocket console real-time
-- [ ] File manager (proxy SFTP)
-- [ ] Testing `WingsService` ke daemon Wings asli (butuh VPS)
+- [ ] Testing manual lanjutan (bikin node/nest/egg/server beneran dari browser)
+- [ ] WebSocket console real-time — butuh VPS
+- [ ] File manager (proxy SFTP) — butuh VPS
+- [ ] Testing `WingsService` ke daemon Wings asli — butuh VPS
+- [ ] Repo `DockWings` terpisah — mulai pas ada VPS
+
 
