@@ -38,6 +38,7 @@ class NodeController extends Controller
     public function show(Node $node)
     {
         $node->loadCount('servers');
+        $node->load('allocations');
 
         return view('nodes.show', compact('node'));
     }

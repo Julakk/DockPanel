@@ -26,5 +26,67 @@
         </div>
     @endif
 
+    <div class="card">
+        <h3 style="margin-top:0;">Allocations (IP:Port)</h3>
+
+        @if ($node->allocations->isEmpty())
+            <p class="muted">Belum ada allocation. Tambah dulu biar bisa dipakai bikin server.</p>
+        @else
+            <table style="margin-bottom:1.5rem;">
+                <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>Port</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($node->allocations as $alloc)
+                        <tr>
+                            <td>{{ $alloc->ip }}</td>
+                            <td>{{ $alloc->port }}</td>
+                            <td>
+                                @if ($alloc->isAssigned())
+                                    <span style="color:#fbbf24;">Dipakai (server #{{ $alloc->server_id }})</span>
+                                @else
+                                    <span style="color:#4ade80;">Available</span>
+                                @endif
+                            </td>
+                            <td class="actions">
+                                @unless ($alloc->isAssigned())
+                                    <form method="POST" action="{{ route('nodes.allocations.destroy', [$node, $alloc]) }}" onsubmit="return confirm('Hapus allocation ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                    </form>
+                                @endunless
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        <form method="POST" action="{{ route('nodes.allocations.store', $node) }}">
+            @csrf
+            <div class="row">
+                <div>
+                    <label for="ip">IP</label>
+                    <input type="text" name="ip" id="ip" placeholder="{{ $node->fqdn }}" required>
+                </div>
+                <div>
+                    <label for="port_start">Port Awal</label>
+                    <input type="number" name="port_start" id="port_start" placeholder="7777" required>
+                </div>
+                <div>
+                    <label for="port_end">Port Akhir (opsional, buat range)</label>
+                    <input type="number" name="port_end" id="port_end" placeholder="7787">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">+ Tambah Allocation</button>
+        </form>
+    </div>
+
     <a href="{{ route('nodes.index') }}" class="muted" style="text-decoration:none;">← Kembali ke daftar node</a>
 @endsection

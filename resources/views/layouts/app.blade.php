@@ -43,7 +43,7 @@
             <a href="{{ route('nodes.index') }}" class="{{ request()->is('nodes*') ? 'active' : '' }}">Nodes</a>
             <a href="{{ route('nests.index') }}" class="{{ request()->is('nests*') ? 'active' : '' }}">Nests</a>
             <a href="{{ route('eggs.index') }}" class="{{ request()->is('eggs*') ? 'active' : '' }}">Eggs</a>
-            <a href="#">Servers</a>
+            <a href="{{ route('servers.index') }}" class="{{ request()->is('servers*') ? 'active' : '' }}">Servers</a>
         </nav>
         <form method="POST" action="/logout">
             @csrf

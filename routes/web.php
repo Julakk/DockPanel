@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AllocationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EggController;
 use App\Http\Controllers\NestController;
 use App\Http\Controllers\NodeController;
+use App\Http\Controllers\ServerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,6 +24,9 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('root_admin')->group(function () {
         Route::resource('nodes', NodeController::class);
+        Route::post('nodes/{node}/allocations', [AllocationController::class, 'store'])->name('nodes.allocations.store');
+        Route::delete('nodes/{node}/allocations/{allocation}', [AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
+
         Route::resource('nests', NestController::class)->except(['show']);
 
         Route::get('eggs/import', [EggController::class, 'importForm'])->name('eggs.import.form');
@@ -29,7 +34,9 @@ Route::middleware('auth')->group(function () {
         Route::post('eggs/{egg}/variables', [EggController::class, 'storeVariable'])->name('eggs.variables.store');
         Route::delete('eggs/{egg}/variables/{variable}', [EggController::class, 'destroyVariable'])->name('eggs.variables.destroy');
         Route::resource('eggs', EggController::class)->except(['show']);
+
+        Route::put('servers/{server}/variables', [ServerController::class, 'updateVariables'])->name('servers.variables.update');
+        Route::post('servers/{server}/provision', [ServerController::class, 'provision'])->name('servers.provision');
+        Route::resource('servers', ServerController::class);
     });
 });
-
-// TODO: route CRUD server (middleware 'auth' + 'root_admin' buat admin-only)
