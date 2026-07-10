@@ -36,7 +36,7 @@
 
             <label for="startup">Startup Command</label>
             <textarea name="startup" id="startup" rows="2" placeholder="./samp03svr" required>{{ old('startup') }}</textarea>
-            <p class="muted" style="margin-top:-0.6rem;">Pakai {{ '{{VAR_NAME}}' }} buat placeholder variable.</p>
+            <p class="muted" style="margin-top:-0.6rem;">Pakai @{{VAR_NAME}} buat placeholder variable.</p>
 
             <label for="script_container">Install Script Container</label>
             <input type="text" name="script_container" id="script_container" value="{{ old('script_container', 'alpine:3.4') }}">
