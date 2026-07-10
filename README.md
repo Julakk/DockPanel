@@ -34,6 +34,18 @@ DockPanel punya 2 komponen terpisah:
 | `allocations` | Kombinasi IP:port yang di-assign ke server |
 | `server_subusers` | Akses terbatas user lain ke satu server |
 
+## Fitur yang Udah Jalan
+
+- 🔐 **Auth** — login/logout, dashboard, proteksi khusus admin (`root_admin` middleware)
+- 🖥️ **CRUD Node** — kelola VPS/node, auto-generate daemon token
+- 🔌 **Allocation Management** — tambah range IP:port per node (max 100 port sekaligus), assign/lepas dari server
+- 🌐 **CRUD Nest** — kategori game
+- 🥚 **CRUD Egg** — template docker image + startup command, manage variable per egg, **import dari JSON kompatibel format Pterodactyl**
+- 📦 **CRUD Server** — nyatuin Node + Nest/Egg + Allocation jadi satu instance server, isi variable per server, tombol provisioning ke Wings
+- ⚙️ **CI otomatis** (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit) tiap push
+
+Semua fitur di atas 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
+
 ## Setup Development
 
 ### 1. Requirement
@@ -65,7 +77,17 @@ Akun admin pertama otomatis dibuat lewat seeder:
 - Email: `admin@ahmadstore.id`
 - Password: `changeme123` (**ganti setelah login pertama!**)
 
-### 3. Testing Wings (Docker control)
+### 3. Alur Pemakaian
+
+1. Login sebagai admin
+2. Bikin **Node** (VPS/server fisik)
+3. Tambah **Allocation** (IP:port) di halaman detail Node
+4. Bikin **Nest** (kategori game) dan **Egg** (template startup), atau import Egg dari JSON
+5. Bikin **Server** — pilih owner, node, egg, allocation, resource limit
+6. Isi **Variable** server (mis. `SERVER_JARFILE`)
+7. Klik **Provision ke Wings** — bakal gagal graceful sampai ada VPS dengan Wings aktif
+
+### 4. Testing Wings (Docker control)
 
 ⚠️ **Docker nggak bisa jalan di Termux/Android.** Bagian ini WAJIB ditest di VPS/server Linux beneran (bisa pakai salah satu node Pterodactyl yang udah ada).
 
@@ -82,12 +104,13 @@ Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
 
 - [x] Skeleton migration + model (nodes, servers, eggs, nests, allocations)
 - [x] `WingsService` — service class buat komunikasi ke daemon
-- [ ] Auth + role admin/user (Laravel Breeze/Sanctum)
-- [ ] CRUD Node (admin)
-- [ ] CRUD Egg/Nest + import format JSON (kompatibel format Pterodactyl)
-- [ ] CRUD Server (admin + user-facing)
-- [ ] WebSocket console real-time
-- [ ] File manager (proxy ke SFTP Wings)
+- [x] Auth + role admin/user
+- [x] CRUD Node (admin) + Allocation management
+- [x] CRUD Egg/Nest + import format JSON (kompatibel format Pterodactyl)
+- [x] CRUD Server (admin-facing) + provisioning skeleton
+- [ ] WebSocket console real-time — **butuh VPS**
+- [ ] File manager (proxy ke SFTP Wings) — **butuh VPS**
+- [ ] Testing `WingsService` ke daemon Wings asli — **butuh VPS**
 - [ ] Billing/expiry integration (opsional, buat dipakai di Ahmad Store)
 
 ## License
