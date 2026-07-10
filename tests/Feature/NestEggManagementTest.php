@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Egg;
 use App\Models\Nest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,7 +49,7 @@ class NestEggManagementTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('eggs', ['name' => 'Vanilla Minecraft']);
 
-        $egg = \App\Models\Egg::where('name', 'Vanilla Minecraft')->first();
+        $egg = Egg::where('name', 'Vanilla Minecraft')->first();
 
         $varResponse = $this->actingAs($admin)->post("/eggs/{$egg->id}/variables", [
             'name' => 'Server Jar File',
