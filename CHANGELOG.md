@@ -2,6 +2,40 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.3.0] - 2026-07-10
+
+> "Node, Nest, Egg — tiga elemen udah lengkap. Tinggal nyatuin jadi Server." 🐧
+
+### ✨ Ditambahkan
+- CRUD Nest (kategori game: Minecraft, SA-MP, FiveM, dll)
+- CRUD Egg lengkap — docker image, startup command, install script
+- Import Egg dari file JSON kompatibel format Pterodactyl
+- Manage Variable per Egg (`ENV_VARIABLE` kayak `SERVER_JARFILE`, `WORLD_NAME`, dll)
+- Navbar admin aktif penuh — Nodes, Nests, Eggs semua nyambung ke halaman asli
+
+### 🐛 Diperbaiki
+- Format kode sesuai standar Pint di test suite baru (`NestEggManagementTest`)
+
+### 📝 Catatan
+- Semua CRUD di atas 100% bisa dites tanpa VPS (murni Laravel + database)
+
+---
+
+## [0.2.0] - 2026-07-10
+
+> "Belum ada VPS, tapi admin udah bisa ngatur node." 🐧
+
+### ✨ Ditambahkan
+- CRUD Node lengkap (admin-only): tambah/edit/hapus VPS, auto-generate daemon token
+- Layout admin bareng (`layouts/app.blade.php`) — navbar konsisten dipakai semua halaman
+- `UserFactory` buat kebutuhan testing
+
+### 🐛 Diperbaiki
+- Package `mockery/mockery` yang belum kedaftar di `composer.json`, bikin test gagal
+- Format kode sesuai standar Pint (`UserFactory.php`)
+
+---
+
 ## [0.1.0] - 2026-07-10
 
 > "Belum ada Wings, tapi Panel-nya udah bisa napas." 🐧
@@ -38,9 +72,8 @@ Semua perubahan penting di project ini dicatat di sini.
 ---
 
 ## Roadmap Selanjutnya
-- [ ] CRUD Node (admin)
-- [ ] CRUD Egg/Nest + import format JSON
 - [ ] CRUD Server (admin + user-facing)
 - [ ] WebSocket console real-time
 - [ ] File manager (proxy SFTP)
 - [ ] Testing `WingsService` ke daemon Wings asli (butuh VPS)
+
