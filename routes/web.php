@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NodeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,6 +17,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware('root_admin')->group(function () {
+        Route::resource('nodes', NodeController::class);
+    });
 });
 
-// TODO: route CRUD node/server/egg (middleware 'auth' + 'root_admin' buat admin-only)
+// TODO: route CRUD egg/nest/server (middleware 'auth' + 'root_admin' buat admin-only)
