@@ -46,38 +46,7 @@ DockPanel punya 2 komponen terpisah:
 
 Semua fitur di atas 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
 
-## Setup Development
-
-### 1. Requirement
-- PHP 8.3+
-- Composer
-- MySQL/MariaDB
-- Redis
-
-### 2. Install (Termux atau VPS)
-
-```bash
-pkg install php php-gd composer mariadb redis   # kalau di Termux
-# atau: apt install php8.3 composer mariadb-server redis-server  # kalau di VPS/Debian
-
-git clone https://github.com/Julakk/DockPanel.git
-cd DockPanel
-
-composer install
-cp .env.example .env
-php artisan key:generate
-
-# nyalain mysql & redis dulu, buat database `dockpanel`
-php artisan migrate --seed
-
-php artisan serve
-```
-
-Akun admin pertama otomatis dibuat lewat seeder:
-- Email: `admin@ahmadstore.id`
-- Password: `changeme123` (**ganti setelah login pertama!**)
-
-### 3. Alur Pemakaian
+## Alur Pemakaian
 
 1. Login sebagai admin
 2. Bikin **Node** (VPS/server fisik)
@@ -87,7 +56,7 @@ Akun admin pertama otomatis dibuat lewat seeder:
 6. Isi **Variable** server (mis. `SERVER_JARFILE`)
 7. Klik **Provision ke Wings** — bakal gagal graceful sampai ada VPS dengan Wings aktif
 
-### 4. Testing Wings (Docker control)
+## Testing Wings (Docker control)
 
 ⚠️ **Docker nggak bisa jalan di Termux/Android.** Bagian ini WAJIB ditest di VPS/server Linux beneran (bisa pakai salah satu node Pterodactyl yang udah ada).
 
