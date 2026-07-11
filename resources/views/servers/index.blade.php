@@ -3,7 +3,7 @@
 @section('title', 'Servers - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>Servers
+    Admin<span class="sep">&gt;</span>Servers
 @endsection
 
 @section('content')
@@ -12,40 +12,51 @@
         <a href="{{ route('servers.create') }}" class="btn btn-primary">+ Buat Server</a>
     </div>
 
-    <div class="card">
-        @if ($servers->isEmpty())
+    @if ($servers->isEmpty())
+        <div class="card">
             <div class="empty-state">
                 <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
                 <p>Belum ada server. Pastikan udah ada Node dan Egg dulu sebelum bikin server.</p>
                 <a href="{{ route('servers.create') }}" class="btn btn-primary">+ Buat Server</a>
             </div>
-        @else
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Owner</th>
-                        <th>Node</th>
-                        <th>Egg</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($servers as $server)
-                        <tr>
-                            <td><a href="{{ route('servers.show', $server) }}" style="color:#f97316;text-decoration:none;">{{ $server->name }}</a></td>
-                            <td class="muted">{{ $server->owner->name }}</td>
-                            <td class="muted">{{ $server->node->name }}</td>
-                            <td class="muted">{{ $server->egg->name }}</td>
-                            <td><span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></td>
-                            <td class="actions">
-                                <a href="{{ route('servers.edit', $server) }}" class="btn btn-secondary">Edit</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-    </div>
+        </div>
+    @else
+        @foreach ($servers as $server)
+            <div class="server-card status-{{ $server->status }}-border">
+                <div class="server-card-icon">
+                    @include('partials.icon', ['name' => 'package', 'size' => 18])
+                </div>
+
+                <div>
+                    <div class="server-card-name">
+                        <a href="{{ route('servers.show', $server) }}">{{ $server->name }}</a>
+                    </div>
+                    <div class="server-card-sub">{{ $server->owner->name }} — {{ $server->node->name }} / {{ $server->egg->name }}</div>
+                </div>
+
+                <span class="status-badge status-{{ $server->status }}" style="margin-left:0.5rem;">{{ $server->status }}</span>
+
+                {{-- Resource usage: placeholder sampai Wings aktif dan bisa lapor data beneran --}}
+                <div class="server-card-stats">
+                    <div class="stat">
+                        <div class="stat-label">CPU</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%;"></div></div>
+                        <div class="stat-value">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Memory</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%;"></div></div>
+                        <div class="stat-value">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Disk</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" style="width:0%;"></div></div>
+                        <div class="stat-value">—</div>
+                    </div>
+                </div>
+
+                <a href="{{ route('servers.edit', $server) }}" class="btn btn-secondary" style="margin-left:0.5rem;">Edit</a>
+            </div>
+        @endforeach
+    @endif
 @endsection
