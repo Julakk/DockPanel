@@ -2,6 +2,29 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.4.0] - 2026-07-11
+
+> "Sekarang mukanya beneran mirip panel hosting beneran." 🐧
+
+### ✨ Ditambahkan
+- **Redesign total layout** — sidebar navigasi ala Pterodactyl (section Basic Administration / Management / Service Management), menggantikan navbar horizontal
+- Sidebar responsive — collapse jadi hamburger menu di layar sempit/HP
+- Dashboard baru: "Administrative Overview" dengan card jumlah Node/Server/Egg
+- Server list sekarang tampil sebagai card dengan resource bar CPU/Memory/Disk (placeholder abu-abu, nunggu Wings aktif buat data beneran)
+- Semua emoji di UI diganti jadi inline SVG icon solid/filled style (logo, server, globe, egg, package, plug, sparkle, home, settings, api, database, location, users, mounts, menu, logout) — satu partial reusable `partials/icon.blade.php`
+- Status badge konsisten (pill + titik warna) buat semua status: running/installing/offline/suspended, dll
+- Empty state yang lebih jelas (ikon + pesan + CTA) di semua halaman index yang datanya kosong
+- Breadcrumb navigasi di semua halaman create/edit/show
+
+### 🐛 Diperbaiki
+- Mobile viewport meta tag yang kelewat dari awal, bikin render Chrome mobile nggak proporsional
+
+### 📝 Catatan
+- Menu sidebar yang belum ada fiturnya (Settings, Application API, Databases, Locations, Users, Mounts) masih placeholder — struktur navigasi disiapin duluan, fungsinya nyusul
+- Resource usage bar di server list masih dummy/kosong sampai Wings beneran aktif dan bisa lapor data CPU/RAM/Disk real-time
+
+---
+
 ## [0.3.1] - 2026-07-11
 
 > "Akhirnya nyala di browser beneran, bukan cuma centang hijau di CI." 🐧
@@ -87,10 +110,13 @@ Semua perubahan penting di project ini dicatat di sini.
 ---
 
 ## Roadmap Selanjutnya
-- [ ] Testing manual lanjutan (bikin node/nest/egg/server beneran dari browser)
+- [x] Testing manual lanjutan (bikin node/nest/egg/server beneran dari browser)
+- [x] Repo `DockWings` terpisah — skeleton awal udah jalan (Go, routing, auth middleware, interface Docker stub)
+- [x] UI polish — sidebar navigasi, status badge, empty state, breadcrumb, icon SVG
+- [ ] `DockerEnvironment` asli di DockWings — butuh VPS
 - [ ] WebSocket console real-time — butuh VPS
 - [ ] File manager (proxy SFTP) — butuh VPS
-- [ ] Testing `WingsService` ke daemon Wings asli — butuh VPS
-- [ ] Repo `DockWings` terpisah — mulai pas ada VPS
+- [ ] Testing `WingsService` (Panel) ↔ DockWings end-to-end — butuh VPS
+- [ ] Halaman fungsional buat menu sidebar placeholder (Settings, API, Databases, Locations, Users, Mounts)
 
 
