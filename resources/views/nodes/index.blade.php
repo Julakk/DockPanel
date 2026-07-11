@@ -2,6 +2,10 @@
 
 @section('title', 'Nodes - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>Nodes
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">Nodes</h2>
@@ -10,7 +14,11 @@
 
     <div class="card">
         @if ($nodes->isEmpty())
-            <p class="muted">Belum ada node. Tambah node pertama buat mulai.</p>
+            <div class="empty-state">
+                <div class="icon">🖥️</div>
+                <p>Belum ada node. Tambah node pertama buat mulai kelola VPS.</p>
+                <a href="{{ route('nodes.create') }}" class="btn btn-primary">+ Tambah Node</a>
+            </div>
         @else
             <table>
                 <thead>
@@ -34,9 +42,9 @@
                             <td>{{ $node->servers_count }}</td>
                             <td>
                                 @if ($node->maintenance_mode)
-                                    <span style="color:#fbbf24;">Maintenance</span>
+                                    <span class="status-badge status-maintenance">Maintenance</span>
                                 @else
-                                    <span style="color:#4ade80;">Aktif</span>
+                                    <span class="status-badge status-active">Aktif</span>
                                 @endif
                             </td>
                             <td class="actions">

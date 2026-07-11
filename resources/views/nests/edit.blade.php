@@ -2,6 +2,11 @@
 
 @section('title', 'Edit Nest - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('nests.index') }}">Nests</a><span class="sep">/</span>Edit
+@endsection
+
 @section('content')
     <h2>Edit Nest: {{ $nest->name }}</h2>
 

@@ -2,6 +2,11 @@
 
 @section('title', $server->name . ' - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">/</span>{{ $server->name }}
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">{{ $server->name }}</h2>
@@ -13,7 +18,7 @@
             <tr><th>Owner</th><td>{{ $server->owner->name }}</td></tr>
             <tr><th>Node</th><td>{{ $server->node->name }}</td></tr>
             <tr><th>Nest / Egg</th><td>{{ $server->egg->nest->name }} / {{ $server->egg->name }}</td></tr>
-            <tr><th>Status</th><td>{{ $server->status }}</td></tr>
+            <tr><th>Status</th><td><span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></td></tr>
             <tr><th>Memory</th><td>{{ number_format($server->memory) }} MB</td></tr>
             <tr><th>Disk</th><td>{{ number_format($server->disk) }} MB</td></tr>
             <tr><th>CPU</th><td>{{ $server->cpu }}%</td></tr>

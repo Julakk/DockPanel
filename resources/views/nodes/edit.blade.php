@@ -2,6 +2,11 @@
 
 @section('title', 'Edit Node - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('nodes.index') }}">Nodes</a><span class="sep">/</span>Edit
+@endsection
+
 @section('content')
     <h2>Edit Node: {{ $node->name }}</h2>
 

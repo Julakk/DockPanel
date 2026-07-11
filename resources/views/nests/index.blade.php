@@ -2,6 +2,10 @@
 
 @section('title', 'Nests - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>Nests
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">Nests</h2>
@@ -10,7 +14,11 @@
 
     <div class="card">
         @if ($nests->isEmpty())
-            <p class="muted">Belum ada nest. Contoh nest: "Minecraft", "SA-MP", "FiveM".</p>
+            <div class="empty-state">
+                <div class="icon">🌐</div>
+                <p>Belum ada nest. Contoh nest: "Minecraft", "SA-MP", "FiveM".</p>
+                <a href="{{ route('nests.create') }}" class="btn btn-primary">+ Tambah Nest</a>
+            </div>
         @else
             <table>
                 <thead>

@@ -2,6 +2,11 @@
 
 @section('title', 'Edit Server - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">/</span>{{ $server->name }}
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">{{ $server->name }}</h2>
@@ -100,7 +105,7 @@
 
     <div class="card">
         <h3 style="margin-top:0;">Provisioning</h3>
-        <p class="muted">Status sekarang: <strong>{{ $server->status }}</strong></p>
+        <p class="muted">Status sekarang: <span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></p>
         <form method="POST" action="{{ route('servers.provision', $server) }}">
             @csrf
             <button type="submit" class="btn btn-primary">Provision ke Wings</button>

@@ -2,6 +2,11 @@
 
 @section('title', 'Buat Server - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">/</span>Buat
+@endsection
+
 @section('content')
     <h2>Buat Server Baru</h2>
 

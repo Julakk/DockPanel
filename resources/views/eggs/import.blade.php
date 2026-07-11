@@ -2,6 +2,11 @@
 
 @section('title', 'Import Egg - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('eggs.index') }}">Eggs</a><span class="sep">/</span>Import
+@endsection
+
 @section('content')
     <h2>Import Egg dari JSON</h2>
     <p class="muted">Format JSON kompatibel sama file export egg Pterodactyl.</p>

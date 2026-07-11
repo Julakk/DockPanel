@@ -2,6 +2,10 @@
 
 @section('title', 'Eggs - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>Eggs
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">Eggs</h2>
@@ -13,7 +17,11 @@
 
     <div class="card">
         @if ($eggs->isEmpty())
-            <p class="muted">Belum ada egg. Bikin egg baru atau import dari format JSON Pterodactyl.</p>
+            <div class="empty-state">
+                <div class="icon">🥚</div>
+                <p>Belum ada egg. Bikin egg baru atau import dari format JSON Pterodactyl.</p>
+                <a href="{{ route('eggs.create') }}" class="btn btn-primary">+ Tambah Egg</a>
+            </div>
         @else
             <table>
                 <thead>

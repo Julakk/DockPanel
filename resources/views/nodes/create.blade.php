@@ -2,6 +2,11 @@
 
 @section('title', 'Tambah Node - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('nodes.index') }}">Nodes</a><span class="sep">/</span>Tambah
+@endsection
+
 @section('content')
     <h2>Tambah Node Baru</h2>
 

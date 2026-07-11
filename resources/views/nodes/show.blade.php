@@ -2,6 +2,11 @@
 
 @section('title', $node->name . ' - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('nodes.index') }}">Nodes</a><span class="sep">/</span>{{ $node->name }}
+@endsection
+
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">{{ $node->name }}</h2>
@@ -16,7 +21,16 @@
             <tr><th>Disk</th><td>{{ $node->diskUsed() }} / {{ number_format($node->disk) }} MB</td></tr>
             <tr><th>Server Terpasang</th><td>{{ $node->servers_count }}</td></tr>
             <tr><th>Publik</th><td>{{ $node->public ? 'Ya' : 'Tidak' }}</td></tr>
-            <tr><th>Status</th><td>{{ $node->maintenance_mode ? 'Maintenance' : 'Aktif' }}</td></tr>
+            <tr>
+                <th>Status</th>
+                <td>
+                    @if ($node->maintenance_mode)
+                        <span class="status-badge status-maintenance">Maintenance</span>
+                    @else
+                        <span class="status-badge status-active">Aktif</span>
+                    @endif
+                </td>
+            </tr>
         </table>
     </div>
 
@@ -30,7 +44,10 @@
         <h3 style="margin-top:0;">Allocations (IP:Port)</h3>
 
         @if ($node->allocations->isEmpty())
-            <p class="muted">Belum ada allocation. Tambah dulu biar bisa dipakai bikin server.</p>
+            <div class="empty-state">
+                <div class="icon">🔌</div>
+                <p>Belum ada allocation. Tambah dulu biar bisa dipakai bikin server.</p>
+            </div>
         @else
             <table style="margin-bottom:1.5rem;">
                 <thead>
@@ -48,9 +65,9 @@
                             <td>{{ $alloc->port }}</td>
                             <td>
                                 @if ($alloc->isAssigned())
-                                    <span style="color:#fbbf24;">Dipakai (server #{{ $alloc->server_id }})</span>
+                                    <span class="status-badge status-installing">Dipakai (#{{ $alloc->server_id }})</span>
                                 @else
-                                    <span style="color:#4ade80;">Available</span>
+                                    <span class="status-badge status-active">Available</span>
                                 @endif
                             </td>
                             <td class="actions">

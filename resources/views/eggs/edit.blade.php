@@ -2,6 +2,11 @@
 
 @section('title', 'Edit Egg - DockPanel')
 
+@section('breadcrumb')
+    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
+    <a href="{{ route('eggs.index') }}">Eggs</a><span class="sep">/</span>Edit
+@endsection
+
 @section('content')
     <h2>Edit Egg: {{ $egg->name }}</h2>
 
@@ -36,7 +41,7 @@
 
             <label for="startup">Startup Command</label>
             <textarea name="startup" id="startup" rows="2" required>{{ old('startup', $egg->startup) }}</textarea>
-            <p class="muted" style="margin-top:-0.6rem;">Pakai @{{VAR_NAME}} buat placeholder variable.</p>
+            <p class="muted" style="margin-top:-0.6rem;">Pakai {{ '{{VAR_NAME}}' }} buat placeholder variable.</p>
 
             <label for="script_container">Install Script Container</label>
             <input type="text" name="script_container" id="script_container" value="{{ old('script_container', $egg->script_container) }}">
