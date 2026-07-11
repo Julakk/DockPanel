@@ -45,7 +45,7 @@
 
         @if ($node->allocations->isEmpty())
             <div class="empty-state">
-                <div class="icon">🔌</div>
+                <div class="icon">@include('partials.icon', ['name' => 'plug', 'size' => 40])</div>
                 <p>Belum ada allocation. Tambah dulu biar bisa dipakai bikin server.</p>
             </div>
         @else

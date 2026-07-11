@@ -15,7 +15,7 @@
     <div class="card">
         @if ($nests->isEmpty())
             <div class="empty-state">
-                <div class="icon">🌐</div>
+                <div class="icon">@include('partials.icon', ['name' => 'globe', 'size' => 40])</div>
                 <p>Belum ada nest. Contoh nest: "Minecraft", "SA-MP", "FiveM".</p>
                 <a href="{{ route('nests.create') }}" class="btn btn-primary">+ Tambah Nest</a>
             </div>

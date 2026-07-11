@@ -15,7 +15,7 @@
     <div class="card">
         @if ($servers->isEmpty())
             <div class="empty-state">
-                <div class="icon">📦</div>
+                <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
                 <p>Belum ada server. Pastikan udah ada Node dan Egg dulu sebelum bikin server.</p>
                 <a href="{{ route('servers.create') }}" class="btn btn-primary">+ Buat Server</a>
             </div>

@@ -18,7 +18,7 @@
     <div class="card">
         @if ($eggs->isEmpty())
             <div class="empty-state">
-                <div class="icon">🥚</div>
+                <div class="icon">@include('partials.icon', ['name' => 'egg', 'size' => 40])</div>
                 <p>Belum ada egg. Bikin egg baru atau import dari format JSON Pterodactyl.</p>
                 <a href="{{ route('eggs.create') }}" class="btn btn-primary">+ Tambah Egg</a>
             </div>

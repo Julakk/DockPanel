@@ -67,13 +67,17 @@
 
         /* Empty state */
         .empty-state { text-align: center; padding: 2.5rem 1rem; }
-        .empty-state .icon { font-size: 2.2rem; margin-bottom: 0.6rem; opacity: 0.6; }
+        .empty-state .icon { color: #475569; margin-bottom: 0.8rem; display: flex; justify-content: center; }
+        .empty-state .icon svg { width: 40px; height: 40px; }
         .empty-state p { color: #64748b; font-size: 0.9rem; margin: 0 0 1rem; }
+
+        /* Inline icon dalam button/link */
+        .btn svg, h1 svg, h2 svg { vertical-align: -4px; margin-right: 0.3rem; }
     </style>
 </head>
 <body>
     <div class="topbar">
-        <h1>🐧 DockPanel
+        <h1>@include('partials.icon', ['name' => 'logo', 'size' => 20]) DockPanel
             @if (auth()->user()?->isRootAdmin())
                 <span class="admin-badge">ADMIN</span>
             @endif

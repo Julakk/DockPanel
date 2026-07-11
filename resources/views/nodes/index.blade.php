@@ -15,7 +15,7 @@
     <div class="card">
         @if ($nodes->isEmpty())
             <div class="empty-state">
-                <div class="icon">🖥️</div>
+                <div class="icon">@include('partials.icon', ['name' => 'server', 'size' => 40])</div>
                 <p>Belum ada node. Tambah node pertama buat mulai kelola VPS.</p>
                 <a href="{{ route('nodes.create') }}" class="btn btn-primary">+ Tambah Node</a>
             </div>
