@@ -8,7 +8,7 @@ Dikembangkan oleh **Julak Junior** ([@Julakk](https://github.com/Julakk)) — di
 
 ## Arsitektur
 
-DockPanel punya 2 komponen terpisah:
+DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 
 ```
 ┌───────────────────┐   HTTP + JWT    ┌──────────────────────┐
@@ -19,7 +19,7 @@ DockPanel punya 2 komponen terpisah:
 ```
 
 - **Panel** (repo ini): web UI, auth, database user/server/egg, kirim perintah ke node.
-- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. **Belum diimplementasi di repo ini** — untuk sementara pakai Wings resmi dari Pterodactyl (kompatibel protokol) sambil Panel-nya matang.
+- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — baru skeleton awal (routing, auth middleware, interface Docker stub), implementasi Docker asli masih nunggu VPS buat testing.
 
 ## Struktur Data Inti
 
@@ -42,6 +42,7 @@ DockPanel punya 2 komponen terpisah:
 - 🌐 **CRUD Nest** — kategori game
 - 🥚 **CRUD Egg** — template docker image + startup command, manage variable per egg, **import dari JSON kompatibel format Pterodactyl**
 - 📦 **CRUD Server** — nyatuin Node + Nest/Egg + Allocation jadi satu instance server, isi variable per server, tombol provisioning ke Wings
+- 🎨 **Sidebar navigasi ala Pterodactyl** — section Basic Administration / Management / Service Management, responsive (collapse jadi hamburger di HP)
 - ⚙️ **CI otomatis** (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit) tiap push
 
 Semua fitur di atas 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
@@ -77,10 +78,17 @@ Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
 - [x] CRUD Node (admin) + Allocation management
 - [x] CRUD Egg/Nest + import format JSON (kompatibel format Pterodactyl)
 - [x] CRUD Server (admin-facing) + provisioning skeleton
+- [x] Redesign UI — sidebar navigasi, status badge, icon SVG, resource bar placeholder
+- [x] Skeleton repo `DockWings` (Go)
+- [ ] `DockerEnvironment` asli di DockWings — **butuh VPS**
 - [ ] WebSocket console real-time — **butuh VPS**
 - [ ] File manager (proxy ke SFTP Wings) — **butuh VPS**
-- [ ] Testing `WingsService` ke daemon Wings asli — **butuh VPS**
+- [ ] Testing `WingsService` ↔ DockWings end-to-end — **butuh VPS**
 - [ ] Billing/expiry integration (opsional, buat dipakai di Ahmad Store)
+
+## Kontribusi
+
+Mau bantu development DockPanel? Cek [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
