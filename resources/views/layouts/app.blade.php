@@ -28,7 +28,7 @@
 
         /* Content */
         .content-wrap { flex: 1; margin-left: 230px; display: flex; flex-direction: column; min-width: 0; }
-        main { padding: 1.5rem; max-width: 1000px; width: 100%; margin: 0 auto; }
+        main { padding: 1.5rem; max-width: 1000px; width: 100%; margin: 0 auto; flex: 1; }
 
         @media (max-width: 860px) {
             .sidebar { transform: translateX(-100%); }
@@ -110,6 +110,13 @@
             .server-card-stats { width: 100%; margin-left: 0; margin-top: 0.6rem; justify-content: space-between; gap: 0.75rem; }
             .stat { min-width: 0; flex: 1; }
         }
+
+        /* Footer ala Pterodactyl */
+        .app-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.5rem; border-top: 1px solid #263349; font-size: 0.75rem; color: #4b5a75; margin-top: auto; }
+        .app-footer a { color: #64748b; text-decoration: none; }
+        .app-footer a:hover { color: #f97316; }
+        .app-footer-right { display: flex; align-items: center; gap: 0.6rem; }
+        .app-footer-version { background: #1e293b; color: #94a3b8; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -194,6 +201,14 @@
 
                 @yield('content')
             </main>
+
+            <div class="app-footer">
+                <div>Copyright &copy; 2026 <a href="https://github.com/Julakk/DockPanel" target="_blank" rel="noopener">DockPanel</a>.</div>
+                <div class="app-footer-right">
+                    <span class="app-footer-version">v0.4.0</span>
+                    <span>{{ defined('LARAVEL_START') ? number_format((microtime(true) - LARAVEL_START) * 1000) . 'ms' : '' }}</span>
+                </div>
+            </div>
         </div>
     </div>
 </body>
