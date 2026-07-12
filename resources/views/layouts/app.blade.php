@@ -8,23 +8,38 @@
         * { box-sizing: border-box; }
         body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
 
-        /* Topbar & Nav */
-        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #1e293b; flex-wrap: wrap; gap: 0.75rem; }
-        .topbar h1 { font-size: 1.15rem; margin: 0; white-space: nowrap; }
-        .topbar nav { display: flex; gap: 0.2rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; order: 3; width: 100%; }
-        .topbar nav::-webkit-scrollbar { display: none; }
-        .topbar nav a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; padding: 0.4rem 0.7rem; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
-        .topbar nav a:hover { color: #e2e8f0; background: #273449; }
-        .topbar nav a.active { color: #f97316; background: #27180b; }
-        .topbar-right { display: flex; align-items: center; gap: 0.6rem; order: 2; margin-left: auto; }
-        .admin-badge { background: #f97316; color: #0f172a; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+        .app { display: flex; min-height: 100vh; }
 
-        @media (min-width: 720px) {
-            .topbar nav { order: 2; width: auto; overflow: visible; }
-            .topbar-right { order: 3; margin-left: 0; }
+        /* Sidebar */
+        .sidebar { width: 230px; background: #1a2333; flex-shrink: 0; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; transform: translateX(0); transition: transform 0.2s ease; z-index: 40; }
+        .sidebar-brand { display: flex; align-items: center; gap: 0.5rem; padding: 1.1rem 1.25rem; font-weight: 700; font-size: 1.05rem; border-bottom: 1px solid #263349; }
+        .sidebar-section { padding: 1rem 1.25rem 0.4rem; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: #4b5a75; font-weight: 600; }
+        .sidebar-link { display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 1.25rem; color: #93a3bf; text-decoration: none; font-size: 0.88rem; border-left: 3px solid transparent; }
+        .sidebar-link:hover { background: #212c40; color: #e2e8f0; }
+        .sidebar-link.active { background: #212c40; color: #f97316; border-left-color: #f97316; }
+        .sidebar-link svg { flex-shrink: 0; }
+
+        /* Topbar (di dalam content area) */
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.5rem; background: #17202f; border-bottom: 1px solid #263349; }
+        .topbar-title { font-weight: 700; font-size: 1rem; }
+        .menu-toggle { display: none; background: none; border: none; color: #e2e8f0; cursor: pointer; padding: 0.3rem; }
+        .topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+        .admin-badge { background: #f97316; color: #0f172a; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+
+        /* Content */
+        .content-wrap { flex: 1; margin-left: 230px; display: flex; flex-direction: column; min-width: 0; }
+        main { padding: 1.5rem; max-width: 1000px; width: 100%; margin: 0 auto; }
+
+        @media (max-width: 860px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .content-wrap { margin-left: 0; }
+            .menu-toggle { display: block; }
         }
 
-        main { padding: 1.5rem 1.25rem; max-width: 900px; margin: 0 auto; }
+        .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 30; }
+        .sidebar-backdrop.open { display: block; }
+
         .card { background: #1e293b; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; }
 
         /* Breadcrumb */
@@ -71,44 +86,115 @@
         .empty-state .icon svg { width: 40px; height: 40px; }
         .empty-state p { color: #64748b; font-size: 0.9rem; margin: 0 0 1rem; }
 
-        /* Inline icon dalam button/link */
         .btn svg, h1 svg, h2 svg { vertical-align: -4px; margin-right: 0.3rem; }
+
+        /* Server card ala Pterodactyl - resource usage bar */
+        .server-card { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1rem; background: #1e293b; border-radius: 8px; margin-bottom: 0.6rem; border-left: 3px solid #334155; }
+        .server-card.status-running-border { border-left-color: #4ade80; }
+        .server-card.status-installing-border { border-left-color: #fbbf24; }
+        .server-card.status-offline-border, .server-card.status-install_failed-border { border-left-color: #f87171; }
+        .server-card-icon { width: 34px; height: 34px; border-radius: 6px; background: #334155; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #94a3b8; }
+        .server-card-name { font-weight: 600; font-size: 0.92rem; }
+        .server-card-name a { color: inherit; text-decoration: none; }
+        .server-card-name a:hover { color: #f97316; }
+        .server-card-sub { font-size: 0.78rem; color: #64748b; margin-top: 0.1rem; }
+        .server-card-stats { display: flex; gap: 1.5rem; margin-left: auto; }
+        .stat { min-width: 90px; }
+        .stat-label { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.25rem; }
+        .stat-bar { height: 5px; border-radius: 3px; background: #0f172a; overflow: hidden; }
+        .stat-bar-fill { height: 100%; background: #334155; border-radius: 3px; width: 0%; }
+        .stat-value { font-size: 0.7rem; color: #475569; margin-top: 0.2rem; }
+
+        @media (max-width: 700px) {
+            .server-card { flex-wrap: wrap; }
+            .server-card-stats { width: 100%; margin-left: 0; margin-top: 0.6rem; justify-content: space-between; gap: 0.75rem; }
+            .stat { min-width: 0; flex: 1; }
+        }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <h1>@include('partials.icon', ['name' => 'logo', 'size' => 20]) DockPanel
-            @if (auth()->user()?->isRootAdmin())
-                <span class="admin-badge">ADMIN</span>
-            @endif
-        </h1>
+    <div class="app">
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="document.getElementById('sidebar').classList.remove('open'); this.classList.remove('open');"></div>
 
-        <nav>
-            <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
-            <a href="{{ route('nodes.index') }}" class="{{ request()->is('nodes*') ? 'active' : '' }}">Nodes</a>
-            <a href="{{ route('nests.index') }}" class="{{ request()->is('nests*') ? 'active' : '' }}">Nests</a>
-            <a href="{{ route('eggs.index') }}" class="{{ request()->is('eggs*') ? 'active' : '' }}">Eggs</a>
-            <a href="{{ route('servers.index') }}" class="{{ request()->is('servers*') ? 'active' : '' }}">Servers</a>
-        </nav>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                @include('partials.icon', ['name' => 'logo', 'size' => 20])
+                DockPanel
+            </div>
 
-        <div class="topbar-right">
-            <form method="POST" action="/logout">
-                @csrf
-                <button type="submit" class="btn btn-secondary">Logout</button>
-            </form>
+            <div class="sidebar-section">Basic Administration</div>
+            <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->is('dashboard') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'home', 'size' => 17]) Overview
+            </a>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'settings', 'size' => 17]) Settings
+            </a>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'api', 'size' => 17]) Application API
+            </a>
+
+            <div class="sidebar-section">Management</div>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'database', 'size' => 17]) Databases
+            </a>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'location', 'size' => 17]) Locations
+            </a>
+            <a href="{{ route('nodes.index') }}" class="sidebar-link {{ request()->is('nodes*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'server', 'size' => 17]) Nodes
+            </a>
+            <a href="{{ route('servers.index') }}" class="sidebar-link {{ request()->is('servers*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'package', 'size' => 17]) Servers
+            </a>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'users', 'size' => 17]) Users
+            </a>
+
+            <div class="sidebar-section">Service Management</div>
+            <a href="#" class="sidebar-link">
+                @include('partials.icon', ['name' => 'mounts', 'size' => 17]) Mounts
+            </a>
+            <a href="{{ route('nests.index') }}" class="sidebar-link {{ request()->is('nests*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'globe', 'size' => 17]) Nests
+            </a>
+            <a href="{{ route('eggs.index') }}" class="sidebar-link {{ request()->is('eggs*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'egg', 'size' => 17]) Eggs
+            </a>
+        </aside>
+
+        <div class="content-wrap">
+            <div class="topbar">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarBackdrop').classList.toggle('open');">
+                        @include('partials.icon', ['name' => 'menu', 'size' => 20])
+                    </button>
+                    <span class="topbar-title">@yield('title', 'DockPanel')</span>
+                </div>
+
+                <div class="topbar-right">
+                    @if (auth()->user()?->isRootAdmin())
+                        <span class="admin-badge">ADMIN</span>
+                    @endif
+                    <span class="muted">{{ auth()->user()?->name }}</span>
+                    <form method="POST" action="/logout">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary">@include('partials.icon', ['name' => 'logout', 'size' => 14])</button>
+                    </form>
+                </div>
+            </div>
+
+            <main>
+                @if (session('success'))
+                    <div class="success">{{ session('success') }}</div>
+                @endif
+
+                @hasSection('breadcrumb')
+                    <div class="breadcrumb">@yield('breadcrumb')</div>
+                @endif
+
+                @yield('content')
+            </main>
         </div>
     </div>
-
-    <main>
-        @if (session('success'))
-            <div class="success">{{ session('success') }}</div>
-        @endif
-
-        @hasSection('breadcrumb')
-            <div class="breadcrumb">@yield('breadcrumb')</div>
-        @endif
-
-        @yield('content')
-    </main>
 </body>
 </html>
