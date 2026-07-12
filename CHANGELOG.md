@@ -2,7 +2,7 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
-## [0.4.0] - 2026-07-11
+## [0.4.0] - 2026-07-12
 
 > "Sekarang mukanya beneran mirip panel hosting beneran." 🐧
 
