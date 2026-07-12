@@ -3,8 +3,8 @@
 @section('title', 'Edit Server - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
-    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">/</span>{{ $server->name }}
+    Admin<span class="sep">&gt;</span>
+    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">&gt;</span>{{ $server->name }}
 @endsection
 
 @section('content')

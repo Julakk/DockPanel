@@ -3,8 +3,8 @@
 @section('title', 'Buat Server - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
-    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">/</span>Buat
+    Admin<span class="sep">&gt;</span>
+    <a href="{{ route('servers.index') }}">Servers</a><span class="sep">&gt;</span>Buat
 @endsection
 
 @section('content')

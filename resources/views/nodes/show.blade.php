@@ -3,8 +3,8 @@
 @section('title', $node->name . ' - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
-    <a href="{{ route('nodes.index') }}">Nodes</a><span class="sep">/</span>{{ $node->name }}
+    Admin<span class="sep">&gt;</span>
+    <a href="{{ route('nodes.index') }}">Nodes</a><span class="sep">&gt;</span>{{ $node->name }}
 @endsection
 
 @section('content')

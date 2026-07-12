@@ -3,8 +3,8 @@
 @section('title', 'Import Egg - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
-    <a href="{{ route('eggs.index') }}">Eggs</a><span class="sep">/</span>Import
+    Admin<span class="sep">&gt;</span>
+    <a href="{{ route('eggs.index') }}">Eggs</a><span class="sep">&gt;</span>Import
 @endsection
 
 @section('content')

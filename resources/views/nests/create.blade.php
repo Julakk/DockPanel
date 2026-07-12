@@ -3,8 +3,8 @@
 @section('title', 'Tambah Nest - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>
-    <a href="{{ route('nests.index') }}">Nests</a><span class="sep">/</span>Tambah
+    Admin<span class="sep">&gt;</span>
+    <a href="{{ route('nests.index') }}">Nests</a><span class="sep">&gt;</span>Tambah
 @endsection
 
 @section('content')

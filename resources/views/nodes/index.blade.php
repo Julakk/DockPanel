@@ -3,7 +3,7 @@
 @section('title', 'Nodes - DockPanel')
 
 @section('breadcrumb')
-    <a href="{{ route('dashboard') }}">Dashboard</a><span class="sep">/</span>Nodes
+    Admin<span class="sep">&gt;</span>Nodes
 @endsection
 
 @section('content')
