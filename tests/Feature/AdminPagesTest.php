@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Location;
 use App\Models\Mount;
+use App\Models\Node;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -53,7 +54,7 @@ class AdminPagesTest extends TestCase
     public function test_admin_cannot_delete_location_with_nodes(): void
     {
         $location = Location::create(['short_code' => 'jakarta']);
-        \App\Models\Node::create([
+        Node::create([
             'name' => 'Node Test', 'fqdn' => 'test.local', 'scheme' => 'https',
             'location_id' => $location->id,
             'memory' => 1024, 'disk' => 10240,
@@ -107,7 +108,7 @@ class AdminPagesTest extends TestCase
 
     public function test_admin_can_create_mount_with_nodes(): void
     {
-        $node = \App\Models\Node::create([
+        $node = Node::create([
             'name' => 'Node Test', 'fqdn' => 'test.local', 'scheme' => 'https',
             'memory' => 1024, 'disk' => 10240,
             'daemon_listen' => 8080, 'daemon_sftp' => 2022,

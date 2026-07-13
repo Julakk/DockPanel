@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AllocationController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -29,8 +30,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('root_admin')->group(function () {
         Route::resource('nodes', NodeController::class);
-        Route::post('nodes/{node}/allocations', [\App\Http\Controllers\AllocationController::class, 'store'])->name('nodes.allocations.store');
-        Route::delete('nodes/{node}/allocations/{allocation}', [\App\Http\Controllers\AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
+        Route::post('nodes/{node}/allocations', [AllocationController::class, 'store'])->name('nodes.allocations.store');
+        Route::delete('nodes/{node}/allocations/{allocation}', [AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
 
         Route::resource('nests', NestController::class)->except(['show']);
 
