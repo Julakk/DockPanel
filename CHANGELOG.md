@@ -2,7 +2,31 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
-## [0.4.0] - 2026-07-12
+## [0.5.0] - 2026-07-13
+
+> "Sidebar-nya nggak ada yang nunjuk ke halaman kosong lagi." 🐧
+
+### ✨ Ditambahkan
+- **Users** — CRUD user lengkap (admin bisa bikin/edit/hapus user, toggle role admin, proteksi nggak bisa hapus akun sendiri)
+- **Locations** — kategorisasi Node berdasarkan lokasi fisik (short code + deskripsi), Node sekarang bisa di-assign ke Location
+- **Settings** — halaman konfigurasi panel (company name, requirement 2FA, default language)
+- **Application API** — manajemen token API pakai Laravel Sanctum (generate, lihat daftar, cabut token)
+- **Databases** — manajemen database host (buat di-assign ke server nantinya), password di-encrypt otomatis
+- **Mounts** — manajemen mount point tambahan buat server, bisa di-assign ke banyak Node sekaligus
+- Semua link sidebar yang sebelumnya placeholder (`href="#"`) sekarang nyambung ke halaman asli
+- Test coverage buat semua fitur baru di atas
+
+### 🐛 Diperbaiki
+- Migration `personal_access_tokens` yang ternyata kelewat dari awal skeleton — tanpa ini, fitur apapun yang pakai Sanctum token bakal error
+- Format kode sesuai standar Pint (`routes/web.php`, `AdminPagesTest.php`)
+
+### 📝 Catatan
+- Semua fitur baru di atas 100% bisa dites tanpa VPS
+- Reminder development: MySQL/MariaDB **wajib dinyalain manual** tiap buka Termux baru (`bash start.sh`) — Termux nggak punya auto-start service
+
+---
+
+## [0.4.0] - 2026-07-11
 
 > "Sekarang mukanya beneran mirip panel hosting beneran." 🐧
 
@@ -14,13 +38,13 @@ Semua perubahan penting di project ini dicatat di sini.
 - Semua emoji di UI diganti jadi inline SVG icon solid/filled style (logo, server, globe, egg, package, plug, sparkle, home, settings, api, database, location, users, mounts, menu, logout) — satu partial reusable `partials/icon.blade.php`
 - Status badge konsisten (pill + titik warna) buat semua status: running/installing/offline/suspended, dll
 - Empty state yang lebih jelas (ikon + pesan + CTA) di semua halaman index yang datanya kosong
-- Breadcrumb navigasi di semua halaman create/edit/show
+- Breadcrumb navigasi di semua halaman create/edit/show, format seragam "Admin > X"
+- Footer ala Pterodactyl — copyright, versi panel, waktu render halaman
 
 ### 🐛 Diperbaiki
 - Mobile viewport meta tag yang kelewat dari awal, bikin render Chrome mobile nggak proporsional
 
 ### 📝 Catatan
-- Menu sidebar yang belum ada fiturnya (Settings, Application API, Databases, Locations, Users, Mounts) masih placeholder — struktur navigasi disiapin duluan, fungsinya nyusul
 - Resource usage bar di server list masih dummy/kosong sampai Wings beneran aktif dan bisa lapor data CPU/RAM/Disk real-time
 
 ---
@@ -113,10 +137,11 @@ Semua perubahan penting di project ini dicatat di sini.
 - [x] Testing manual lanjutan (bikin node/nest/egg/server beneran dari browser)
 - [x] Repo `DockWings` terpisah — skeleton awal udah jalan (Go, routing, auth middleware, interface Docker stub)
 - [x] UI polish — sidebar navigasi, status badge, empty state, breadcrumb, icon SVG
+- [x] Halaman fungsional buat menu sidebar (Users, Locations, Settings, Application API, Databases, Mounts)
 - [ ] `DockerEnvironment` asli di DockWings — butuh VPS
 - [ ] WebSocket console real-time — butuh VPS
 - [ ] File manager (proxy SFTP) — butuh VPS
 - [ ] Testing `WingsService` (Panel) ↔ DockWings end-to-end — butuh VPS
-- [ ] Halaman fungsional buat menu sidebar placeholder (Settings, API, Databases, Locations, Users, Mounts)
+- [ ] Assign Database Host & Mount ke Server (UI di halaman edit server)
 
 
