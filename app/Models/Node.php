@@ -12,7 +12,7 @@ class Node extends Model
 
     protected $fillable = [
         'name', 'description', 'public', 'fqdn', 'scheme',
-        'behind_proxy', 'maintenance_mode',
+        'behind_proxy', 'maintenance_mode', 'location_id',
         'memory', 'memory_overallocate', 'disk', 'disk_overallocate',
         'daemon_listen', 'daemon_sftp', 'daemon_token',
     ];
@@ -35,6 +35,11 @@ class Node extends Model
         });
     }
 
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
     public function servers()
     {
         return $this->hasMany(Server::class);
@@ -43,6 +48,11 @@ class Node extends Model
     public function allocations()
     {
         return $this->hasMany(Allocation::class);
+    }
+
+    public function mounts()
+    {
+        return $this->belongsToMany(Mount::class, 'mount_node');
     }
 
     /**

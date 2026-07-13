@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Location;
 use App\Models\Node;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,7 +18,9 @@ class NodeController extends Controller
 
     public function create()
     {
-        return view('nodes.create');
+        $locations = Location::orderBy('short_code')->get();
+
+        return view('nodes.create', compact('locations'));
     }
 
     public function store(Request $request)
@@ -38,14 +41,16 @@ class NodeController extends Controller
     public function show(Node $node)
     {
         $node->loadCount('servers');
-        $node->load('allocations');
+        $node->load('allocations', 'location');
 
         return view('nodes.show', compact('node'));
     }
 
     public function edit(Node $node)
     {
-        return view('nodes.edit', compact('node'));
+        $locations = Location::orderBy('short_code')->get();
+
+        return view('nodes.edit', compact('node', 'locations'));
     }
 
     public function update(Request $request, Node $node)
@@ -78,6 +83,7 @@ class NodeController extends Controller
         return $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'location_id' => 'nullable|exists:locations,id',
             'fqdn' => 'required|string|max:255',
             'scheme' => 'required|in:http,https',
             'public' => 'boolean',

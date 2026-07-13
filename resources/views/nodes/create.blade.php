@@ -25,6 +25,14 @@
             <label for="name">Nama Node</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="ex: Node Jakarta 1" required>
 
+            <label for="location_id">Location (opsional)</label>
+            <select name="location_id" id="location_id">
+                <option value="">-- Tanpa location --</option>
+                @foreach ($locations as $location)
+                    <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->short_code }}</option>
+                @endforeach
+            </select>
+
             <label for="description">Deskripsi (opsional)</label>
             <textarea name="description" id="description" rows="2">{{ old('description') }}</textarea>
 

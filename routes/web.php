@@ -1,12 +1,17 @@
 <?php
 
-use App\Http\Controllers\AllocationController;
+use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseHostController;
 use App\Http\Controllers\EggController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MountController;
 use App\Http\Controllers\NestController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\ServerController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,8 +29,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('root_admin')->group(function () {
         Route::resource('nodes', NodeController::class);
-        Route::post('nodes/{node}/allocations', [AllocationController::class, 'store'])->name('nodes.allocations.store');
-        Route::delete('nodes/{node}/allocations/{allocation}', [AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
+        Route::post('nodes/{node}/allocations', [\App\Http\Controllers\AllocationController::class, 'store'])->name('nodes.allocations.store');
+        Route::delete('nodes/{node}/allocations/{allocation}', [\App\Http\Controllers\AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
 
         Route::resource('nests', NestController::class)->except(['show']);
 
@@ -38,5 +43,17 @@ Route::middleware('auth')->group(function () {
         Route::put('servers/{server}/variables', [ServerController::class, 'updateVariables'])->name('servers.variables.update');
         Route::post('servers/{server}/provision', [ServerController::class, 'provision'])->name('servers.provision');
         Route::resource('servers', ServerController::class);
+
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('locations', LocationController::class)->except(['show']);
+        Route::resource('databases', DatabaseHostController::class)->except(['show']);
+        Route::resource('mounts', MountController::class)->except(['show']);
+
+        Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+
+        Route::get('api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
+        Route::post('api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+        Route::delete('api-keys/{tokenId}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
     });
 });

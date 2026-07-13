@@ -133,18 +133,18 @@
             <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->is('dashboard') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'home', 'size' => 17]) Overview
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('settings.edit') }}" class="sidebar-link {{ request()->is('settings') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'settings', 'size' => 17]) Settings
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('api-keys.index') }}" class="sidebar-link {{ request()->is('api-keys*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'api', 'size' => 17]) Application API
             </a>
 
             <div class="sidebar-section">Management</div>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('databases.index') }}" class="sidebar-link {{ request()->is('databases*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'database', 'size' => 17]) Databases
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('locations.index') }}" class="sidebar-link {{ request()->is('locations*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'location', 'size' => 17]) Locations
             </a>
             <a href="{{ route('nodes.index') }}" class="sidebar-link {{ request()->is('nodes*') ? 'active' : '' }}">
@@ -153,12 +153,12 @@
             <a href="{{ route('servers.index') }}" class="sidebar-link {{ request()->is('servers*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'package', 'size' => 17]) Servers
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('users.index') }}" class="sidebar-link {{ request()->is('users*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'users', 'size' => 17]) Users
             </a>
 
             <div class="sidebar-section">Service Management</div>
-            <a href="#" class="sidebar-link">
+            <a href="{{ route('mounts.index') }}" class="sidebar-link {{ request()->is('mounts*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'mounts', 'size' => 17]) Mounts
             </a>
             <a href="{{ route('nests.index') }}" class="sidebar-link {{ request()->is('nests*') ? 'active' : '' }}">

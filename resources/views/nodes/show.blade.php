@@ -20,6 +20,7 @@
             <tr><th>Memory</th><td>{{ $node->memoryUsed() }} / {{ number_format($node->memory) }} MB</td></tr>
             <tr><th>Disk</th><td>{{ $node->diskUsed() }} / {{ number_format($node->disk) }} MB</td></tr>
             <tr><th>Server Terpasang</th><td>{{ $node->servers_count }}</td></tr>
+            <tr><th>Location</th><td>{{ $node->location?->short_code ?? '-' }}</td></tr>
             <tr><th>Publik</th><td>{{ $node->public ? 'Ya' : 'Tidak' }}</td></tr>
             <tr>
                 <th>Status</th>
