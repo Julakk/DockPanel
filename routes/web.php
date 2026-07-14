@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\AccountApiCredentialController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AllocationController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Client\AccountController as ClientAccountController;
-use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseHostController;
 use App\Http\Controllers\EggController;
@@ -29,20 +29,16 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Area Client — buat semua user login (admin atau bukan), lihat & kelola server + akun sendiri
-    Route::prefix('client')->name('client.')->group(function () {
-        Route::get('/', [ClientDashboardController::class, 'index'])->name('index');
+    Route::get('account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::put('account/email', [AccountController::class, 'updateEmail'])->name('account.email.update');
 
-        Route::get('account', [ClientAccountController::class, 'edit'])->name('account.edit');
-        Route::put('account/password', [ClientAccountController::class, 'updatePassword'])->name('account.password');
-        Route::put('account/email', [ClientAccountController::class, 'updateEmail'])->name('account.email');
-
-        Route::get('api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
-        Route::post('api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
-        Route::delete('api-keys/{tokenId}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
-    });
+    Route::get('account/api-credentials', [AccountApiCredentialController::class, 'index'])->name('account.api-credentials.index');
+    Route::post('account/api-credentials', [AccountApiCredentialController::class, 'store'])->name('account.api-credentials.store');
+    Route::delete('account/api-credentials/{tokenId}', [AccountApiCredentialController::class, 'destroy'])->name('account.api-credentials.destroy');
 
     Route::middleware('root_admin')->group(function () {
         Route::resource('nodes', NodeController::class);
