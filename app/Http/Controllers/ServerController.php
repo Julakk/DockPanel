@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Allocation;
+use App\Models\DatabaseHost;
 use App\Models\Egg;
 use App\Models\Mount;
 use App\Models\Node;
@@ -89,7 +90,7 @@ class ServerController extends Controller
     {
         $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts']);
         $users = User::orderBy('name')->get();
-        $databaseHosts = \App\Models\DatabaseHost::orderBy('name')->get();
+        $databaseHosts = DatabaseHost::orderBy('name')->get();
         $allMounts = Mount::orderBy('name')->get();
 
         return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts'));
