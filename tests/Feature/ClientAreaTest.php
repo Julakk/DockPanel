@@ -8,6 +8,7 @@ use App\Models\Node;
 use App\Models\Server;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ClientAreaTest extends TestCase
@@ -63,7 +64,7 @@ class ClientAreaTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newpassword123', $user->fresh()->password));
+        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->password));
     }
 
     public function test_user_cannot_update_password_with_wrong_current_password(): void
