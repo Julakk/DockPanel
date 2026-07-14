@@ -10,11 +10,23 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard', [
-            'user' => auth()->user(),
-            'nodeCount' => Node::count(),
-            'serverCount' => Server::count(),
-            'eggCount' => Egg::count(),
-        ]);
+        $user = auth()->user();
+
+        if ($user->isRootAdmin()) {
+            return view('dashboard', [
+                'user' => $user,
+                'nodeCount' => Node::count(),
+                'serverCount' => Server::count(),
+                'eggCount' => Egg::count(),
+            ]);
+        }
+
+        $servers = Server::with(['node', 'egg'])
+            ->where('owner_id', $user->id)
+            ->orWhereHas('subusers', fn ($q) => $q->where('users.id', $user->id))
+            ->orderBy('name')
+            ->get();
+
+        return view('client.servers', compact('user', 'servers'));
     }
 }
