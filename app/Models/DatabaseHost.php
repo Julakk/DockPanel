@@ -21,4 +21,9 @@ class DatabaseHost extends Model
     {
         return $this->belongsTo(Node::class);
     }
+
+    public function databases()
+    {
+        return $this->hasMany(ServerDatabase::class);
+    }
 }

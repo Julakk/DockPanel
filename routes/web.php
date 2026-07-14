@@ -11,6 +11,7 @@ use App\Http\Controllers\MountController;
 use App\Http\Controllers\NestController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\ServerController;
+use App\Http\Controllers\ServerDatabaseController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('eggs', EggController::class)->except(['show']);
 
         Route::put('servers/{server}/variables', [ServerController::class, 'updateVariables'])->name('servers.variables.update');
+        Route::put('servers/{server}/mounts', [ServerController::class, 'updateMounts'])->name('servers.mounts.update');
+        Route::post('servers/{server}/databases', [ServerDatabaseController::class, 'store'])->name('servers.databases.store');
+        Route::delete('servers/{server}/databases/{database}', [ServerDatabaseController::class, 'destroy'])->name('servers.databases.destroy');
         Route::post('servers/{server}/provision', [ServerController::class, 'provision'])->name('servers.provision');
         Route::resource('servers', ServerController::class);
 

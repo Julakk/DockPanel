@@ -104,6 +104,87 @@
     </div>
 
     <div class="card">
+        <h3 style="margin-top:0;">Databases</h3>
+
+        @if ($server->databases->isEmpty())
+            <p class="muted">Belum ada database buat server ini.</p>
+        @else
+            <table style="margin-bottom:1.5rem;">
+                <thead>
+                    <tr>
+                        <th>Nama Database</th>
+                        <th>Username</th>
+                        <th>Host</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($server->databases as $db)
+                        <tr>
+                            <td>{{ $db->database }}</td>
+                            <td class="muted">{{ $db->username }}</td>
+                            <td class="muted">{{ $db->databaseHost->name }}</td>
+                            <td class="actions">
+                                <form method="POST" action="{{ route('servers.databases.destroy', [$server, $db]) }}" onsubmit="return confirm('Hapus database ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        @if ($databaseHosts->isEmpty())
+            <p class="muted">Belum ada Database Host — tambah dulu di halaman <a href="{{ route('databases.index') }}" style="color:#f97316;">Databases</a>.</p>
+        @else
+            <form method="POST" action="{{ route('servers.databases.store', $server) }}">
+                @csrf
+                <div class="row">
+                    <div>
+                        <label for="database_host_id">Database Host</label>
+                        <select name="database_host_id" id="database_host_id" required>
+                            @foreach ($databaseHosts as $dbHost)
+                                <option value="{{ $dbHost->id }}">{{ $dbHost->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="database_name">Nama Database</label>
+                        <input type="text" name="database_name" id="database_name" placeholder="mygame_db" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">+ Buat Database</button>
+            </form>
+        @endif
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Mounts</h3>
+
+        @if ($allMounts->isEmpty())
+            <p class="muted">Belum ada mount point — tambah dulu di halaman <a href="{{ route('mounts.index') }}" style="color:#f97316;">Mounts</a>.</p>
+        @else
+            @php $assignedMountIds = $server->mounts->pluck('id')->toArray(); @endphp
+            <form method="POST" action="{{ route('servers.mounts.update', $server) }}">
+                @csrf
+                @method('PUT')
+
+                @foreach ($allMounts as $mount)
+                    <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+                        <input type="checkbox" name="mount_ids[]" value="{{ $mount->id }}" style="width:auto;" {{ in_array($mount->id, $assignedMountIds) ? 'checked' : '' }}>
+                        <span>{{ $mount->name }} <span class="muted">({{ $mount->source }} → {{ $mount->target }})</span></span>
+                    </label>
+                @endforeach
+
+                <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Simpan Mounts</button>
+            </form>
+        @endif
+    </div>
+
+    <div class="card">
         <h3 style="margin-top:0;">Provisioning</h3>
         <p class="muted">Status sekarang: <span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></p>
         <form method="POST" action="{{ route('servers.provision', $server) }}">

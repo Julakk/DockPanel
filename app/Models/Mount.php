@@ -17,4 +17,9 @@ class Mount extends Model
     {
         return $this->belongsToMany(Node::class, 'mount_node');
     }
+
+    public function servers()
+    {
+        return $this->belongsToMany(Server::class, 'mount_server');
+    }
 }

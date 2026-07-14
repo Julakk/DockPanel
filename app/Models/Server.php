@@ -72,6 +72,16 @@ class Server extends Model
             ->withTimestamps();
     }
 
+    public function databases()
+    {
+        return $this->hasMany(ServerDatabase::class);
+    }
+
+    public function mounts()
+    {
+        return $this->belongsToMany(Mount::class, 'mount_server');
+    }
+
     /**
      * Docker container name di Wings, konsisten pakai uuid.
      */

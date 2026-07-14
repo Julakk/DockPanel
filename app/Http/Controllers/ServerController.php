@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Allocation;
 use App\Models\Egg;
+use App\Models\Mount;
 use App\Models\Node;
 use App\Models\Server;
 use App\Models\User;
@@ -79,17 +80,19 @@ class ServerController extends Controller
 
     public function show(Server $server)
     {
-        $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'allocations']);
+        $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'allocations', 'databases.databaseHost', 'mounts']);
 
         return view('servers.show', compact('server'));
     }
 
     public function edit(Server $server)
     {
-        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable']);
+        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts']);
         $users = User::orderBy('name')->get();
+        $databaseHosts = \App\Models\DatabaseHost::orderBy('name')->get();
+        $allMounts = Mount::orderBy('name')->get();
 
-        return view('servers.edit', compact('server', 'users'));
+        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts'));
     }
 
     public function update(Request $request, Server $server)
@@ -126,6 +129,21 @@ class ServerController extends Controller
         });
 
         return back()->with('success', 'Variable server diupdate.');
+    }
+
+    /**
+     * Sync mount yang di-assign ke server ini (dari checklist di halaman edit).
+     */
+    public function updateMounts(Request $request, Server $server)
+    {
+        $validated = $request->validate([
+            'mount_ids' => 'nullable|array',
+            'mount_ids.*' => 'exists:mounts,id',
+        ]);
+
+        $server->mounts()->sync($validated['mount_ids'] ?? []);
+
+        return back()->with('success', 'Mount server diupdate.');
     }
 
     /**
