@@ -2,6 +2,30 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.6.0] - 2026-07-15
+
+> "User biasa akhirnya punya rumah sendiri, nggak numpang di sidebar admin lagi." 🐧
+
+### ✨ Ditambahkan
+- **Client Area** — sidebar & dashboard terpisah buat user biasa (non-admin):
+  - **My Servers** — daftar server milik sendiri (owner atau subuser), card + resource bar placeholder, tanpa tombol admin
+  - **Account Settings** — update password (validasi password lama), update email (validasi password), placeholder Two-Step Verification
+  - **API Credentials** — token API personal, bisa dipakai semua user (beda dari "Application API" yang tetap khusus admin)
+- Sidebar sekarang otomatis nyesuain isi berdasarkan role: admin lihat semua menu, user biasa cuma lihat "My Servers" + section "Account"
+- `DashboardController` cabang otomatis: admin lihat Administrative Overview, user biasa lihat My Servers
+- Test coverage lengkap (5 test) buat area Client
+
+### 🐛 Diperbaiki
+- Route `account.edit` dan turunannya sempat ilang gara-gara ketiban merge dari commit lain — ke-detect dari test yang gagal massal (`Route [account.edit] not defined`), diperbaiki dengan restore isi `routes/web.php` yang lengkap
+- Format kode sesuai standar Pint (`AccountController.php`, `ClientAreaTest.php`)
+
+### 📝 Catatan
+- Semua fitur di atas 100% bisa dites tanpa VPS
+- Reminder: kalau `git push` ketolak "fetch first" setelah `git pull`, selalu cek ulang file kunci (`routes/web.php`, dll) pakai `grep` sebelum lanjut, biar nggak ketiban regresi diam-diam kayak kejadian ini
+- `start.sh` kadang false-alarm gagal nyalain MySQL padahal cuma butuh waktu lebih lama buat startup — kalau muncul "Gagal nyalain MySQL", coba `mysqladmin -u root status` manual dulu sebelum panik
+
+---
+
 ## [0.5.0] - 2026-07-13
 
 > "Sidebar-nya nggak ada yang nunjuk ke halaman kosong lagi." 🐧
@@ -15,10 +39,11 @@ Semua perubahan penting di project ini dicatat di sini.
 - **Mounts** — manajemen mount point tambahan buat server, bisa di-assign ke banyak Node sekaligus
 - Semua link sidebar yang sebelumnya placeholder (`href="#"`) sekarang nyambung ke halaman asli
 - Test coverage buat semua fitur baru di atas
+- **Assign Database Host & Mount ke Server** — provisioning database per-server (nama dinamespace pakai uuid_short biar nggak bentrok), checklist assign mount ke server
 
 ### 🐛 Diperbaiki
 - Migration `personal_access_tokens` yang ternyata kelewat dari awal skeleton — tanpa ini, fitur apapun yang pakai Sanctum token bakal error
-- Format kode sesuai standar Pint (`routes/web.php`, `AdminPagesTest.php`)
+- Format kode sesuai standar Pint (`routes/web.php`, `AdminPagesTest.php`, `ServerController.php`)
 
 ### 📝 Catatan
 - Semua fitur baru di atas 100% bisa dites tanpa VPS
@@ -138,10 +163,12 @@ Semua perubahan penting di project ini dicatat di sini.
 - [x] Repo `DockWings` terpisah — skeleton awal udah jalan (Go, routing, auth middleware, interface Docker stub)
 - [x] UI polish — sidebar navigasi, status badge, empty state, breadcrumb, icon SVG
 - [x] Halaman fungsional buat menu sidebar (Users, Locations, Settings, Application API, Databases, Mounts)
+- [x] Assign Database Host & Mount ke Server
+- [x] Client Area — dashboard, account settings, API credentials buat user biasa (non-admin)
 - [ ] `DockerEnvironment` asli di DockWings — butuh VPS
 - [ ] WebSocket console real-time — butuh VPS
 - [ ] File manager (proxy SFTP) — butuh VPS
 - [ ] Testing `WingsService` (Panel) ↔ DockWings end-to-end — butuh VPS
-- [ ] Assign Database Host & Mount ke Server (UI di halaman edit server)
+- [ ] Two-Step Verification (2FA) — masih placeholder di Account Settings
 
 
