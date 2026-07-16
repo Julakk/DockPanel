@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Services\TwoFactorService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class AuthFeaturesTest extends TestCase
@@ -29,7 +31,7 @@ class AuthFeaturesTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $token = \Illuminate\Support\Facades\Password::createToken($user);
+        $token = Password::createToken($user);
 
         $response = $this->post('/reset-password', [
             'token' => $token,
@@ -39,7 +41,7 @@ class AuthFeaturesTest extends TestCase
         ]);
 
         $response->assertRedirect(route('login'));
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newpassword123', $user->fresh()->password));
+        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->password));
     }
 
     public function test_user_can_enable_two_factor_with_valid_code(): void

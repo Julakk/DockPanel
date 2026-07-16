@@ -12,8 +12,11 @@ namespace App\Services;
 class TwoFactorService
 {
     private const SECRET_LENGTH = 20; // 160 bit, standar buat TOTP
+
     private const PERIOD = 30; // detik per time-step
+
     private const DIGITS = 6;
+
     private const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     /**
