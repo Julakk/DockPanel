@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Allocation;
-use App\Models\DatabaseHost;
 use App\Models\Egg;
 use App\Models\Mount;
 use App\Models\Node;
@@ -88,12 +87,13 @@ class ServerController extends Controller
 
     public function edit(Server $server)
     {
-        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts']);
+        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts', 'subusers']);
         $users = User::orderBy('name')->get();
-        $databaseHosts = DatabaseHost::orderBy('name')->get();
+        $databaseHosts = \App\Models\DatabaseHost::orderBy('name')->get();
         $allMounts = Mount::orderBy('name')->get();
+        $availablePermissions = \App\Http\Controllers\ServerSubuserController::AVAILABLE_PERMISSIONS;
 
-        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts'));
+        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts', 'availablePermissions'));
     }
 
     public function update(Request $request, Server $server)

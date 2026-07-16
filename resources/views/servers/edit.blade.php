@@ -185,6 +185,58 @@
     </div>
 
     <div class="card">
+        <h3 style="margin-top:0;">Subusers</h3>
+        <p class="muted" style="margin-top:-0.6rem;">Kasih akses server ini ke user lain tanpa jadiin mereka owner.</p>
+
+        @if ($server->subusers->isEmpty())
+            <p class="muted">Belum ada subuser.</p>
+        @else
+            <table style="margin-bottom:1.5rem;">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Permissions</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($server->subusers as $subuser)
+                        <tr>
+                            <td>{{ $subuser->name }}</td>
+                            <td class="muted">{{ $subuser->email }}</td>
+                            <td class="muted">{{ implode(', ', json_decode($subuser->pivot->permissions ?? '[]')) ?: '-' }}</td>
+                            <td class="actions">
+                                <form method="POST" action="{{ route('servers.subusers.destroy', [$server, $subuser]) }}" onsubmit="return confirm('Cabut akses subuser ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Cabut</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        <form method="POST" action="{{ route('servers.subusers.store', $server) }}">
+            @csrf
+            <label for="subuser_email">Email User</label>
+            <input type="email" name="email" id="subuser_email" placeholder="user@example.com" required>
+
+            <label style="margin-top:0.5rem;">Permissions</label>
+            @foreach ($availablePermissions as $key => $label)
+                <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; font-weight:normal;">
+                    <input type="checkbox" name="permissions[]" value="{{ $key }}" style="width:auto;">
+                    <span style="color:#e2e8f0; font-size:0.85rem;">{{ $label }}</span>
+                </label>
+            @endforeach
+
+            <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">+ Tambah Subuser</button>
+        </form>
+    </div>
+
+    <div class="card">
         <h3 style="margin-top:0;">Provisioning</h3>
         <p class="muted">Status sekarang: <span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></p>
         <form method="POST" action="{{ route('servers.provision', $server) }}">

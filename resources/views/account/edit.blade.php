@@ -7,9 +7,11 @@
 @endsection
 
 @section('content')
-    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid #263349;">
-        <a href="{{ route('account.edit') }}" style="padding:0.6rem 0; color:#f97316; text-decoration:none; border-bottom:2px solid #f97316; font-size:0.9rem; font-weight:600;">Account</a>
-        <a href="{{ route('account.api-credentials.index') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem;">API Credentials</a>
+    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid #263349; overflow-x:auto;">
+        <a href="{{ route('account.edit') }}" style="padding:0.6rem 0; color:#f97316; text-decoration:none; border-bottom:2px solid #f97316; font-size:0.9rem; font-weight:600; white-space:nowrap;">Account</a>
+        <a href="{{ route('account.api-credentials.index') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">API Credentials</a>
+        <a href="{{ route('account.two-factor.show') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">Two-Factor</a>
+        <a href="{{ route('account.activity') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">Activity</a>
     </div>
 
     @if ($errors->any())
@@ -61,10 +63,11 @@
             </div>
 
             <div class="card">
-                <h3 style="margin-top:0;">Two-Step Verification</h3>
-                <p class="muted">Kamu belum mengaktifkan two-step verification untuk akun ini.</p>
-                <button type="button" class="btn btn-secondary" disabled title="Belum diimplementasi">Enable Two-Step</button>
-                <p class="muted" style="margin-top:0.6rem;">🚧 Fitur ini masih dalam pengembangan.</p>
+                <h3 style="margin-top:0;">Two-Factor Authentication</h3>
+                <p class="muted">
+                    Status: {{ $user->hasTwoFactorEnabled() ? 'Aktif ✅' : 'Belum aktif' }}
+                </p>
+                <a href="{{ route('account.two-factor.show') }}" class="btn btn-secondary">Kelola Two-Factor</a>
             </div>
         </div>
     </div>

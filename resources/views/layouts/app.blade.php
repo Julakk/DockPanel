@@ -178,6 +178,12 @@
             <a href="{{ route('account.api-credentials.index') }}" class="sidebar-link {{ request()->is('account/api-credentials*') ? 'active' : '' }}">
                 @include('partials.icon', ['name' => 'api', 'size' => 17]) API Credentials
             </a>
+            <a href="{{ route('account.two-factor.show') }}" class="sidebar-link {{ request()->is('account/two-factor*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'settings', 'size' => 17]) Two-Factor
+            </a>
+            <a href="{{ route('account.activity') }}" class="sidebar-link {{ request()->is('account/activity*') ? 'active' : '' }}">
+                @include('partials.icon', ['name' => 'api', 'size' => 17]) Activity
+            </a>
         </aside>
 
         <div class="content-wrap">
