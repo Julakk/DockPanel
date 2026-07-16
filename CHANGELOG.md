@@ -2,6 +2,28 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.7.0] - 2026-07-16
+
+> "Subuser, activity log, lupa password, 2FA beneran — empat kado sekaligus." 🐧
+
+### ✨ Ditambahkan
+- **Subusers** — admin bisa kasih akses server ke user lain tanpa jadiin mereka owner, lengkap dengan pilihan permission granular (`control.start`, `console.access`, `files.read`, dll) dari halaman edit server
+- **Activity Log** — histori aktivitas otomatis kecatet buat login sukses/gagal, logout, ganti password/email, enable/disable 2FA; bisa dilihat di Account > Activity dengan waktu relatif ("2 jam lalu")
+- **Forgot Password** — flow reset password lengkap: form "Lupa password?" di login → link reset (lewat mail driver `log` buat development) → form set password baru
+- **Two-Factor Authentication beneran** — implementasi TOTP (RFC 6238) ditulis manual pakai `hash_hmac`, nggak nambah dependency composer. Compatible sama Google Authenticator/Authy. Login sekarang ada tahap tambahan challenge kode 6 digit kalau 2FA aktif
+- Unit test khusus buat algoritma TOTP (`TwoFactorServiceTest`) pakai implementasi referensi independen buat cross-check
+
+### 🐛 Diperbaiki
+- `two_factor_secret` dan `two_factor_enabled_at` ternyata nggak ada di `$fillable` model `User`, bikin data 2FA diam-diam nggak kesimpen (mass assignment ke-block) — ketauan dari test yang gagal, bukan dari production
+- Format kode sesuai standar Pint (`ServerController.php`, `User.php`, `TwoFactorService.php`, `AuthFeaturesTest.php`)
+- `config/mail.php` yang ternyata belum ada dari awal skeleton — dibutuhin buat fitur forgot password
+
+### 📝 Catatan
+- 44 test lolos semua — mayoritas fitur besar DockPanel yang bisa dikerjain tanpa VPS sekarang udah kelar
+- Sisa roadmap besar (integrasi Docker asli, WebSocket console, file manager SFTP) tetap nunggu VPS tersedia
+
+---
+
 ## [0.6.0] - 2026-07-15
 
 > "User biasa akhirnya punya rumah sendiri, nggak numpang di sidebar admin lagi." 🐧
@@ -165,10 +187,13 @@ Semua perubahan penting di project ini dicatat di sini.
 - [x] Halaman fungsional buat menu sidebar (Users, Locations, Settings, Application API, Databases, Mounts)
 - [x] Assign Database Host & Mount ke Server
 - [x] Client Area — dashboard, account settings, API credentials buat user biasa (non-admin)
+- [x] Subusers — kasih akses server ke user lain dengan permission granular
+- [x] Activity Log — histori aktivitas per user
+- [x] Forgot Password — flow reset password lengkap
+- [x] Two-Factor Authentication beneran (TOTP, RFC 6238)
 - [ ] `DockerEnvironment` asli di DockWings — butuh VPS
 - [ ] WebSocket console real-time — butuh VPS
 - [ ] File manager (proxy SFTP) — butuh VPS
 - [ ] Testing `WingsService` (Panel) ↔ DockWings end-to-end — butuh VPS
-- [ ] Two-Step Verification (2FA) — masih placeholder di Account Settings
 
 
