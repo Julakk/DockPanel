@@ -2,6 +2,29 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.8.0] - 2026-07-17
+
+> "Sekarang instalnya segampang Pterodactyl, dan tampilannya nggak keliatan proyek dari HP lagi." 🐧
+
+### ✨ Ditambahkan
+- **`install.sh`** — installer satu perintah mirip `pterodactyl-installer`, bisa dijalanin langsung di VPS Ubuntu 24.04:
+  ```
+  bash <(curl -s https://raw.githubusercontent.com/Julakk/DockPanel/main/install.sh)
+  ```
+  Ada 2 pilihan: install Panel (PHP, Composer, MariaDB, Nginx, opsional SSL Certbot) atau install Node/Wings (Docker, Go, systemd service)
+- **UI/UX refresh total** — palet warna baru pakai CSS custom properties (`:root` variables) biar konsisten, tipografi native font stack, card dengan border+shadow, hover/focus state di semua button/input/table row, topbar sticky dengan efek blur
+- Halaman auth (login, forgot password, reset password, 2FA challenge) disamain temanya, dulu masih pakai styling lama yang beda sendiri
+
+### 🐛 Diperbaiki
+- Badge versi di footer yang kepasang hardcode `v0.4.0` dari lama, sekarang ngikutin versi rilis terbaru (`v0.8.0`)
+- Development lokal disaranin pindah ke SQLite (`DB_CONNECTION=sqlite`) biar nggak perlu nyalain MariaDB manual tiap buka Termux — perbaikan workflow, bukan perubahan kode
+
+### 📝 Catatan
+- Installer script ditulis manual tanpa bisa ditest langsung di VPS Ubuntu beneran (belum ada VPS) — logic-nya ngikutin cara setup standar PHP/Nginx/MariaDB/Docker/Go, tapi kemungkinan ada penyesuaian kecil pas dicoba pertama kali di VPS asli
+- SQLite cuma buat convenience development, produksi/VPS installer tetap pakai MariaDB (nggak berubah)
+
+---
+
 ## [0.7.0] - 2026-07-16
 
 > "Subuser, activity log, lupa password, 2FA beneran — empat kado sekaligus." 🐧

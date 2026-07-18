@@ -14,7 +14,7 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 ┌───────────────────┐   HTTP + JWT    ┌──────────────────────┐
 │   PANEL (repo ini)  │ ◄─────────────► │   WINGS (daemon Go)   │
 │   Laravel 11        │                 │   Docker control      │
-│   MySQL + Redis      │                 │   SFTP + WebSocket     │
+│   MySQL/SQLite       │                 │   SFTP + WebSocket     │
 └───────────────────┘                 └──────────────────────┘
 ```
 
@@ -26,40 +26,87 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 | Tabel | Fungsi |
 |---|---|
 | `nodes` | Server fisik/VPS yang jalanin Wings |
+| `locations` | Kategorisasi Node berdasarkan lokasi fisik |
 | `nests` | Kategori game (Minecraft, SA-MP, FiveM, dst) |
 | `eggs` | Template docker image + startup command per game |
 | `egg_variables` | Variabel yang bisa diisi user per egg (ex: `SERVER_JARFILE`) |
 | `servers` | Instance server game milik user |
 | `server_variables` | Nilai variable egg yang di-set per server |
 | `allocations` | Kombinasi IP:port yang di-assign ke server |
-| `server_subusers` | Akses terbatas user lain ke satu server |
+| `server_subusers` | Akses terbatas user lain ke satu server, dengan permission granular |
+| `server_databases` | Database yang di-provision buat server tertentu |
+| `database_hosts` | Host MySQL/MariaDB yang bisa dipakai server |
+| `mounts` | Mount point tambahan buat server |
+| `activity_logs` | Histori aktivitas user (login, ganti password, dst) |
+| `panel_settings` | Konfigurasi panel (company name, requirement 2FA, dll) |
 
 ## Fitur yang Udah Jalan
 
-- 🔐 **Auth** — login/logout, dashboard, proteksi khusus admin (`root_admin` middleware)
-- 🖥️ **CRUD Node** — kelola VPS/node, auto-generate daemon token
-- 🔌 **Allocation Management** — tambah range IP:port per node (max 100 port sekaligus), assign/lepas dari server
-- 🌐 **CRUD Nest** — kategori game
-- 🥚 **CRUD Egg** — template docker image + startup command, manage variable per egg, **import dari JSON kompatibel format Pterodactyl**
-- 📦 **CRUD Server** — nyatuin Node + Nest/Egg + Allocation jadi satu instance server, isi variable per server, tombol provisioning ke Wings
-- 🎨 **Sidebar navigasi ala Pterodactyl** — section Basic Administration / Management / Service Management, responsive (collapse jadi hamburger di HP)
-- ⚙️ **CI otomatis** (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit) tiap push
+**Auth & Keamanan**
+- 🔐 Login/logout, proteksi khusus admin (`root_admin` middleware)
+- 🔑 Forgot password — flow reset lengkap lewat email
+- 📱 Two-Factor Authentication beneran (TOTP, RFC 6238) — kompatibel Google Authenticator/Authy
+- 📜 Activity Log — histori login, ganti password/email, enable/disable 2FA
 
-Semua fitur di atas 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
+**Admin**
+- 🖥️ CRUD Node + Allocation Management (range IP:port, max 100 sekaligus)
+- 📍 Locations — kategorisasi Node
+- 🌐 CRUD Nest + 🥚 CRUD Egg (import JSON kompatibel format Pterodactyl, manage variable)
+- 📦 CRUD Server — nyatuin Node + Nest/Egg + Allocation, assign Database Host & Mount, provisioning ke Wings
+- 👥 CRUD Users + role admin
+- 🔧 Settings (company name, 2FA requirement, default language)
+- 🔗 Application API (token Sanctum)
+- 🗄️ Database Hosts + 📁 Mounts
+
+**Client Area (user biasa)**
+- 📋 My Servers — daftar server milik sendiri atau yang di-subuser-kan
+- 👤 Account Settings, API Credentials personal, Two-Factor, Activity
+- 🤝 Subusers — admin bisa kasih akses server ke user lain dengan permission granular
+
+**UI/UX**
+- 🎨 Sidebar navigasi ala Pterodactyl (Basic Administration / Management / Service Management), collapse jadi hamburger di HP, otomatis nyesuain menu berdasarkan role
+- 🖌️ Design system pakai CSS custom properties — warna, tipografi, hover/focus state konsisten di semua halaman
+- 📊 Resource bar placeholder (CPU/Memory/Disk) di server card, siap diisi data beneran begitu Wings aktif
+
+**Infrastruktur**
+- ⚙️ CI otomatis (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit)
+- 🚀 One-command installer (`install.sh`) — mirip `pterodactyl-installer`, install Panel atau Node/Wings di VPS Ubuntu 24 tinggal `bash <(curl -s ...)`
+
+Semua fitur di atas (kecuali Wings) 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
 
 ## Alur Pemakaian
 
 1. Login sebagai admin
-2. Bikin **Node** (VPS/server fisik)
+2. Bikin **Location** (opsional) dan **Node** (VPS/server fisik)
 3. Tambah **Allocation** (IP:port) di halaman detail Node
 4. Bikin **Nest** (kategori game) dan **Egg** (template startup), atau import Egg dari JSON
 5. Bikin **Server** — pilih owner, node, egg, allocation, resource limit
-6. Isi **Variable** server (mis. `SERVER_JARFILE`)
+6. Isi **Variable** server, assign **Database** & **Mount** kalau perlu, tambah **Subuser** kalau mau kasih akses ke user lain
 7. Klik **Provision ke Wings** — bakal gagal graceful sampai ada VPS dengan Wings aktif
+
+## Setup Development (Termux)
+
+Database default development pakai **SQLite** (nggak perlu nyalain service MySQL manual tiap sesi):
+
+```bash
+cp .env.example .env
+touch database/database.sqlite
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
+
+## Install ke VPS Produksi
+
+```bash
+bash <(curl -s https://raw.githubusercontent.com/Julakk/DockPanel/main/install.sh)
+```
+
+Pilih opsi **1** buat install Panel, atau opsi **2** buat install Node/Wings di VPS Ubuntu 24 yang beda. Installer otomatis setup PHP, MariaDB, Nginx (buat Panel) atau Docker + Go (buat Wings).
 
 ## Testing Wings (Docker control)
 
-⚠️ **Docker nggak bisa jalan di Termux/Android.** Bagian ini WAJIB ditest di VPS/server Linux beneran (bisa pakai salah satu node Pterodactyl yang udah ada).
+⚠️ **Docker nggak bisa jalan di Termux/Android.** Bagian ini WAJIB ditest di VPS/server Linux beneran.
 
 Development flow yang disarankan:
 
@@ -72,14 +119,16 @@ Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
 
 ## Roadmap
 
-- [x] Skeleton migration + model (nodes, servers, eggs, nests, allocations)
-- [x] `WingsService` — service class buat komunikasi ke daemon
-- [x] Auth + role admin/user
-- [x] CRUD Node (admin) + Allocation management
-- [x] CRUD Egg/Nest + import format JSON (kompatibel format Pterodactyl)
-- [x] CRUD Server (admin-facing) + provisioning skeleton
-- [x] Redesign UI — sidebar navigasi, status badge, icon SVG, resource bar placeholder
+- [x] Skeleton migration + model, `WingsService`
+- [x] Auth + role admin/user + 2FA + Forgot Password
+- [x] CRUD Node/Nest/Egg/Server + Allocation
+- [x] Halaman admin lengkap (Users, Locations, Settings, Application API, Databases, Mounts)
+- [x] Assign Database Host & Mount ke Server
+- [x] Client Area buat user biasa
+- [x] Subusers + Activity Log
+- [x] Redesign UI total — sidebar, design token, hover/focus state
 - [x] Skeleton repo `DockWings` (Go)
+- [x] One-command installer script (Panel + Wings)
 - [ ] `DockerEnvironment` asli di DockWings — **butuh VPS**
 - [ ] WebSocket console real-time — **butuh VPS**
 - [ ] File manager (proxy ke SFTP Wings) — **butuh VPS**
