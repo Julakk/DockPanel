@@ -13,7 +13,7 @@
     <div class="card">
         <h3 style="margin-top:0;">System Information</h3>
         <p class="muted" style="margin:0;">
-            You are running <strong style="color:#e2e8f0;">DockPanel</strong> — self-hosted game server management panel.
+            You are running <strong style="color:#e2e8f0;">DockPanel</strong> version <code>{{ config('app.version') }}</code>.
             Wings daemon belum aktif, jadi resource usage server masih placeholder.
         </p>
     </div>

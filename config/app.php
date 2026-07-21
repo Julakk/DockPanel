@@ -14,4 +14,13 @@ return [
     'maintenance' => [
         'driver' => 'file',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Versi Panel
+    |--------------------------------------------------------------------------
+    | Update manual tiap rilis baru (samain sama CHANGELOG.md).
+    | Dipakai di footer dan halaman Overview.
+    */
+    'version' => '0.8.0',
 ];

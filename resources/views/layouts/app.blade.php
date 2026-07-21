@@ -376,7 +376,7 @@
             <div class="app-footer">
                 <div>Copyright &copy; 2026 <a href="https://github.com/Julakk/DockPanel" target="_blank" rel="noopener">DockPanel</a>.</div>
                 <div class="app-footer-right">
-                    <span class="app-footer-version">v0.8.0</span>
+                    <span class="app-footer-version">v{{ config('app.version') }}</span>
                     <span>{{ defined('LARAVEL_START') ? number_format((microtime(true) - LARAVEL_START) * 1000) . 'ms' : '' }}</span>
                 </div>
             </div>
