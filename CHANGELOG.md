@@ -2,6 +2,16 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.8.1] - 2026-07-21
+
+> "Sekecil apapun, versi panel sekarang keliatan di layar, bukan cuma di CHANGELOG." 🐧
+
+### ✨ Ditambahkan
+- Halaman Overview sekarang nampilin versi panel di card "System Information", persis pola Pterodactyl (`You are running DockPanel version 0.8.0.`)
+- Versi panel dipusatin di `config/app.php` (`config('app.version')`) — dipakai bareng di Overview dan footer, jadi tiap rilis baru cukup update satu tempat aja
+
+---
+
 ## [0.8.0] - 2026-07-17
 
 > "Sekarang instalnya segampang Pterodactyl, dan tampilannya nggak keliatan proyek dari HP lagi." 🐧
