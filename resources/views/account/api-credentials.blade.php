@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(auth()->user()->isRootAdmin() ? 'layouts.app' : 'layouts.client')
 
 @section('title', 'API Credentials - DockPanel')
 
@@ -7,11 +7,9 @@
 @endsection
 
 @section('content')
-    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid #263349; overflow-x:auto;">
-        <a href="{{ route('account.edit') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">Account</a>
-        <a href="{{ route('account.api-credentials.index') }}" style="padding:0.6rem 0; color:#f97316; text-decoration:none; border-bottom:2px solid #f97316; font-size:0.9rem; font-weight:600; white-space:nowrap;">API Credentials</a>
-        <a href="{{ route('account.two-factor.show') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">Two-Factor</a>
-        <a href="{{ route('account.activity') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem; white-space:nowrap;">Activity</a>
+    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid #263349;">
+        <a href="{{ route('account.edit') }}" style="padding:0.6rem 0; color:#94a3b8; text-decoration:none; font-size:0.9rem;">Account</a>
+        <a href="{{ route('account.api-credentials.index') }}" style="padding:0.6rem 0; color:#f97316; text-decoration:none; border-bottom:2px solid #f97316; font-size:0.9rem; font-weight:600;">API Credentials</a>
     </div>
 
     <div class="card">

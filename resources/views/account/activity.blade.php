@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(auth()->user()->isRootAdmin() ? 'layouts.app' : 'layouts.client')
 
 @section('title', 'Activity - DockPanel')
 
