@@ -2,7 +2,7 @@
   <img src="assets/logo.png" alt="DockPanel Logo" width="450">
 </p>
 
-# DockPanel
+#  DockPanel
 
 > Self-hosted game server management panel. Terinspirasi dari Pterodactyl, dibangun dari nol pakai Laravel.
 
