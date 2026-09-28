@@ -12,6 +12,7 @@ class Server extends Model
         'owner_id', 'node_id', 'nest_id', 'egg_id',
         'memory', 'swap', 'disk', 'io', 'cpu', 'threads',
         'startup', 'image', 'skip_scripts', 'status',
+        'expires_at', 'suspension_reason', 'expiry_notified_at',
     ];
 
     protected function casts(): array
@@ -19,6 +20,8 @@ class Server extends Model
         return [
             'suspended' => 'boolean',
             'skip_scripts' => 'boolean',
+            'expires_at' => 'datetime',
+            'expiry_notified_at' => 'datetime',
         ];
     }
 

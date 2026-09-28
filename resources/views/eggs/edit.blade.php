@@ -75,7 +75,7 @@
                     @foreach ($egg->variables as $variable)
                         <tr>
                             <td>{{ $variable->name }}</td>
-                            <td class="muted">{{ '{{' . $variable->env_variable . '}}' }}</td>
+                    <td class="muted">{{ '{' . '{' . $variable->env_variable . '}' . '}' }}</td>
                             <td class="muted">{{ $variable->default_value ?: '-' }}</td>
                             <td class="actions">
                                 <form method="POST" action="{{ route('eggs.variables.destroy', [$egg, $variable]) }}" onsubmit="return confirm('Hapus variable ini?');">

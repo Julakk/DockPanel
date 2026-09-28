@@ -92,3 +92,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('api-keys/{tokenId}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
     });
 });
+
+require __DIR__.'/client.php';
+require __DIR__.'/billing.php';

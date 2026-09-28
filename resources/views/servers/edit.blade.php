@@ -87,7 +87,7 @@
                 @foreach ($server->serverVariables as $sv)
                     <label for="var_{{ $sv->egg_variable_id }}">
                         {{ $sv->eggVariable->name }}
-                        <span class="muted">({{ '{{' . $sv->eggVariable->env_variable . '}}' }})</span>
+                        <span class="muted">({{ '{' . '{' . $sv->eggVariable->env_variable . '}' . '}' }})</span>
                     </label>
                     <input
                         type="text"
