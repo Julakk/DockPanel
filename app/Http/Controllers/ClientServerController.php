@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ClientServerController extends Controller
 {
-    private const TABS = ['console', 'files', 'settings', 'startup'];
+    private const TABS = ['console', 'files', 'settings', 'startup', 'schedules'];
 
     /**
      * Boleh akses: root admin, owner, atau subuser server ini.

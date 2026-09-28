@@ -85,7 +85,7 @@
     @endif
 
     <div class="dp-tabs">
-        @foreach (['console' => 'Console', 'files' => 'Files', 'settings' => 'Settings', 'startup' => 'Startup'] as $key => $label)
+        @foreach (['console' => 'Console', 'files' => 'Files', 'settings' => 'Settings', 'startup' => 'Startup', 'schedules' => 'Schedules'] as $key => $label)
             <a href="{{ route('client.servers.show', ['server' => $server, 'tab' => $key]) }}" class="{{ $tab === $key ? 'active' : '' }}">{{ $label }}</a>
         @endforeach
     </div>
@@ -118,6 +118,8 @@ Sementara ini kamu bisa kirim command lewat form di bawah.</div>
                 <tr><td class="dp-muted">CPU</td><td>{{ $server->cpu ? $server->cpu.'%' : 'Unlimited' }}</td></tr>
             </table>
         </div>
+    @elseif ($tab === 'schedules')
+        @include('client.partials.schedules')
     @elseif ($tab === 'startup')
         <div class="dp-card">
             <div class="dp-muted">Startup command</div>

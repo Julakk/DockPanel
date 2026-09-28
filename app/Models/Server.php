@@ -75,6 +75,11 @@ class Server extends Model
             ->withTimestamps();
     }
 
+    public function schedules()
+    {
+        return $this->hasMany(ServerSchedule::class);
+    }
+
     public function databases()
     {
         return $this->hasMany(ServerDatabase::class);

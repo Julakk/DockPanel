@@ -13,3 +13,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('servers:notify-expiring')->dailyAt('08:00');
 Schedule::command('servers:suspend-expired')->everyFiveMinutes();
+
+Schedule::command('servers:run-schedules')->everyMinute();

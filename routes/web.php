@@ -95,3 +95,5 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/client.php';
 require __DIR__.'/billing.php';
+require __DIR__.'/audit.php';
+require __DIR__.'/schedules.php';
