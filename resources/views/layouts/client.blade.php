@@ -142,6 +142,7 @@
         .app-footer-right { display: flex; align-items: center; gap: 0.6rem; }
         .app-footer-version { background: var(--surface); border: 1px solid var(--border-light); color: var(--text-muted); padding: 0.15rem 0.55rem; border-radius: 999px; font-weight: 700; }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/dp-theme.css') }}?v={{ @filemtime(public_path('css/dp-theme.css')) }}">
 </head>
 <body>
     <div class="client-topbar">

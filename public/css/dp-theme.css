@@ -1,0 +1,63 @@
+/* DockPanel theme - gaya Pterodactyl (dark slate + cyan) */
+:root:root{
+  --bg:#12161b; --bg-elevated:#1a2027; --surface:#1f262e; --surface-hover:#27303a;
+  --border:#323d49; --border-light:#2a333d;
+  --text:#e3e8ee; --text-muted:#9aa7b5; --text-faint:#6b7785;
+  --accent:#22b8d6; --accent-hover:#4fd0ea; --accent-dark:#0e8fb0; --accent-soft:rgba(34,184,214,.14);
+  --green:#3ec28f; --green-bg:rgba(62,194,143,.14);
+  --red:#f0616d; --red-bg:rgba(240,97,109,.14);
+  --amber:#f2b64a; --amber-bg:rgba(242,182,74,.14);
+  --gray:#9aa7b5; --gray-bg:rgba(154,167,181,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 4px 14px rgba(0,0,0,.45);
+  --radius:6px; --radius-sm:4px; --radius-lg:8px;
+  --card:var(--surface); --primary:var(--accent);
+}
+html,body{background:var(--bg)!important;color:var(--text)!important}
+a{color:var(--accent)}
+a:hover{color:var(--accent-hover)}
+h1,h2,h3{color:#fff}
+.sidebar{background:var(--bg-elevated)!important;border-right:1px solid var(--border)!important}
+.sidebar-brand{font-weight:700;letter-spacing:.04em;color:#fff!important}
+.sidebar-section{text-transform:uppercase;font-size:.68rem!important;letter-spacing:.12em;
+  color:var(--text-faint)!important;font-weight:600}
+.sidebar-link{color:var(--text-muted)!important;border-left:3px solid transparent;border-radius:0!important;
+  transition:background .15s,color .15s,border-color .15s}
+.sidebar-link:hover{background:rgba(255,255,255,.04)!important;color:#fff!important}
+.sidebar-link.active{background:var(--accent-soft)!important;color:#fff!important;border-left-color:var(--accent)}
+.topbar{background:var(--bg-elevated)!important;border-bottom:1px solid var(--border)!important}
+.topbar-title{color:#fff}
+.app-footer{color:var(--text-faint)}
+.card{background:var(--surface)!important;border:1px solid var(--border)!important;
+  border-top:3px solid var(--accent-dark)!important;border-radius:var(--radius)!important}
+.server-card{background:var(--surface)!important;border:1px solid var(--border)!important;
+  border-radius:var(--radius)!important;transition:border-color .15s,transform .15s}
+.server-card:hover{border-color:var(--accent)!important;transform:translateY(-1px)}
+.stat-bar{background:#151a20!important;height:6px}
+.stat-bar-fill{background:linear-gradient(90deg,var(--accent-dark),var(--accent))!important}
+table{border-collapse:collapse}
+th{background:rgba(255,255,255,.03);color:var(--text-muted);text-transform:uppercase;
+  font-size:.7rem;letter-spacing:.08em;font-weight:600}
+th,td{border-bottom:1px solid var(--border-light)}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+.btn-primary{background:var(--accent-dark)!important;color:#fff!important;border-color:transparent!important}
+.btn-primary:hover{background:var(--accent)!important}
+.btn-secondary{background:#2b3540!important;color:var(--text)!important;border:1px solid var(--border)!important}
+.btn-danger{background:var(--red-bg)!important;color:var(--red)!important;border:1px solid var(--red)!important}
+.btn-danger:hover{background:var(--red)!important;color:#fff!important}
+input,select,textarea{background:#171c22!important;color:var(--text)!important;
+  border:1px solid var(--border)!important;border-radius:var(--radius)!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px rgba(34,184,214,.2)}
+label{color:var(--text-muted)}
+.dp-tabs{border-bottom:1px solid var(--border);gap:0}
+.dp-tabs a{border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;
+  color:var(--text-muted);padding:.55rem 1rem;background:transparent}
+.dp-tabs a:hover{color:#fff}
+.dp-tabs a.active{background:transparent!important;color:#fff!important;border-bottom-color:var(--accent)!important}
+.dp-bar{background:#151a20!important;height:6px}
+.dp-bar>span{background:linear-gradient(90deg,var(--accent-dark),var(--accent))!important}
+.dp-console{background:#0c0f12!important;border:1px solid var(--border);color:#c8d1da}
+.dp-power button{background:#2b3540!important;color:var(--text)!important;border:1px solid var(--border)!important}
+.dp-power button:hover:not(:disabled){border-color:var(--accent)!important;color:#fff!important}
+*::-webkit-scrollbar{height:8px;width:8px}
+*::-webkit-scrollbar-thumb{background:#3a4652;border-radius:8px}
