@@ -2,6 +2,23 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [Unreleased] - 2026-09-28
+
+### Added
+- Halaman detail server di client area (`/client/servers/{server}`) dengan tab Console, Files, Settings, Startup.
+- Tombol power (start/restart/stop/kill) dan kirim command dari client area, dengan akses owner, subuser, atau root admin.
+- Resource bar CPU/Memory/Disk (polling 5 detik) lewat `ServerResourceService`; fallback ke mode mock kalau Wings belum aktif.
+- Masa aktif server: kolom `expires_at`, `suspension_reason`, `expiry_notified_at`.
+- Command `servers:suspend-expired` (auto-suspend) dan `servers:notify-expiring` (email pengingat H-3), dijadwalkan lewat scheduler.
+- Form admin buat set tanggal expired atau perpanjang X hari; suspend karena expired otomatis dibuka saat diperpanjang.
+- Test baru: `ClientServerTest`, `ServerExpiryTest`, dan helper `tests/Concerns/MakesServers`.
+
+### Fixed
+- `ParseError` di `eggs/edit` dan `servers/edit` akibat `'{{'` di dalam echo Blade.
+
+### Security
+- `database/*.sqlite` dan `.phpunit.result.cache` masuk `.gitignore`.
+
 ## [0.8.1] - 2026-07-21
 
 > "Sekecil apapun, versi panel sekarang keliatan di layar, bukan cuma di CHANGELOG." 🐧

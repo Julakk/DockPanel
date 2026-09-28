@@ -66,11 +66,13 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 - 📋 My Servers — daftar server milik sendiri atau yang di-subuser-kan
 - 👤 Account Settings, API Credentials personal, Two-Factor, Activity
 - 🤝 Subusers — admin bisa kasih akses server ke user lain dengan permission granular
+- 🖥️ Halaman detail server — tab Console, Files, Settings, Startup + tombol power dan kirim command
+- ⏳ Masa aktif server — admin set atau perpanjang expiry, server auto-suspend kalau lewat waktu, email pengingat H-3
 
 **UI/UX**
 - 🎨 Sidebar navigasi ala Pterodactyl (Basic Administration / Management / Service Management), collapse jadi hamburger di HP, otomatis nyesuain menu berdasarkan role
 - 🖌️ Design system pakai CSS custom properties — warna, tipografi, hover/focus state konsisten di semua halaman
-- 📊 Resource bar placeholder (CPU/Memory/Disk) di server card, siap diisi data beneran begitu Wings aktif
+- 📊 Resource bar CPU/Memory/Disk di halaman server (polling 5 detik), otomatis fallback ke mode mock kalau Wings belum aktif
 
 **Infrastruktur**
 - ⚙️ CI otomatis (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit)
@@ -99,6 +101,25 @@ php artisan key:generate
 php artisan migrate --seed
 php artisan serve
 ```
+
+## Scheduler (Expiry Server)
+
+Auto-suspend dan email pengingat jalan lewat Laravel scheduler.
+
+Development di Termux (session terpisah):
+
+    php artisan schedule:work
+
+Produksi di VPS, tambahkan ke crontab:
+
+    * * * * * cd /var/www/dockpanel && php artisan schedule:run >> /dev/null 2>&1
+
+Command manual:
+
+    php artisan servers:suspend-expired
+    php artisan servers:notify-expiring --days=3
+
+Email pengingat butuh `MAIL_*` di `.env`. Pakai `MAIL_MAILER=log` buat ngetes, isinya masuk ke `storage/logs/laravel.log`.
 
 ## Install ke VPS Produksi
 
@@ -133,6 +154,8 @@ Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
 - [x] Redesign UI total — sidebar, design token, hover/focus state
 - [x] Skeleton repo `DockWings` (Go)
 - [x] One-command installer script (Panel + Wings)
+- [x] Halaman detail server di client area + resource bar
+- [x] Masa aktif server + auto-suspend + email pengingat
 - [ ] `DockerEnvironment` asli di DockWings — **butuh VPS**
 - [ ] WebSocket console real-time — **butuh VPS**
 - [ ] File manager (proxy ke SFTP Wings) — **butuh VPS**
