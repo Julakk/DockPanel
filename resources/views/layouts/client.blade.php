@@ -183,5 +183,6 @@
             <span>{{ defined('LARAVEL_START') ? number_format((microtime(true) - LARAVEL_START) * 1000) . 'ms' : '' }}</span>
         </div>
     </div>
+<script src="{{ asset("js/dp-ui.js") }}?v={{ @filemtime(public_path("js/dp-ui.js")) }}" defer></script>
 </body>
 </html>

@@ -1,3 +1,321 @@
+#!/usr/bin/env bash
+# DockPanel - PART 1: Client area (user) ala Pterodactyl
+set -e
+[ -f artisan ] || { echo "Jalankan dari root repo DockPanel (yang ada file artisan)"; exit 1; }
+mkdir -p resources/views/client
+
+cat > routes/client.php << 'EOF'
+<?php
+
+use App\Http\Controllers\ClientServerController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('auth')->prefix('client/servers/{server}')->name('client.servers.')->group(function () {
+    Route::get('/', [ClientServerController::class, 'show'])->name('show');
+    Route::get('resources', [ClientServerController::class, 'resources'])->name('resources');
+    Route::post('power', [ClientServerController::class, 'power'])->name('power');
+    Route::post('command', [ClientServerController::class, 'command'])->name('command');
+    Route::put('rename', [ClientServerController::class, 'rename'])->name('rename');
+    Route::put('startup', [ClientServerController::class, 'updateStartup'])->name('startup.update');
+    Route::post('users', [ClientServerController::class, 'addUser'])->name('users.store');
+    Route::delete('users/{user}', [ClientServerController::class, 'removeUser'])->name('users.destroy');
+});
+EOF
+
+cat > app/Http/Controllers/ClientServerController.php << 'EOF'
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ActivityLog;
+use App\Models\Server;
+use App\Models\User;
+use App\Services\ServerResourceService;
+use App\Services\WingsService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+class ClientServerController extends Controller
+{
+    /** key tab => [label, permission subuser yang dibutuhkan (null = semua yang punya akses)] */
+    private const TABS = [
+        'console' => ['Console', 'console.access'],
+        'files' => ['Files', 'files.read'],
+        'databases' => ['Databases', 'database.view'],
+        'schedules' => ['Schedules', null],
+        'users' => ['Users', 'manage'],
+        'network' => ['Network', null],
+        'startup' => ['Startup', null],
+        'settings' => ['Settings', null],
+        'activity' => ['Activity', null],
+    ];
+
+    private function isManager(Request $request, Server $server): bool
+    {
+        $user = $request->user();
+
+        return (bool) ($user->root_admin ?? false) || (int) $server->owner_id === (int) $user->id;
+    }
+
+    /**
+     * null = akses penuh (admin/owner). Array = daftar permission subuser.
+     * Bukan admin/owner/subuser => 403.
+     */
+    private function permissions(Request $request, Server $server): ?array
+    {
+        if ($this->isManager($request, $server)) {
+            return null;
+        }
+
+        $sub = $server->subusers()->where('users.id', $request->user()->id)->first();
+        abort_unless($sub, 403);
+
+        $perms = json_decode($sub->pivot->permissions ?? '[]', true);
+
+        return is_array($perms) ? $perms : [];
+    }
+
+    private function can(Request $request, Server $server, ?string $perm): bool
+    {
+        if ($perm === null) {
+            $this->permissions($request, $server);
+
+            return true;
+        }
+
+        if ($perm === 'manage') {
+            return $this->isManager($request, $server);
+        }
+
+        $perms = $this->permissions($request, $server);
+
+        return $perms === null || in_array($perm, $perms, true);
+    }
+
+    private function authorizeAccess(Request $request, Server $server): void
+    {
+        $this->permissions($request, $server);
+    }
+
+    private function requireManager(Request $request, Server $server): void
+    {
+        abort_unless($this->isManager($request, $server), 403);
+    }
+
+    public function show(Request $request, Server $server)
+    {
+        $this->authorizeAccess($request, $server);
+
+        $tabs = [];
+        foreach (self::TABS as $key => [$label, $perm]) {
+            if ($this->can($request, $server, $perm)) {
+                $tabs[$key] = $label;
+            }
+        }
+
+        $tab = $request->query('tab', 'console');
+        if (! isset($tabs[$tab])) {
+            $tab = array_key_first($tabs);
+        }
+
+        $server->load(['node', 'egg', 'primaryAllocation', 'allocations']);
+
+        $data = [];
+        if ($tab === 'databases') {
+            $server->load('databases.databaseHost');
+        } elseif ($tab === 'users') {
+            $server->load(['owner', 'subusers']);
+            $data['availablePermissions'] = ServerSubuserController::AVAILABLE_PERMISSIONS;
+        } elseif ($tab === 'startup') {
+            $server->load('serverVariables.eggVariable');
+            $data['isAdmin'] = (bool) ($request->user()->root_admin ?? false);
+        } elseif ($tab === 'activity') {
+            $data['activities'] = ActivityLog::with('user')
+                ->where('server_id', $server->id)
+                ->latest()->limit(30)->get();
+        }
+
+        return view('client.server', array_merge($data, [
+            'server' => $server,
+            'tab' => $tab,
+            'tabs' => $tabs,
+            'isManager' => $this->isManager($request, $server),
+            'canStart' => $this->can($request, $server, 'control.start'),
+            'canStop' => $this->can($request, $server, 'control.stop'),
+            'canRestart' => $this->can($request, $server, 'control.restart'),
+        ]));
+    }
+
+    public function resources(Request $request, Server $server, ServerResourceService $resources): JsonResponse
+    {
+        $this->authorizeAccess($request, $server);
+
+        return response()->json($resources->for($server));
+    }
+
+    public function power(Request $request, Server $server)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:start,stop,restart,kill'],
+        ]);
+
+        $perm = match ($data['action']) {
+            'start' => 'control.start',
+            'restart' => 'control.restart',
+            default => 'control.stop',
+        };
+        abort_unless($this->can($request, $server, $perm), 403);
+
+        if ($server->suspended) {
+            return back()->with('error', 'Server lagi di-suspend, power action dimatiin.');
+        }
+
+        try {
+            $ok = (new WingsService($server->loadMissing('node')))->power($data['action']);
+        } catch (\Throwable $e) {
+            $ok = false;
+        }
+
+        ActivityLog::record('server:power', ['action' => $data['action'], 'ok' => $ok], $server);
+
+        return $ok
+            ? back()->with('success', "Power action '{$data['action']}' dikirim ke Wings.")
+            : back()->with('error', 'Gagal hubungi Wings. Node belum aktif atau nggak bisa dijangkau.');
+    }
+
+    public function command(Request $request, Server $server)
+    {
+        abort_unless($this->can($request, $server, 'console.access'), 403);
+
+        $data = $request->validate([
+            'command' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($server->suspended) {
+            return back()->with('error', 'Server lagi di-suspend.');
+        }
+
+        try {
+            $ok = (new WingsService($server->loadMissing('node')))->sendCommand($data['command']);
+        } catch (\Throwable $e) {
+            $ok = false;
+        }
+
+        return $ok
+            ? back()->with('success', 'Command terkirim.')
+            : back()->with('error', 'Gagal kirim command. Wings belum aktif?');
+    }
+
+    public function rename(Request $request, Server $server)
+    {
+        $this->requireManager($request, $server);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $server->update($data);
+        ActivityLog::record('server:rename', ['name' => $data['name']], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'settings'])
+            ->with('success', 'Detail server diupdate.');
+    }
+
+    public function updateStartup(Request $request, Server $server)
+    {
+        $this->requireManager($request, $server);
+
+        $isAdmin = (bool) ($request->user()->root_admin ?? false);
+        $server->load('serverVariables.eggVariable');
+        $errors = [];
+
+        foreach ($server->serverVariables as $sv) {
+            $ev = $sv->eggVariable;
+            if (! $ev || (! $isAdmin && ! $ev->user_editable)) {
+                continue;
+            }
+            if (! $request->has("variables.{$ev->id}")) {
+                continue;
+            }
+
+            $value = (string) $request->input("variables.{$ev->id}", '');
+            $rules = $ev->rules ?: 'nullable|string|max:255';
+
+            try {
+                $v = Validator::make([$ev->env_variable => $value], [$ev->env_variable => $rules]);
+                $failed = $v->fails();
+                $msg = $failed ? $v->errors()->first() : null;
+            } catch (\Throwable $e) {
+                $failed = mb_strlen($value) > 255;
+                $msg = 'Nilai terlalu panjang.';
+            }
+
+            if ($failed) {
+                $errors[] = "{$ev->name}: {$msg}";
+
+                continue;
+            }
+
+            $sv->update(['variable_value' => $value]);
+        }
+
+        if ($errors) {
+            return back()->with('error', implode(' | ', $errors));
+        }
+
+        ActivityLog::record('server:startup', [], $server);
+
+        return back()->with('success', 'Variable startup diupdate.');
+    }
+
+    public function addUser(Request $request, Server $server)
+    {
+        $this->requireManager($request, $server);
+
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'permissions' => 'nullable|array',
+            'permissions.*' => Rule::in(array_keys(ServerSubuserController::AVAILABLE_PERMISSIONS)),
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if ((int) $user->id === (int) $server->owner_id) {
+            return back()->with('error', 'User ini udah jadi owner server.');
+        }
+        if ($server->subusers()->where('users.id', $user->id)->exists()) {
+            return back()->with('error', 'User ini udah jadi subuser di server ini.');
+        }
+
+        $server->subusers()->attach($user->id, [
+            'permissions' => json_encode($validated['permissions'] ?? []),
+        ]);
+        ActivityLog::record('server:subuser.add', ['email' => $user->email], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'users'])
+            ->with('success', "{$user->name} ditambahin sebagai subuser.");
+    }
+
+    public function removeUser(Request $request, Server $server, User $user)
+    {
+        $this->requireManager($request, $server);
+
+        $server->subusers()->detach($user->id);
+        ActivityLog::record('server:subuser.remove', ['email' => $user->email], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'users'])
+            ->with('success', "{$user->name} dicabut dari server ini.");
+    }
+}
+EOF
+
+cat > resources/views/client/server.blade.php << 'EOF'
 @extends('layouts.client')
 
 @section('title', $server->name)
@@ -296,3 +614,96 @@ Sementara ini kamu bisa kirim command lewat form di bawah.</div>
 })();
 </script>
 @endsection
+EOF
+
+cat > resources/views/client/servers.blade.php << 'EOF'
+@extends('layouts.client')
+
+@section('title', 'My Servers - DockPanel')
+
+@section('content')
+    <h2 style="margin-top:0;">Halo, {{ $user->name }} @include('partials.icon', ['name' => 'sparkle', 'size' => 22])</h2>
+    <p class="muted" style="margin-top:-0.6rem;">Ini daftar server yang kamu punya akses.</p>
+
+    @if ($servers->isEmpty())
+        <div class="card">
+            <div class="empty-state">
+                <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
+                <p>Kamu belum punya server. Hubungi admin buat dibuatin server baru.</p>
+            </div>
+        </div>
+    @else
+        <input type="search" id="dp-server-filter" placeholder="Cari server..." style="max-width:320px">
+
+        @foreach ($servers as $server)
+            <a href="{{ route('client.servers.show', $server) }}" class="server-card status-{{ $server->status }}-border" data-server-card data-name="{{ strtolower($server->name) }}" data-url="{{ route('client.servers.resources', $server) }}" style="text-decoration:none;color:inherit">
+                <div class="server-card-icon">
+                    @include('partials.icon', ['name' => 'package', 'size' => 18])
+                </div>
+
+                <div>
+                    <div class="server-card-name">{{ $server->name }}</div>
+                    <div class="server-card-sub">{{ $server->node->name }} / {{ $server->egg->name }}@if ($server->expires_at) · exp {{ $server->expires_at->format('d M Y') }}@endif</div>
+                </div>
+
+                <span class="status-badge status-{{ $server->suspended ? 'suspended' : $server->status }}" data-state style="margin-left:0.5rem;">{{ $server->suspended ? 'suspended' : $server->status }}</span>
+
+                <div class="server-card-stats">
+                    <div class="stat">
+                        <div class="stat-label">CPU</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-bar="cpu" style="width:0%;"></div></div>
+                        <div class="stat-value" data-val="cpu">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Memory</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-bar="mem" style="width:0%;"></div></div>
+                        <div class="stat-value" data-val="mem">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Disk</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-bar="disk" style="width:0%;"></div></div>
+                        <div class="stat-value" data-val="disk">—</div>
+                    </div>
+                </div>
+            </a>
+        @endforeach
+
+        <script>
+        (function () {
+            const cards = [...document.querySelectorAll('[data-server-card]')];
+            const mb = b => b >= 1073741824 ? (b / 1073741824).toFixed(1) + 'G' : (b / 1048576).toFixed(0) + 'M';
+            const pct = (v, l) => l > 0 ? Math.min(100, (v / l) * 100) : 0;
+            const put = (c, k, p, t) => {
+                c.querySelector('[data-bar="' + k + '"]').style.width = p + '%';
+                c.querySelector('[data-val="' + k + '"]').textContent = t;
+            };
+            async function refresh(c) {
+                try {
+                    const r = await fetch(c.dataset.url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    if (d.source === 'mock') return;
+                    put(c, 'cpu', Math.min(100, d.cpu_percent), d.cpu_percent + '%');
+                    put(c, 'mem', pct(d.memory_bytes, d.memory_limit_bytes), mb(d.memory_bytes) + (d.memory_limit_bytes ? ' / ' + mb(d.memory_limit_bytes) : ''));
+                    put(c, 'disk', pct(d.disk_bytes, d.disk_limit_bytes), mb(d.disk_bytes) + (d.disk_limit_bytes ? ' / ' + mb(d.disk_limit_bytes) : ''));
+                    const s = c.querySelector('[data-state]');
+                    if (!s.textContent.includes('suspended')) {
+                        s.textContent = d.state;
+                        s.className = 'status-badge status-' + (d.state === 'running' ? 'running' : d.state === 'offline' ? 'offline' : 'starting');
+                    }
+                } catch (e) {}
+            }
+            cards.forEach(refresh);
+            setInterval(() => cards.forEach(refresh), 10000);
+
+            document.getElementById('dp-server-filter').addEventListener('input', e => {
+                const q = e.target.value.trim().toLowerCase();
+                cards.forEach(c => { c.style.display = c.dataset.name.includes(q) ? '' : 'none'; });
+            });
+        })();
+        </script>
+    @endif
+@endsection
+EOF
+
+echo "PART 1 selesai."

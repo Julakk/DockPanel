@@ -61,3 +61,34 @@ label{color:var(--text-muted)}
 .dp-power button:hover:not(:disabled){border-color:var(--accent)!important;color:#fff!important}
 *::-webkit-scrollbar{height:8px;width:8px}
 *::-webkit-scrollbar-thumb{background:#3a4652;border-radius:8px}
+
+/* ── dp-ui v1: toast, modal, tabel responsif, loading, a11y ── */
+#dp-toasts{position:fixed;top:1rem;right:1rem;z-index:1000;display:flex;flex-direction:column;gap:.5rem;
+  max-width:min(380px,calc(100vw - 2rem))}
+.dp-toast{display:flex;align-items:flex-start;gap:.75rem;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--green);
+  border-radius:var(--radius);padding:.7rem .9rem;box-shadow:var(--shadow-md);font-size:.88rem;
+  animation:dp-in .2s ease-out}
+.dp-toast-error{border-left-color:var(--red)}
+.dp-toast button{background:none;border:0;color:var(--text-muted);font-size:1.2rem;line-height:1;cursor:pointer;padding:0}
+.dp-toast button:hover{color:#fff}
+.dp-toast.out{opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s}
+@keyframes dp-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (max-width:600px){#dp-toasts{top:auto;bottom:1rem;right:1rem;left:1rem;max-width:none}}
+
+.dp-modal{position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.6);display:flex;
+  align-items:center;justify-content:center;padding:1rem;animation:dp-fade .15s ease-out}
+.dp-modal-box{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);
+  border-radius:var(--radius-lg);padding:1.25rem;width:100%;max-width:420px;box-shadow:var(--shadow-md)}
+.dp-modal-box p{margin:0 0 1.1rem;line-height:1.5}
+.dp-modal-actions{display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap}
+@keyframes dp-fade{from{opacity:0}to{opacity:1}}
+
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:700px){.table-wrap table{min-width:520px}}
+.dp-table-filter{max-width:280px;margin-bottom:.6rem!important}
+
+.btn.is-loading,button.is-loading{opacity:.6;cursor:wait}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{animation:dp-fade .25s ease-out}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

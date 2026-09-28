@@ -386,5 +386,6 @@
             </div>
         </div>
     </div>
+<script src="{{ asset("js/dp-ui.js") }}?v={{ @filemtime(public_path("js/dp-ui.js")) }}" defer></script>
 </body>
 </html>

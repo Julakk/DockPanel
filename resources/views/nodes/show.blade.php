@@ -10,7 +10,7 @@
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="margin:0;">{{ $node->name }}</h2>
-        <a href="{{ route('nodes.edit', $node) }}" class="btn btn-secondary">Edit</a>
+        <div style="display:flex;gap:.5rem;"><a href="{{ route("nodes.config", $node) }}" class="btn btn-secondary">Configuration</a><a href="{{ route("nodes.edit", $node) }}" class="btn btn-secondary">Edit</a></div>
     </div>
 
     <div class="card">

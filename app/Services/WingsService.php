@@ -40,9 +40,35 @@ class WingsService
     }
 
     /**
-     * Suruh Wings bikin & start container buat server ini.
-     * Dipanggil sekali pas server pertama kali dibuat (fase "installing").
+     * Susun map ENV_VARIABLE => value buat dikirim ke Wings sebagai `docker -e`.
+     * Ini yang bikin ${MAIN_FILE} dkk kebaca di container saat runtime, beda
+     * dari renderStartup() yang cuma ganti placeholder {{VAR}} di teks command.
      */
+    protected function envVariables(): array
+    {
+        $vars = [];
+
+        foreach ($this->server->serverVariables()->with('eggVariable')->get() as $sv) {
+            $vars[$sv->eggVariable->env_variable] = $sv->variable_value ?? $sv->eggVariable->default_value ?? '';
+        }
+
+        return $vars;
+    }
+
+    /**
+     * Susun daftar allocation (ip+port) server ini buat dikirim ke Wings.
+     * Yang primary ditandai 'primary' => true; port-nya dipakai buat
+     * ngisi env SERVER_PORT/SERVER_IP di container.
+     */
+    protected function allocationsPayload(): array
+    {
+        return $this->server->allocations()->get()->map(fn ($a) => [
+            'ip' => $a->ip,
+            'port' => $a->port,
+            'primary' => $a->is_primary,
+        ])->values()->all();
+    }
+
     public function createServer(): array
     {
         $response = $this->client()->post('/api/servers', [
@@ -50,6 +76,7 @@ class WingsService
             'container' => [
                 'image' => $this->server->image,
                 'startup_command' => $this->server->egg->renderStartup($this->server),
+                'env_variables' => $this->envVariables(),
             ],
             'build' => [
                 'memory_limit' => $this->server->memory,
@@ -58,6 +85,7 @@ class WingsService
                 'cpu_limit' => $this->server->cpu,
                 'disk_space' => $this->server->disk,
             ],
+            'allocations' => $this->allocationsPayload(),
         ]);
 
         return $response->json() ?? [];
@@ -96,6 +124,10 @@ class WingsService
      * Generate JWT short-lived buat otorisasi koneksi WebSocket console
      * dari browser user langsung ke Wings (bukan lewat Panel, biar console
      * real-time nggak numpuk di Laravel queue).
+     *
+     * PENTING: ditandatangani pakai daemon_token Node (SAMA dengan auth_token
+     * di config.json Wings), BUKAN app.key. Wings cuma kenal daemon_token,
+     * jadi secret verifikasinya harus itu.
      */
     public function generateWebsocketToken(): string
     {
@@ -106,6 +138,11 @@ class WingsService
             'server_uuid' => $this->server->uuid,
         ];
 
-        return JWT::encode($payload, config('app.key'), 'HS256');
+        return JWT::encode($payload, $this->daemonToken, 'HS256');
+    }
+
+    public function daemonBaseUrl(): string
+    {
+        return $this->baseUrl;
     }
 }

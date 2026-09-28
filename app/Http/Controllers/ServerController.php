@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Allocation;
 use App\Models\DatabaseHost;
 use App\Models\Egg;
@@ -15,11 +16,34 @@ use Illuminate\Support\Facades\DB;
 
 class ServerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $servers = Server::with(['owner', 'node', 'egg'])->orderBy('name')->get();
+        $query = Server::with(['owner', 'node', 'egg']);
 
-        return view('servers.index', compact('servers'));
+        if ($q = trim((string) $request->query('q', ''))) {
+            $query->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                    ->orWhere('uuid_short', 'like', "%{$q}%")
+                    ->orWhereHas('owner', fn ($o) => $o->where('name', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%"));
+            });
+        }
+
+        if ($status = $request->query('status')) {
+            if ($status === 'suspended') {
+                $query->where('suspended', true);
+            } else {
+                $query->where('status', $status);
+            }
+        }
+
+        if ($nodeId = $request->query('node')) {
+            $query->where('node_id', $nodeId);
+        }
+
+        $servers = $query->orderBy('name')->paginate(15)->withQueryString();
+        $nodes = Node::orderBy('name')->get();
+
+        return view('servers.index', compact('servers', 'nodes'));
     }
 
     public function create()
@@ -66,7 +90,6 @@ class ServerController extends Controller
                 ->update(['server_id' => $server->id, 'is_primary' => true]);
         }
 
-        // Siapin baris server_variables kosong buat tiap egg_variable, biar tinggal diisi di halaman edit
         foreach ($egg->variables as $eggVariable) {
             $server->serverVariables()->create([
                 'egg_variable_id' => $eggVariable->id,
@@ -81,7 +104,7 @@ class ServerController extends Controller
 
     public function show(Server $server)
     {
-        $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'allocations', 'databases.databaseHost', 'mounts']);
+        $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'allocations', 'databases.databaseHost', 'mounts', 'subusers']);
 
         return view('servers.show', compact('server'));
     }
@@ -115,9 +138,6 @@ class ServerController extends Controller
         return redirect()->route('servers.edit', $server)->with('success', "Server '{$server->name}' diupdate.");
     }
 
-    /**
-     * Update semua nilai variable server sekaligus (batch, dari form edit).
-     */
     public function updateVariables(Request $request, Server $server)
     {
         $values = $request->input('variables', []);
@@ -133,9 +153,6 @@ class ServerController extends Controller
         return back()->with('success', 'Variable server diupdate.');
     }
 
-    /**
-     * Sync mount yang di-assign ke server ini (dari checklist di halaman edit).
-     */
     public function updateMounts(Request $request, Server $server)
     {
         $validated = $request->validate([
@@ -148,11 +165,6 @@ class ServerController extends Controller
         return back()->with('success', 'Mount server diupdate.');
     }
 
-    /**
-     * Coba provision server ke Wings di node yang dipilih.
-     * Karena belum ada VPS/Wings asli buat dites, ini bakal gagal
-     * dengan graceful error sampai node beneran tersedia.
-     */
     public function provision(Server $server)
     {
         try {
@@ -167,6 +179,29 @@ class ServerController extends Controller
                 'provision' => 'Gagal provision ke Wings: '.$e->getMessage().' (wajar kalau node belum aktif/VPS belum ada)',
             ]);
         }
+    }
+
+    public function suspend(Server $server)
+    {
+        $server->update(['suspended' => true, 'suspension_reason' => 'admin']);
+
+        try {
+            (new WingsService($server->loadMissing('node')))->power('stop');
+        } catch (\Throwable $e) {
+            // Wings belum aktif, flag suspended tetap kepasang
+        }
+
+        ActivityLog::record('server:suspend', [], $server);
+
+        return back()->with('success', "Server '{$server->name}' di-suspend.");
+    }
+
+    public function unsuspend(Server $server)
+    {
+        $server->update(['suspended' => false, 'suspension_reason' => null]);
+        ActivityLog::record('server:unsuspend', [], $server);
+
+        return back()->with('success', "Server '{$server->name}' diaktifkan lagi.");
     }
 
     public function destroy(Server $server)

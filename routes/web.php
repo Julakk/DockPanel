@@ -72,6 +72,7 @@ Route::middleware('auth')->group(function () {
 
         Route::put('servers/{server}/variables', [ServerController::class, 'updateVariables'])->name('servers.variables.update');
         Route::put('servers/{server}/mounts', [ServerController::class, 'updateMounts'])->name('servers.mounts.update');
+        Route::put('servers/{server}/allocations', [ServerController::class, 'updateAllocations'])->name('servers.allocations.update');
         Route::post('servers/{server}/databases', [ServerDatabaseController::class, 'store'])->name('servers.databases.store');
         Route::delete('servers/{server}/databases/{database}', [ServerDatabaseController::class, 'destroy'])->name('servers.databases.destroy');
         Route::post('servers/{server}/subusers', [ServerSubuserController::class, 'store'])->name('servers.subusers.store');
@@ -97,3 +98,4 @@ require __DIR__.'/client.php';
 require __DIR__.'/billing.php';
 require __DIR__.'/audit.php';
 require __DIR__.'/schedules.php';
+require __DIR__.'/admin_extra.php';

@@ -256,4 +256,26 @@
             <button type="submit" class="btn btn-danger">Hapus Server</button>
         </form>
     </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Allocations (IP:Port)</h3>
+        <form method="POST" action="{{ route('servers.allocations.update', $server) }}">
+            @csrf
+            @method('PUT')
+            @if ($nodeAllocations->isEmpty())
+                <p class="muted">Belum ada allocation kosong di node ini. Tambah dulu lewat halaman Node.</p>
+            @else
+                @foreach ($nodeAllocations as $alloc)
+                    <label style="display:block;font-weight:normal;">
+                        <input type="checkbox" name="allocation_ids[]" value="{{ $alloc->id }}"
+                            {{ $server->allocations->contains('id', $alloc->id) ? 'checked' : '' }}>
+                        {{ $alloc->ip }}:{{ $alloc->port }}
+                        <input type="radio" name="primary_allocation_id" value="{{ $alloc->id }}"
+                            {{ $alloc->is_primary ? 'checked' : '' }}> primary
+                    </label>
+                @endforeach
+                <button type="submit" class="btn btn-primary" style="margin-top:.75rem;">Simpan Allocation</button>
+            @endif
+        </form>
+    </div>
 @endsection
