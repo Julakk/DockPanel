@@ -46,6 +46,7 @@
                     </div>
                 </div>
             </div>
+        <div style="margin:-.25rem 0 1rem"><a href="{{ route('client.servers.show', $server) }}" class="btn">Buka server &rarr;</a></div>
         @endforeach
     @endif
 @endsection

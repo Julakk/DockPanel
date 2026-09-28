@@ -309,6 +309,9 @@
                 <a href="{{ route('servers.index') }}" class="sidebar-link {{ request()->is('servers*') ? 'active' : '' }}">
                     @include('partials.icon', ['name' => 'package', 'size' => 17]) Servers
                 </a>
+                <a href="{{ route('admin.audit') }}" class="sidebar-link {{ request()->is('admin/audit*') ? 'active' : '' }}">
+                    @include('partials.icon', ['name' => 'package', 'size' => 17]) Audit Log
+                </a>
                 <a href="{{ route('users.index') }}" class="sidebar-link {{ request()->is('users*') ? 'active' : '' }}">
                     @include('partials.icon', ['name' => 'users', 'size' => 17]) Users
                 </a>
