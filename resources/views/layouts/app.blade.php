@@ -360,7 +360,7 @@
                     <span class="muted">{{ auth()->user()?->name }}</span>
                     <form method="POST" action="/logout">
                         @csrf
-                        <button type="submit" class="btn btn-secondary">@include('partials.icon', ['name' => 'logout', 'size' => 14])</button>
+                        <button type="submit" class="btn btn-secondary">@include('partials.icon', ['name' => 'logout', 'size' => 14]) Keluar</button>
                     </form>
                 </div>
             </div>
