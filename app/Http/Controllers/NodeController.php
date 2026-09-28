@@ -27,9 +27,14 @@ class NodeController extends Controller
     {
         $validated = $this->validateNode($request);
 
-        // daemon_token cuma di-generate sekali pas node dibuat, ditampilin sekali doang
+        // daemon_token cuma di-generate sekali pas node dibuat, ditampilin sekali doang.
+        // NOTE: disimpen mentah (bukan bcrypt) karena ini shared secret yang dikirim
+        // apa adanya sebagai Bearer token ke Wings (WingsService::client()), lalu
+        // dicocokin pake constant-time compare di sisi Wings — bukan password yang
+        // diverifikasi via Hash::check(). Kalau di-bcrypt, token yang ditampilin ke
+        // admin (plaintext) gak akan pernah cocok sama yang beneran dikirim Panel.
         $plainToken = Str::random(64);
-        $validated['daemon_token'] = bcrypt($plainToken);
+        $validated['daemon_token'] = $plainToken;
 
         $node = Node::create($validated);
 
