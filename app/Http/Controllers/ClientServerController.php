@@ -130,6 +130,27 @@ class ClientServerController extends Controller
         return response()->json($resources->for($server));
     }
 
+    /**
+     * Token JWT short-lived buat browser buka WebSocket console langsung ke Wings.
+     * Dipanggil dari JS sebelum bikin koneksi ws://, bukan dipakai server-side.
+     */
+    public function consoleToken(Request $request, Server $server): JsonResponse
+    {
+        $this->authorizeAccess($request, $server);
+
+        if (! $server->node) {
+            return response()->json(['error' => 'Node belum di-set buat server ini.'], 422);
+        }
+
+        $wings = new WingsService($server->loadMissing('node'));
+
+        return response()->json([
+            'token' => $wings->generateWebsocketToken(),
+            'ws_host' => $server->node->fqdn,
+            'ws_port' => 8443,
+        ]);
+    }
+
     public function power(Request $request, Server $server)
     {
         $data = $request->validate([

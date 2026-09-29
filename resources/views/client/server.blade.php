@@ -99,15 +99,67 @@
 
     @if ($tab === 'console')
         <div class="dp-card">
-            <div class="dp-console">Console real-time belum aktif.
-Butuh koneksi WebSocket ke Wings (roadmap: WebSocket console).
-Sementara ini kamu bisa kirim command lewat form di bawah.</div>
-            <form method="POST" action="{{ route('client.servers.command', $server) }}" style="margin-top:.75rem;display:flex;gap:.5rem">
-                @csrf
-                <input class="dp-input" type="text" name="command" maxlength="255" placeholder="Ketik command, mis. say halo" required @disabled($server->suspended)>
+            <div class="dp-console" id="dp-console-log">Menyambungkan ke Wings...</div>
+            <form id="dp-console-form" style="margin-top:.75rem;display:flex;gap:.5rem">
+                <input class="dp-input" type="text" id="dp-console-cmd" maxlength="255" placeholder="Ketik command, mis. say halo" @disabled($server->suspended)>
                 <button class="dp-btn" type="submit" @disabled($server->suspended)>Kirim</button>
             </form>
+            <div class="dp-muted" id="dp-console-status" style="margin-top:.4rem"></div>
         </div>
+        <script>
+        (function () {
+            const tokenUrl = @json(route('client.servers.console-token', $server));
+            const logEl = document.getElementById('dp-console-log');
+            const statusEl = document.getElementById('dp-console-status');
+            const form = document.getElementById('dp-console-form');
+            const input = document.getElementById('dp-console-cmd');
+            let ws = null;
+
+            function append(line) {
+                logEl.textContent += (logEl.textContent === 'Menyambungkan ke Wings...' ? '' : '\n') + line;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+
+            async function connect() {
+                try {
+                    const r = await fetch(tokenUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                    const d = await r.json();
+                    if (!r.ok || !d.token) {
+                        statusEl.textContent = 'Gagal ambil token console: ' + (d.error || r.status);
+                        return;
+                    }
+                    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+                    const url = `${proto}://${d.ws_host}:${d.ws_port}/api/servers/{{ $server->uuid }}/ws/console?token=${encodeURIComponent(d.token)}`;
+                    ws = new WebSocket(url);
+                    ws.onopen = () => { statusEl.textContent = 'Console tersambung.'; logEl.textContent = ''; };
+                    ws.onmessage = (ev) => append(ev.data);
+                    ws.onerror = () => { statusEl.textContent = 'Koneksi console error.'; };
+                    ws.onclose = () => {
+                        statusEl.textContent = 'Console terputus, reconnect dalam 5 detik...';
+                        setTimeout(connect, 5000);
+                    };
+                } catch (e) {
+                    statusEl.textContent = 'Gagal konek: ' + e.message;
+                    setTimeout(connect, 5000);
+                }
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const cmd = input.value.trim();
+                if (!cmd) return;
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(cmd);
+                    append('> ' + cmd);
+                    input.value = '';
+                } else {
+                    statusEl.textContent = 'Belum tersambung ke console.';
+                }
+            });
+
+            connect();
+        })();
+        </script>
 
     @elseif ($tab === 'files')
         <div class="dp-card">
