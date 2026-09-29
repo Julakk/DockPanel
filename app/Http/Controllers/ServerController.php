@@ -111,13 +111,20 @@ class ServerController extends Controller
 
     public function edit(Server $server)
     {
-        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts', 'subusers']);
+        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts', 'subusers', 'allocations']);
         $users = User::orderBy('name')->get();
         $databaseHosts = DatabaseHost::orderBy('name')->get();
         $allMounts = Mount::orderBy('name')->get();
         $availablePermissions = ServerSubuserController::AVAILABLE_PERMISSIONS;
 
-        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts', 'availablePermissions'));
+        $nodeAllocations = Allocation::where('node_id', $server->node_id)
+            ->where(function ($q) use ($server) {
+                $q->whereNull('server_id')->orWhere('server_id', $server->id);
+            })
+            ->orderBy('ip')->orderBy('port')->get();
+
+        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts', 'availablePermissions', 'nodeAllocations'));
+
     }
 
     public function update(Request $request, Server $server)
@@ -179,6 +186,57 @@ class ServerController extends Controller
                 'provision' => 'Gagal provision ke Wings: '.$e->getMessage().' (wajar kalau node belum aktif/VPS belum ada)',
             ]);
         }
+    }
+
+    /**
+     * Assign/lepas allocation ke server ini. Cuma allocation dari node yang
+     * sama dan (belum dipakai ATAU udah dipakai server ini sendiri) yang boleh.
+     * primary_allocation_id wajib salah satu dari yang di-assign.
+     */
+    public function updateAllocations(Request $request, Server $server)
+    {
+        $validated = $request->validate([
+            'allocation_ids' => 'nullable|array',
+            'allocation_ids.*' => 'exists:allocations,id',
+            'primary_allocation_id' => 'nullable|exists:allocations,id',
+        ]);
+
+        $ids = $validated['allocation_ids'] ?? [];
+        $primaryId = $validated['primary_allocation_id'] ?? null;
+
+        if ($primaryId && ! in_array($primaryId, $ids)) {
+            $ids[] = $primaryId;
+        }
+
+        DB::transaction(function () use ($server, $ids, $primaryId) {
+            // Lepas semua allocation server ini dulu.
+            Allocation::where('server_id', $server->id)->update([
+                'server_id' => null,
+                'is_primary' => false,
+            ]);
+
+            if (empty($ids)) {
+                return;
+            }
+
+            // Assign cuma allocation dari node yang sama & belum dipakai server lain.
+            Allocation::whereIn('id', $ids)
+                ->where('node_id', $server->node_id)
+                ->where(function ($q) use ($server) {
+                    $q->whereNull('server_id')->orWhere('server_id', $server->id);
+                })
+                ->update(['server_id' => $server->id]);
+
+            if ($primaryId) {
+                Allocation::where('id', $primaryId)
+                    ->where('server_id', $server->id)
+                    ->update(['is_primary' => true]);
+            } else {
+                Allocation::where('server_id', $server->id)->limit(1)->update(['is_primary' => true]);
+            }
+        });
+
+        return back()->with('success', 'Allocation server diupdate.');
     }
 
     public function suspend(Server $server)
