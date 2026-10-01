@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClientFileController;
 use App\Http\Controllers\ClientServerController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,4 +14,15 @@ Route::middleware('auth')->prefix('client/servers/{server}')->name('client.serve
     Route::put('startup', [ClientServerController::class, 'updateStartup'])->name('startup.update');
     Route::post('users', [ClientServerController::class, 'addUser'])->name('users.store');
     Route::delete('users/{user}', [ClientServerController::class, 'removeUser'])->name('users.destroy');
+});
+
+Route::middleware('auth')->prefix('client/servers/{server}/files')->name('client.servers.files.')->group(function () {
+    Route::get('list', [ClientFileController::class, 'list'])->name('list');
+    Route::get('contents', [ClientFileController::class, 'contents'])->name('contents');
+    Route::get('download', [ClientFileController::class, 'download'])->name('download');
+    Route::post('save', [ClientFileController::class, 'save'])->name('save');
+    Route::post('upload', [ClientFileController::class, 'upload'])->name('upload');
+    Route::post('mkdir', [ClientFileController::class, 'mkdir'])->name('mkdir');
+    Route::post('rename', [ClientFileController::class, 'rename'])->name('rename');
+    Route::post('delete', [ClientFileController::class, 'delete'])->name('delete');
 });

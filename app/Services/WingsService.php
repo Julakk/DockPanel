@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Server;
+use App\Services\Concerns\WingsFiles;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Http;
 
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Http;
  */
 class WingsService
 {
+    use WingsFiles;
+
     protected string $baseUrl;
 
     protected string $daemonToken;
