@@ -23,7 +23,7 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 ```
 
 - **Panel** (repo ini): web UI, auth, database user/server/egg, kirim perintah ke node.
-- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — baru skeleton awal (routing, auth middleware, interface Docker stub), implementasi Docker asli masih nunggu VPS buat testing.
+- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — kontrol Docker, console WebSocket, file manager, dan SFTP udah ada; butuh VPS Linux buat dijalanin. Panel v0.9.0 cocok dipasangkan dengan DockWings v0.2.0+.
 
 ## Struktur Data Inti
 

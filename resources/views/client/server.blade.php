@@ -38,13 +38,15 @@
 
     <div class="dp-head">
         <div>
-            <h1 style="margin:0">{{ $server->name }}</h1>
-            <div class="dp-muted">
-                {{ $server->uuid_short }}
+            <div class="dp-crumb"><a href="{{ route('dashboard') }}">Servers</a> <span>/</span></div>
+            <h1 class="dp-title">{{ $server->name }}</h1>
+            <div class="dp-sub">
+                <span class="dp-pill" id="dp-state" data-state="unknown">memuat</span>
+                <code>{{ $server->uuid_short }}</code>
                 @if ($server->primaryAllocation)
-                    · {{ $server->primaryAllocation->ip }}:{{ $server->primaryAllocation->port }}
+                    <code>{{ $server->primaryAllocation->ip }}:{{ $server->primaryAllocation->port }}</code>
                 @endif
-                @if ($server->suspended) · <strong>SUSPENDED</strong> @endif
+                @if ($server->suspended) <span class="dp-pill" data-state="suspended">suspended</span> @endif
             </div>
         </div>
         <form method="POST" action="{{ route('client.servers.power', $server) }}" class="dp-power">
@@ -55,14 +57,24 @@
         </form>
     </div>
 
-    <div class="dp-card">
-        <div class="dp-res">
-            <div><div>CPU <span class="dp-muted" id="dp-cpu-t">-</span></div><div class="dp-bar"><span id="dp-cpu"></span></div></div>
-            <div><div>Memory <span class="dp-muted" id="dp-mem-t">-</span></div><div class="dp-bar"><span id="dp-mem"></span></div></div>
-            <div><div>Disk <span class="dp-muted" id="dp-disk-t">-</span></div><div class="dp-bar"><span id="dp-disk"></span></div></div>
+    <div class="dp-stats">
+        <div class="dp-stat">
+            <div class="dp-stat-label">CPU</div>
+            <div class="dp-stat-value" id="dp-cpu-t">-</div>
+            <div class="dp-bar"><span id="dp-cpu"></span></div>
         </div>
-        <div class="dp-muted" id="dp-state">Status: memuat...</div>
+        <div class="dp-stat">
+            <div class="dp-stat-label">Memory</div>
+            <div class="dp-stat-value" id="dp-mem-t">-</div>
+            <div class="dp-bar"><span id="dp-mem"></span></div>
+        </div>
+        <div class="dp-stat">
+            <div class="dp-stat-label">Disk</div>
+            <div class="dp-stat-value" id="dp-disk-t">-</div>
+            <div class="dp-bar"><span id="dp-disk"></span></div>
+        </div>
     </div>
+    <div class="dp-muted" id="dp-mock-note" style="display:none;margin:-.4rem 0 1rem">Wings belum terhubung, angka di atas belum data asli.</div>
 
     @if ($server->expires_at)
         <div class="dp-card">
@@ -339,8 +351,10 @@
                 mb(d.memory_bytes) + ' / ' + (d.memory_limit_bytes ? mb(d.memory_limit_bytes) : '∞'));
             set('disk', pct(d.disk_bytes, d.disk_limit_bytes),
                 mb(d.disk_bytes) + ' / ' + (d.disk_limit_bytes ? mb(d.disk_limit_bytes) : '∞'));
-            document.getElementById('dp-state').textContent =
-                'Status: ' + d.state + (d.source === 'mock' ? ' (Wings belum terhubung)' : '');
+            const st = document.getElementById('dp-state');
+            st.textContent = d.state;
+            st.dataset.state = d.state;
+            document.getElementById('dp-mock-note').style.display = d.source === 'mock' ? 'block' : 'none';
         } catch (e) {}
     }
     tick();

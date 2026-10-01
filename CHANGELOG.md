@@ -2,7 +2,22 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
-## [Unreleased] - 2026-09-28
+## [0.9.0] - 2026-10-02
+
+> "Panel sama Wings akhirnya ngobrol pakai bahasa yang sama, dan halaman server mulai kayak Pterodactyl." 🐧
+
+### Added
+- Halaman server (client area) dirombak ala Pterodactyl: judul + breadcrumb, pill status server, kode UUID dan alamat, tombol power di kanan, lalu tile CPU / Memory / Disk. Tab dan console tetap, console lebih tinggi.
+- Halaman detail Node nampilin status daemon dan versi DockWings (`GET /api/system`), mirip halaman node Pterodactyl. Timeout 3 detik biar halaman nggak hang kalau Wings mati.
+- Pesan error koneksi ke Wings sekarang ngasih petunjuk (scheme https/http nggak cocok, koneksi ditolak, timeout), dipakai di Provision dan halaman Node.
+
+### Fixed
+- `cURL error 35 ... wrong version number` pas Provision ke Wings: penyebabnya scheme Node `https` padahal Wings melayani HTTP. Sekarang ada petunjuk jelasnya; solusinya set scheme Node ke `http`, atau aktifin `ssl` di config Wings v0.2.0+.
+
+### Changed
+- Versi panel jadi 0.9.0. Butuh DockWings v0.2.0+ buat tampilan versi daemon di halaman Node.
+
+## [Sebelumnya, belum dirilis] - 2026-09-28
 
 ### Added
 - Halaman detail server di client area (`/client/servers/{server}`) dengan tab Console, Files, Settings, Startup.

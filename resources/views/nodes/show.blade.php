@@ -16,6 +16,21 @@
     <div class="card">
         <table>
             <tr><th>FQDN</th><td>{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemon_listen }}</td></tr>
+            <tr>
+                <th>Daemon</th>
+                <td>
+                    @if ($wings['ok'])
+                        <span class="status-badge status-active">Online</span>
+                        <span class="muted">DockWings v{{ $wings['data']['version'] ?? '?' }}
+                            @if (! empty($wings['data']['architecture'])) · {{ $wings['data']['os'] ?? '' }}/{{ $wings['data']['architecture'] }} @endif
+                            @if (isset($wings['data']['cpu_count'])) · {{ $wings['data']['cpu_count'] }} CPU @endif
+                        </span>
+                    @else
+                        <span class="status-badge status-offline">Offline</span>
+                        <div class="muted" style="margin-top:.4rem;">{{ $wings['error'] }}</div>
+                    @endif
+                </td>
+            </tr>
             <tr><th>Port SFTP</th><td>{{ $node->daemon_sftp }}</td></tr>
             <tr><th>Memory</th><td>{{ $node->memoryUsed() }} / {{ number_format($node->memory) }} MB</td></tr>
             <tr><th>Disk</th><td>{{ $node->diskUsed() }} / {{ number_format($node->disk) }} MB</td></tr>

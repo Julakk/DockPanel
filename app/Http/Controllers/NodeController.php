@@ -47,8 +47,9 @@ class NodeController extends Controller
     {
         $node->loadCount('servers');
         $node->load('allocations', 'location');
+        $wings = $node->daemonSystemInfo();
 
-        return view('nodes.show', compact('node'));
+        return view('nodes.show', compact('node', 'wings'));
     }
 
     public function edit(Node $node)

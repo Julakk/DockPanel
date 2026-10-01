@@ -92,3 +92,27 @@ label{color:var(--text-muted)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 main{animation:dp-fade .25s ease-out}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* ── Halaman server ala Pterodactyl (v0.9.0) ── */
+.dp-crumb{font-size:.78rem;color:var(--text-faint);margin-bottom:.25rem}
+.dp-crumb a{color:var(--text-muted);text-decoration:none}
+.dp-crumb a:hover{color:var(--accent)}
+.dp-crumb span{margin:0 .2rem}
+.dp-title{margin:0;font-size:1.45rem;font-weight:600;letter-spacing:0}
+.dp-sub{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.45rem}
+.dp-sub code{font-size:.78rem;color:var(--text-muted)}
+.dp-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.15rem .6rem;border-radius:999px;
+  font-size:.72rem;font-weight:600;background:var(--gray-bg);color:var(--gray)}
+.dp-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.dp-pill[data-state="running"]{background:var(--green-bg);color:var(--green)}
+.dp-pill[data-state="starting"],.dp-pill[data-state="stopping"],.dp-pill[data-state="restarting"]{background:var(--amber-bg);color:var(--amber)}
+.dp-pill[data-state="offline"],.dp-pill[data-state="exited"],.dp-pill[data-state="stopped"],.dp-pill[data-state="suspended"]{background:var(--red-bg);color:var(--red)}
+.dp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-bottom:1rem}
+.dp-stat{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent-dark);
+  border-radius:var(--radius);padding:.8rem 1rem}
+.dp-stat-label{font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.dp-stat-value{font-size:1.15rem;font-weight:600;margin:.3rem 0 .15rem;color:#fff;font-variant-numeric:tabular-nums}
+.dp-tabs{margin-bottom:1rem;border-bottom:1px solid var(--border)}
+.dp-console{min-height:340px;max-height:60vh;overflow:auto;font-size:.82rem;line-height:1.45}
+@media (max-width:600px){.dp-power{width:100%}.dp-power button{flex:1}}

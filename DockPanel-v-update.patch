@@ -1,0 +1,267 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 582653f..a778592 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,7 +2,22 @@
+ 
+ Semua perubahan penting di project ini dicatat di sini.
+ 
+-## [Unreleased] - 2026-09-28
++## [0.9.0] - 2026-10-02
++
++> "Panel sama Wings akhirnya ngobrol pakai bahasa yang sama, dan halaman server mulai kayak Pterodactyl." 🐧
++
++### Added
++- Halaman server (client area) dirombak ala Pterodactyl: judul + breadcrumb, pill status server, kode UUID dan alamat, tombol power di kanan, lalu tile CPU / Memory / Disk. Tab dan console tetap, console lebih tinggi.
++- Halaman detail Node nampilin status daemon dan versi DockWings (`GET /api/system`), mirip halaman node Pterodactyl. Timeout 3 detik biar halaman nggak hang kalau Wings mati.
++- Pesan error koneksi ke Wings sekarang ngasih petunjuk (scheme https/http nggak cocok, koneksi ditolak, timeout), dipakai di Provision dan halaman Node.
++
++### Fixed
++- `cURL error 35 ... wrong version number` pas Provision ke Wings: penyebabnya scheme Node `https` padahal Wings melayani HTTP. Sekarang ada petunjuk jelasnya; solusinya set scheme Node ke `http`, atau aktifin `ssl` di config Wings v0.2.0+.
++
++### Changed
++- Versi panel jadi 0.9.0. Butuh DockWings v0.2.0+ buat tampilan versi daemon di halaman Node.
++
++## [Sebelumnya, belum dirilis] - 2026-09-28
+ 
+ ### Added
+ - Halaman detail server di client area (`/client/servers/{server}`) dengan tab Console, Files, Settings, Startup.
+diff --git a/README.md b/README.md
+index a7eed44..95d2198 100644
+--- a/README.md
++++ b/README.md
+@@ -23,7 +23,7 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
+ ```
+ 
+ - **Panel** (repo ini): web UI, auth, database user/server/egg, kirim perintah ke node.
+-- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — baru skeleton awal (routing, auth middleware, interface Docker stub), implementasi Docker asli masih nunggu VPS buat testing.
++- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — kontrol Docker, console WebSocket, file manager, dan SFTP udah ada; butuh VPS Linux buat dijalanin. Panel v0.9.0 cocok dipasangkan dengan DockWings v0.2.0+.
+ 
+ ## Struktur Data Inti
+ 
+diff --git a/app/Http/Controllers/NodeController.php b/app/Http/Controllers/NodeController.php
+index da9acf1..2fb6833 100644
+--- a/app/Http/Controllers/NodeController.php
++++ b/app/Http/Controllers/NodeController.php
+@@ -47,8 +47,9 @@ class NodeController extends Controller
+     {
+         $node->loadCount('servers');
+         $node->load('allocations', 'location');
++        $wings = $node->daemonSystemInfo();
+ 
+-        return view('nodes.show', compact('node'));
++        return view('nodes.show', compact('node', 'wings'));
+     }
+ 
+     public function edit(Node $node)
+diff --git a/app/Http/Controllers/ServerController.php b/app/Http/Controllers/ServerController.php
+index 9900a66..af0b2dd 100644
+--- a/app/Http/Controllers/ServerController.php
++++ b/app/Http/Controllers/ServerController.php
+@@ -183,7 +183,7 @@ class ServerController extends Controller
+             return back()->with('success', 'Server berhasil di-provision ke Wings.');
+         } catch (\Throwable $e) {
+             return back()->withErrors([
+-                'provision' => 'Gagal provision ke Wings: '.$e->getMessage().' (wajar kalau node belum aktif/VPS belum ada)',
++                'provision' => 'Gagal provision ke Wings: '.\App\Models\Node::explainWingsError($e->getMessage(), (string) $server->node?->scheme),
+             ]);
+         }
+     }
+diff --git a/app/Models/Node.php b/app/Models/Node.php
+index 9098d88..71c734b 100644
+--- a/app/Models/Node.php
++++ b/app/Models/Node.php
+@@ -64,6 +64,55 @@ class Node extends Model
+         return "{$this->scheme}://{$this->fqdn}:{$this->daemon_listen}";
+     }
+ 
++    /**
++     * Info daemon dari GET /api/system (versi Wings, arsitektur, dll), mirip
++     * halaman node Pterodactyl yang nampilin versi Wings. Balikin
++     * ['ok' => true, 'data' => [...]] atau ['ok' => false, 'error' => '...'].
++     * Timeout pendek biar halaman Node nggak ikut hang kalau Wings mati.
++     */
++    public function daemonSystemInfo(): array
++    {
++        try {
++            $res = \Illuminate\Support\Facades\Http::withToken($this->daemon_token)
++                ->baseUrl($this->daemonBaseUrl())
++                ->acceptJson()
++                ->timeout(3)
++                ->connectTimeout(3)
++                ->get('/api/system');
++
++            if (! $res->successful()) {
++                return ['ok' => false, 'error' => 'HTTP '.$res->status().' dari Wings (cek daemon_token di config.json)'];
++            }
++
++            return ['ok' => true, 'data' => $res->json()];
++        } catch (\Throwable $e) {
++            return ['ok' => false, 'error' => self::explainWingsError($e->getMessage(), $this->scheme)];
++        }
++    }
++
++    /**
++     * Terjemahin error koneksi ke Wings jadi petunjuk yang bisa langsung dipakai.
++     * Error paling umum: scheme Node (https/http) nggak cocok sama Wings.
++     */
++    public static function explainWingsError(string $message, string $scheme): string
++    {
++        if (str_contains($message, 'cURL error 35') || str_contains($message, 'wrong version number')) {
++            return $scheme === 'https'
++                ? 'Scheme Node diset https, tapi Wings melayani HTTP biasa. Ubah scheme Node ke http, atau aktifin ssl di config.json Wings. ('.$message.')'
++                : 'Handshake TLS gagal. ('.$message.')';
++        }
++
++        if (str_contains($message, 'cURL error 7') || str_contains($message, 'Connection refused')) {
++            return 'Wings nggak bisa dijangkau. Cek service wings jalan dan port daemon kebuka di firewall. ('.$message.')';
++        }
++
++        if (str_contains($message, 'cURL error 28') || str_contains($message, 'timed out')) {
++            return 'Wings nggak merespon (timeout). Cek firewall/port daemon. ('.$message.')';
++        }
++
++        return $message;
++    }
++
+     public function memoryUsed(): int
+     {
+         return (int) $this->servers()->sum('memory');
+diff --git a/config/app.php b/config/app.php
+index 6d030eb..d3a3d64 100644
+--- a/config/app.php
++++ b/config/app.php
+@@ -22,5 +22,5 @@ return [
+     | Update manual tiap rilis baru (samain sama CHANGELOG.md).
+     | Dipakai di footer dan halaman Overview.
+     */
+-    'version' => '0.8.1',
++    'version' => '0.9.0',
+ ];
+diff --git a/public/css/dp-theme.css b/public/css/dp-theme.css
+index eb246ca..66b108e 100644
+--- a/public/css/dp-theme.css
++++ b/public/css/dp-theme.css
+@@ -92,3 +92,27 @@ label{color:var(--text-muted)}
+ :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+ main{animation:dp-fade .25s ease-out}
+ @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
++
++
++/* ── Halaman server ala Pterodactyl (v0.9.0) ── */
++.dp-crumb{font-size:.78rem;color:var(--text-faint);margin-bottom:.25rem}
++.dp-crumb a{color:var(--text-muted);text-decoration:none}
++.dp-crumb a:hover{color:var(--accent)}
++.dp-crumb span{margin:0 .2rem}
++.dp-title{margin:0;font-size:1.45rem;font-weight:600;letter-spacing:0}
++.dp-sub{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.45rem}
++.dp-sub code{font-size:.78rem;color:var(--text-muted)}
++.dp-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.15rem .6rem;border-radius:999px;
++  font-size:.72rem;font-weight:600;background:var(--gray-bg);color:var(--gray)}
++.dp-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
++.dp-pill[data-state="running"]{background:var(--green-bg);color:var(--green)}
++.dp-pill[data-state="starting"],.dp-pill[data-state="stopping"],.dp-pill[data-state="restarting"]{background:var(--amber-bg);color:var(--amber)}
++.dp-pill[data-state="offline"],.dp-pill[data-state="exited"],.dp-pill[data-state="stopped"],.dp-pill[data-state="suspended"]{background:var(--red-bg);color:var(--red)}
++.dp-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-bottom:1rem}
++.dp-stat{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent-dark);
++  border-radius:var(--radius);padding:.8rem 1rem}
++.dp-stat-label{font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
++.dp-stat-value{font-size:1.15rem;font-weight:600;margin:.3rem 0 .15rem;color:#fff;font-variant-numeric:tabular-nums}
++.dp-tabs{margin-bottom:1rem;border-bottom:1px solid var(--border)}
++.dp-console{min-height:340px;max-height:60vh;overflow:auto;font-size:.82rem;line-height:1.45}
++@media (max-width:600px){.dp-power{width:100%}.dp-power button{flex:1}}
+diff --git a/resources/views/client/server.blade.php b/resources/views/client/server.blade.php
+index 176c75d..dfc5992 100644
+--- a/resources/views/client/server.blade.php
++++ b/resources/views/client/server.blade.php
+@@ -38,13 +38,15 @@
+ 
+     <div class="dp-head">
+         <div>
+-            <h1 style="margin:0">{{ $server->name }}</h1>
+-            <div class="dp-muted">
+-                {{ $server->uuid_short }}
++            <div class="dp-crumb"><a href="{{ route('dashboard') }}">Servers</a> <span>/</span></div>
++            <h1 class="dp-title">{{ $server->name }}</h1>
++            <div class="dp-sub">
++                <span class="dp-pill" id="dp-state" data-state="unknown">memuat</span>
++                <code>{{ $server->uuid_short }}</code>
+                 @if ($server->primaryAllocation)
+-                    · {{ $server->primaryAllocation->ip }}:{{ $server->primaryAllocation->port }}
++                    <code>{{ $server->primaryAllocation->ip }}:{{ $server->primaryAllocation->port }}</code>
+                 @endif
+-                @if ($server->suspended) · <strong>SUSPENDED</strong> @endif
++                @if ($server->suspended) <span class="dp-pill" data-state="suspended">suspended</span> @endif
+             </div>
+         </div>
+         <form method="POST" action="{{ route('client.servers.power', $server) }}" class="dp-power">
+@@ -55,14 +57,24 @@
+         </form>
+     </div>
+ 
+-    <div class="dp-card">
+-        <div class="dp-res">
+-            <div><div>CPU <span class="dp-muted" id="dp-cpu-t">-</span></div><div class="dp-bar"><span id="dp-cpu"></span></div></div>
+-            <div><div>Memory <span class="dp-muted" id="dp-mem-t">-</span></div><div class="dp-bar"><span id="dp-mem"></span></div></div>
+-            <div><div>Disk <span class="dp-muted" id="dp-disk-t">-</span></div><div class="dp-bar"><span id="dp-disk"></span></div></div>
++    <div class="dp-stats">
++        <div class="dp-stat">
++            <div class="dp-stat-label">CPU</div>
++            <div class="dp-stat-value" id="dp-cpu-t">-</div>
++            <div class="dp-bar"><span id="dp-cpu"></span></div>
++        </div>
++        <div class="dp-stat">
++            <div class="dp-stat-label">Memory</div>
++            <div class="dp-stat-value" id="dp-mem-t">-</div>
++            <div class="dp-bar"><span id="dp-mem"></span></div>
++        </div>
++        <div class="dp-stat">
++            <div class="dp-stat-label">Disk</div>
++            <div class="dp-stat-value" id="dp-disk-t">-</div>
++            <div class="dp-bar"><span id="dp-disk"></span></div>
+         </div>
+-        <div class="dp-muted" id="dp-state">Status: memuat...</div>
+     </div>
++    <div class="dp-muted" id="dp-mock-note" style="display:none;margin:-.4rem 0 1rem">Wings belum terhubung, angka di atas belum data asli.</div>
+ 
+     @if ($server->expires_at)
+         <div class="dp-card">
+@@ -339,8 +351,10 @@
+                 mb(d.memory_bytes) + ' / ' + (d.memory_limit_bytes ? mb(d.memory_limit_bytes) : '∞'));
+             set('disk', pct(d.disk_bytes, d.disk_limit_bytes),
+                 mb(d.disk_bytes) + ' / ' + (d.disk_limit_bytes ? mb(d.disk_limit_bytes) : '∞'));
+-            document.getElementById('dp-state').textContent =
+-                'Status: ' + d.state + (d.source === 'mock' ? ' (Wings belum terhubung)' : '');
++            const st = document.getElementById('dp-state');
++            st.textContent = d.state;
++            st.dataset.state = d.state;
++            document.getElementById('dp-mock-note').style.display = d.source === 'mock' ? 'block' : 'none';
+         } catch (e) {}
+     }
+     tick();
+diff --git a/resources/views/nodes/show.blade.php b/resources/views/nodes/show.blade.php
+index fea0301..6038935 100644
+--- a/resources/views/nodes/show.blade.php
++++ b/resources/views/nodes/show.blade.php
+@@ -16,6 +16,21 @@
+     <div class="card">
+         <table>
+             <tr><th>FQDN</th><td>{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemon_listen }}</td></tr>
++            <tr>
++                <th>Daemon</th>
++                <td>
++                    @if ($wings['ok'])
++                        <span class="status-badge status-active">Online</span>
++                        <span class="muted">DockWings v{{ $wings['data']['version'] ?? '?' }}
++                            @if (! empty($wings['data']['architecture'])) · {{ $wings['data']['os'] ?? '' }}/{{ $wings['data']['architecture'] }} @endif
++                            @if (isset($wings['data']['cpu_count'])) · {{ $wings['data']['cpu_count'] }} CPU @endif
++                        </span>
++                    @else
++                        <span class="status-badge status-offline">Offline</span>
++                        <div class="muted" style="margin-top:.4rem;">{{ $wings['error'] }}</div>
++                    @endif
++                </td>
++            </tr>
+             <tr><th>Port SFTP</th><td>{{ $node->daemon_sftp }}</td></tr>
+             <tr><th>Memory</th><td>{{ $node->memoryUsed() }} / {{ number_format($node->memory) }} MB</td></tr>
+             <tr><th>Disk</th><td>{{ $node->diskUsed() }} / {{ number_format($node->disk) }} MB</td></tr>
