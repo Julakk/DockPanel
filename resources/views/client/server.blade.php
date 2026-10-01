@@ -174,11 +174,205 @@
         </script>
 
     @elseif ($tab === 'files')
-        <div class="dp-card">
-            <strong>File Manager</strong>
-            <p class="dp-muted">Belum tersedia. Menunggu proxy SFTP ke Wings (butuh VPS buat testing).</p>
-            <p class="dp-muted" style="margin-bottom:0">Sementara, akses file lewat SFTP: host <code>{{ $server->node->fqdn ?? '-' }}</code>, port <code>{{ $server->node->daemon_sftp ?? '-' }}</code>.</p>
+        <div class="dp-card" id="fm">
+            <div style="display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.6rem">
+                <button class="dp-btn" id="fm-up" type="button">&larr; Naik</button>
+                <button class="dp-btn" id="fm-refresh" type="button">Refresh</button>
+                <button class="dp-btn" id="fm-mkdir" type="button">Folder baru</button>
+                <button class="dp-btn" id="fm-upload" type="button">Upload</button>
+                <input type="file" id="fm-file" multiple style="display:none">
+            </div>
+            <div class="dp-muted" id="fm-path" style="margin-bottom:.5rem;font-family:monospace">/</div>
+            <div id="fm-msg" class="dp-alert dp-err" style="display:none"></div>
+            <div style="overflow-x:auto">
+                <table class="dp-table" style="width:100%">
+                    <tbody id="fm-list"><tr><td class="dp-muted">Memuat...</td></tr></tbody>
+                </table>
+            </div>
         </div>
+
+        <div class="dp-card" id="fm-editor" style="display:none">
+            <strong id="fm-ed-name"></strong>
+            <textarea id="fm-ed-text" class="dp-input" spellcheck="false" style="min-height:320px;font-family:monospace;font-size:.85rem;margin:.6rem 0"></textarea>
+            <button class="dp-btn" id="fm-ed-save" type="button">Simpan</button>
+            <button class="dp-btn" id="fm-ed-close" type="button">Tutup</button>
+        </div>
+
+        <script>
+        (function () {
+            const U = {
+                list: @json(route('client.servers.files.list', $server)),
+                contents: @json(route('client.servers.files.contents', $server)),
+                download: @json(route('client.servers.files.download', $server)),
+                save: @json(route('client.servers.files.save', $server)),
+                upload: @json(route('client.servers.files.upload', $server)),
+                mkdir: @json(route('client.servers.files.mkdir', $server)),
+                rename: @json(route('client.servers.files.rename', $server)),
+                del: @json(route('client.servers.files.delete', $server)),
+            };
+            const CSRF = @json(csrf_token());
+            const $ = (id) => document.getElementById(id);
+            let cwd = '/';
+            let editing = null;
+
+            const join = (d, n) => (d === '/' ? '' : d.replace(/\/$/, '')) + '/' + n;
+            const parent = (d) => d === '/' ? '/' : (d.replace(/\/$/, '').split('/').slice(0, -1).join('/') || '/');
+            const q = (u, o) => u + '?' + new URLSearchParams(o).toString();
+            const size = (n) => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+
+            function msg(t) {
+                const el = $('fm-msg');
+                el.textContent = t || '';
+                el.style.display = t ? 'block' : 'none';
+            }
+
+            async function api(url, opt) {
+                opt = opt || {};
+                opt.headers = Object.assign({ 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }, opt.headers || {});
+                const r = await fetch(url, opt);
+                let data = null;
+                try { data = await r.json(); } catch (e) {}
+                if (!r.ok) throw new Error((data && (data.error || data.message)) || ('Error ' + r.status));
+                return data;
+            }
+
+            const post = (url, body) => api(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            async function load(path) {
+                msg('');
+                try {
+                    const d = await api(q(U.list, { path: path }));
+                    cwd = path;
+                    $('fm-path').textContent = cwd;
+                    render(d.entries || []);
+                } catch (e) {
+                    msg(e.message);
+                    $('fm-list').innerHTML = '';
+                }
+            }
+
+            function btn(label, fn) {
+                const b = document.createElement('button');
+                b.className = 'dp-btn';
+                b.type = 'button';
+                b.style.padding = '.2rem .5rem';
+                b.textContent = label;
+                b.addEventListener('click', fn);
+                return b;
+            }
+
+            function render(entries) {
+                const tb = $('fm-list');
+                tb.innerHTML = '';
+                entries.sort((a, b) => (b.is_dir - a.is_dir) || a.name.localeCompare(b.name));
+                if (!entries.length) {
+                    tb.innerHTML = '<tr><td class="dp-muted">Folder kosong.</td></tr>';
+                    return;
+                }
+                entries.forEach((e) => {
+                    const tr = document.createElement('tr');
+                    const full = join(cwd, e.name);
+
+                    const tdName = document.createElement('td');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.style.color = 'inherit';
+                    a.textContent = (e.is_dir ? '[dir] ' : '') + e.name;
+                    a.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        e.is_dir ? load(full) : openFile(full);
+                    });
+                    tdName.appendChild(a);
+
+                    const tdSize = document.createElement('td');
+                    tdSize.className = 'dp-muted';
+                    tdSize.textContent = e.is_dir ? '' : size(e.size);
+
+                    const tdAct = document.createElement('td');
+                    tdAct.style.whiteSpace = 'nowrap';
+                    if (!e.is_dir) {
+                        tdAct.appendChild(btn('Unduh', () => { location.href = q(U.download, { path: full }); }));
+                        tdAct.appendChild(document.createTextNode(' '));
+                    }
+                    tdAct.appendChild(btn('Rename', async () => {
+                        const n = prompt('Nama baru:', e.name);
+                        if (!n || n === e.name) return;
+                        try { await post(U.rename, { from: full, to: join(cwd, n) }); load(cwd); } catch (x) { msg(x.message); }
+                    }));
+                    tdAct.appendChild(document.createTextNode(' '));
+                    tdAct.appendChild(btn('Hapus', async () => {
+                        if (!confirm('Hapus ' + e.name + '?')) return;
+                        try { await post(U.del, { paths: [full] }); load(cwd); } catch (x) { msg(x.message); }
+                    }));
+
+                    tr.appendChild(tdName);
+                    tr.appendChild(tdSize);
+                    tr.appendChild(tdAct);
+                    tb.appendChild(tr);
+                });
+            }
+
+            async function openFile(path) {
+                msg('');
+                try {
+                    const d = await api(q(U.contents, { path: path }));
+                    editing = path;
+                    $('fm-ed-name').textContent = path;
+                    $('fm-ed-text').value = d.content;
+                    $('fm-editor').style.display = 'block';
+                    $('fm-editor').scrollIntoView({ behavior: 'smooth' });
+                } catch (e) {
+                    msg(e.message);
+                }
+            }
+
+            $('fm-ed-save').addEventListener('click', async () => {
+                if (!editing) return;
+                try {
+                    await api(q(U.save, { path: editing }), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: $('fm-ed-text').value,
+                    });
+                    msg('');
+                    $('fm-ed-save').textContent = 'Tersimpan';
+                    setTimeout(() => { $('fm-ed-save').textContent = 'Simpan'; }, 1500);
+                } catch (e) { msg(e.message); }
+            });
+
+            $('fm-ed-close').addEventListener('click', () => {
+                editing = null;
+                $('fm-editor').style.display = 'none';
+            });
+
+            $('fm-up').addEventListener('click', () => load(parent(cwd)));
+            $('fm-refresh').addEventListener('click', () => load(cwd));
+
+            $('fm-mkdir').addEventListener('click', async () => {
+                const n = prompt('Nama folder:');
+                if (!n) return;
+                try { await post(U.mkdir, { path: join(cwd, n) }); load(cwd); } catch (e) { msg(e.message); }
+            });
+
+            $('fm-upload').addEventListener('click', () => $('fm-file').click());
+            $('fm-file').addEventListener('change', async (ev) => {
+                const fd = new FormData();
+                fd.append('path', cwd);
+                Array.from(ev.target.files).forEach((f) => fd.append('files[]', f));
+                try {
+                    await api(U.upload, { method: 'POST', body: fd });
+                    load(cwd);
+                } catch (e) { msg(e.message); }
+                ev.target.value = '';
+            });
+
+            load('/');
+        })();
+        </script>
 
     @elseif ($tab === 'databases')
         <div class="dp-card">
