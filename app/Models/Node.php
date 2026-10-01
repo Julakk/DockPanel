@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class Node extends Model
@@ -73,7 +74,7 @@ class Node extends Model
     public function daemonSystemInfo(): array
     {
         try {
-            $res = \Illuminate\Support\Facades\Http::withToken($this->daemon_token)
+            $res = Http::withToken($this->daemon_token)
                 ->baseUrl($this->daemonBaseUrl())
                 ->acceptJson()
                 ->timeout(3)

@@ -183,7 +183,7 @@ class ServerController extends Controller
             return back()->with('success', 'Server berhasil di-provision ke Wings.');
         } catch (\Throwable $e) {
             return back()->withErrors([
-                'provision' => 'Gagal provision ke Wings: '.\App\Models\Node::explainWingsError($e->getMessage(), (string) $server->node?->scheme),
+                'provision' => 'Gagal provision ke Wings: '.Node::explainWingsError($e->getMessage(), (string) $server->node?->scheme),
             ]);
         }
     }
