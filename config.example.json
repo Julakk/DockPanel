@@ -1,0 +1,9 @@
+{
+  "listen_addr": ":8080",
+  "sftp_addr": ":2022",
+  "auth_token": "GANTI_DENGAN_DAEMON_TOKEN_DARI_PANEL",
+  "docker_socket": "/var/run/docker.sock",
+  "data_directory": "/var/lib/dockwings/servers",
+  "panel_url": "https://panel.contoh.com",
+  "sftp_host_key": "/etc/dockwings/sftp_host_ed25519_key"
+}
