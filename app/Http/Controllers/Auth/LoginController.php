@@ -79,7 +79,7 @@ class LoginController extends Controller
             return redirect()->route('login');
         }
 
-        $key = $this->throttleKey($request, '2fa:' . $userId);
+        $key = $this->throttleKey($request, '2fa:'.$userId);
         $this->ensureNotLockedOut($key, 'code');
 
         $user = User::findOrFail($userId);
@@ -118,7 +118,7 @@ class LoginController extends Controller
 
     private function throttleKey(Request $request, string $identity): string
     {
-        return Str::transliterate(Str::lower($identity) . '|' . $request->ip());
+        return Str::transliterate(Str::lower($identity).'|'.$request->ip());
     }
 
     private function ensureNotLockedOut(string $key, string $field): void
