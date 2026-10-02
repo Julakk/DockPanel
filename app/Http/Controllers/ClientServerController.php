@@ -147,7 +147,7 @@ class ClientServerController extends Controller
         return response()->json([
             'token' => $wings->generateWebsocketToken(),
             'ws_host' => $server->node->fqdn,
-            'ws_port' => 8443,
+            'ws_port' => $server->node->daemon_listen,
         ]);
     }
 
