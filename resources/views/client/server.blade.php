@@ -38,7 +38,7 @@
 
     <div class="dp-head">
         <div>
-            <div class="dp-crumb"><a href="{{ route('dashboard') }}">Servers</a> <span>/</span></div>
+            <div class="dp-crumb"><a href="{{ route('client.index') }}">Servers</a> <span>/</span></div>
             <h1 class="dp-title">{{ $server->name }}</h1>
             <div class="dp-sub">
                 <span class="dp-pill" id="dp-state" data-state="unknown">memuat</span>

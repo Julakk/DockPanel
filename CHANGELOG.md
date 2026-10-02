@@ -2,6 +2,25 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.10.0] - 2026-10-03
+
+> "Tampilan login, admin, dan client sekarang satu bahasa, mirip Pterodactyl." 🐧
+
+### Added
+- Halaman login gaya Pterodactyl (judul + kartu "Login to Continue", label mengambang, tombol tampilkan password, checkbox "Ingat saya"). Halaman 2FA ikut disamain lewat layout baru `layouts/auth`.
+- Batas percobaan login: maksimal 5 kali per menit per kombinasi email + IP, berlaku juga buat kode 2FA.
+- Admin panel: header atas dengan ikon, sidebar bisa di-collapse (pilihan disimpan di browser), kartu bergaya box AdminLTE, dan dashboard dengan kotak statistik berwarna + System Information.
+- Client area: navbar atas ala Pterodactyl, daftar server di `/client` (route `client.index`) lengkap dengan alamat IP:port dan kotak pencarian, tab bar dan tombol power berwarna di halaman server.
+- Admin bisa lihat server miliknya, milik user lain, atau semua lewat filter di daftar server, dan punya ikon pintas ke panel admin di navbar client.
+- Stylesheet baru `public/css/dp-ptero.css` (dimuat setelah `dp-theme.css`).
+
+### Fixed
+- Ikon sidebar/topbar (`home`, `settings`, `api`, `database`, `location`, `mounts`, `users`, `user`, `menu`, `logout`) sebelumnya belum ada di `partials/icon`, jadi tampil kosong. Sekarang sudah ditambahin.
+- Checkbox "Ingat saya" sebelumnya dibaca controller tapi nggak ada di form login.
+
+### Changed
+- Versi panel jadi 0.10.0. Tetap butuh DockWings v0.2.0+.
+
 ## [0.9.0] - 2026-10-02
 
 > "Panel sama Wings akhirnya ngobrol pakai bahasa yang sama, dan halaman server mulai kayak Pterodactyl." 🐧

@@ -1,0 +1,77 @@
+/* DockPanel x Pterodactyl look (v0.10) - dimuat SETELAH dp-theme.css */
+main{max-width:1200px!important}
+.content-header{padding:.7rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015)}
+.dp-bc{font-size:.8rem;color:var(--text-faint)}
+.dp-bc .sep{margin:0 .45rem;color:var(--border)}
+
+/* Header admin */
+.dp-header{position:sticky;top:0;z-index:20;height:50px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 1rem;background:var(--bg-elevated);border-bottom:1px solid var(--border)}
+.dp-header-right{display:flex;align-items:center;gap:.25rem}
+.dp-hbtn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:0;border-radius:3px;
+  background:none;color:var(--text-muted);cursor:pointer;text-decoration:none}
+.dp-hbtn:hover{background:rgba(255,255,255,.06);color:#fff}
+.dp-hname{font-size:.85rem;color:var(--text-muted);margin:0 .5rem}
+@media (max-width:500px){.dp-hname{display:none}}
+
+/* Sidebar gaya AdminLTE */
+.sidebar{background:#151a20!important}
+.sidebar-brand{height:50px;justify-content:center;padding:0!important;font-size:1.15rem!important;letter-spacing:.12em;
+  text-transform:uppercase;background:#0f1317;border-bottom:1px solid var(--border)!important}
+.sidebar-brand svg{display:none}
+.sidebar-section{background:rgba(0,0,0,.2);padding:.6rem 1rem!important;margin-top:.4rem}
+.sidebar-link{margin:0!important;padding:.65rem 1rem!important}
+body.sidebar-collapsed .sidebar{transform:translateX(-100%)}
+body.sidebar-collapsed .content-wrap{margin-left:0}
+
+/* Box (card) gaya AdminLTE */
+.card{border-radius:3px!important;border-top:3px solid var(--accent)!important;padding:1.25rem!important;box-shadow:0 1px 1px rgba(0,0,0,.3)!important}
+.card>h3:first-child{margin:-1.25rem -1.25rem 1rem!important;padding:.75rem 1.25rem!important;border-bottom:1px solid var(--border);
+  font-size:1.05rem!important;font-weight:400!important}
+th{background:none!important;border-bottom:2px solid var(--border)!important}
+.btn{border-radius:3px!important;font-weight:500!important}
+.btn-primary{background:var(--accent-dark)!important;color:#fff!important}
+input,select,textarea{border-radius:3px!important}
+.status-badge{border-radius:3px!important}
+
+/* Small-box dashboard admin */
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.25rem}
+.pt-small{position:relative;display:block;overflow:hidden;border-radius:3px;color:#fff!important;text-decoration:none;
+  padding:1rem 1rem 0;box-shadow:0 1px 1px rgba(0,0,0,.3)}
+.pt-small-num{font-size:2.2rem;font-weight:700;line-height:1}
+.pt-small-label{font-size:.95rem;margin:.3rem 0 .9rem}
+.pt-small-ico{position:absolute;right:.8rem;top:.6rem;opacity:.22}
+.pt-small-ico svg{width:64px;height:64px}
+.pt-small-more{display:block;margin:0 -1rem;padding:.3rem 0;text-align:center;font-size:.8rem;background:rgba(0,0,0,.12)}
+.pt-small:hover .pt-small-more{background:rgba(0,0,0,.22)}
+.pt-blue{background:#1a8fb0}.pt-green{background:#2a9d73}.pt-amber{background:#c98b22}.pt-red{background:#c9484f}.pt-gray{background:#5f6f7f}
+
+/* Navbar client */
+.client-topbar{height:52px;padding:0 1.25rem!important;background:#0f1418!important;border-bottom:1px solid var(--border)!important}
+.client-brand{color:#fff!important;text-decoration:none;font-size:1.15rem!important;letter-spacing:.1em;text-transform:uppercase}
+.client-icon-btn{height:52px!important;width:44px!important;border-radius:0!important;border-bottom:2px solid transparent!important}
+.client-icon-btn.active,.client-icon-btn:hover{background:rgba(255,255,255,.04)!important;color:#fff!important}
+.client-icon-btn.active{border-bottom-color:var(--accent)!important}
+
+/* Daftar server client */
+.pt-filter{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.pt-filter input{max-width:300px;margin:0 0 0 auto!important}
+.pt-pill{padding:.35rem .9rem;border-radius:3px;border:1px solid var(--border);color:var(--text-muted);font-size:.82rem;text-decoration:none}
+.pt-pill:hover{color:#fff}.pt-pill.on{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff}
+.server-card{border-radius:3px!important;border-left-width:4px!important;padding:1rem 1.1rem!important}
+.server-card-icon{border-radius:3px!important}
+.pt-addr{font-family:Menlo,Consolas,monospace;font-size:.75rem;color:var(--text-muted);background:rgba(0,0,0,.25);padding:.15rem .5rem;border-radius:3px}
+
+/* Halaman server */
+body .dp-wrap{max-width:1200px}
+body .dp-tabs{background:var(--bg-elevated);border:1px solid var(--border);border-radius:3px;padding:0 .5rem;gap:0;margin-bottom:1rem;overflow-x:auto}
+body .dp-tabs a{border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;padding:.8rem 1rem;font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+body .dp-tabs a.active{background:none!important;color:#fff!important;border-bottom-color:var(--accent)!important}
+body .dp-card{border-radius:3px;background:var(--surface);border:1px solid var(--border)}
+body .dp-stat{border-radius:3px}
+body .dp-power button{border-radius:3px;font-weight:600;border-width:1px;background:transparent!important}
+body .dp-power button.p-start{background:var(--green)!important;border-color:var(--green)!important;color:#06140d!important}
+body .dp-power button.p-restart{background:var(--amber)!important;border-color:var(--amber)!important;color:#1a1204!important}
+body .dp-power button.p-stop,body .dp-power button.p-kill{background:var(--red)!important;border-color:var(--red)!important;color:#fff!important}
+body .dp-power button:disabled{opacity:.35}
+body .dp-console{background:#000!important;border:1px solid #222;border-radius:3px;font-family:Menlo,Consolas,"Courier New",monospace;color:#d0d7de}

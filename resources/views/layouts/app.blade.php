@@ -273,6 +273,7 @@
         }
     </style>
     <link rel="stylesheet" href="{{ asset('css/dp-theme.css') }}?v={{ @filemtime(public_path('css/dp-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/dp-ptero.css') }}?v={{ @filemtime(public_path('css/dp-ptero.css')) }}">
 </head>
 <body>
     <div class="app">
@@ -345,33 +346,42 @@
         </aside>
 
         <div class="content-wrap">
-            <div class="topbar">
-                <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarBackdrop').classList.toggle('open');">
-                        @include('partials.icon', ['name' => 'menu', 'size' => 20])
-                    </button>
-                    <span class="topbar-title">@yield('title', 'DockPanel')</span>
+            <header class="dp-header">
+                <div>
+                    <button type="button" class="dp-hbtn" id="dpMenuBtn" aria-label="Menu">@include('partials.icon', ['name' => 'menu', 'size' => 20])</button>
                 </div>
-
-                <div class="topbar-right">
-                    @if (auth()->user()?->isRootAdmin())
-                        <span class="admin-badge">ADMIN</span>
-                    @endif
-                    <span class="muted">{{ auth()->user()?->name }}</span>
-                    <form method="POST" action="/logout">
+                <div class="dp-header-right">
+                    <a href="{{ route('client.index') }}" class="dp-hbtn" title="Server saya">@include('partials.icon', ['name' => 'server', 'size' => 18])</a>
+                    <a href="{{ route('account.edit') }}" class="dp-hbtn" title="Akun">@include('partials.icon', ['name' => 'user', 'size' => 18])</a>
+                    <span class="dp-hname">{{ auth()->user()?->name }}</span>
+                    <form method="POST" action="/logout" style="display:inline">
                         @csrf
-                        <button type="submit" class="btn btn-secondary">@include('partials.icon', ['name' => 'logout', 'size' => 14]) Keluar</button>
+                        <button type="submit" class="dp-hbtn" title="Keluar">@include('partials.icon', ['name' => 'logout', 'size' => 18])</button>
                     </form>
                 </div>
-            </div>
+            </header>
+            <script>
+            (function () {
+                var sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop');
+                try { if (window.innerWidth > 860 && localStorage.getItem('dp-sb') === '1') document.body.classList.add('sidebar-collapsed'); } catch (e) {}
+                document.getElementById('dpMenuBtn').addEventListener('click', function () {
+                    if (window.innerWidth > 860) {
+                        document.body.classList.toggle('sidebar-collapsed');
+                        try { localStorage.setItem('dp-sb', document.body.classList.contains('sidebar-collapsed') ? '1' : '0'); } catch (e) {}
+                    } else {
+                        sb.classList.toggle('open'); bd.classList.toggle('open');
+                    }
+                });
+            })();
+            </script>
+
+            @hasSection('breadcrumb')
+                <div class="content-header"><div class="dp-bc">@yield('breadcrumb')</div></div>
+            @endif
 
             <main>
                 @if (session('success'))
                     <div class="success">{{ session('success') }}</div>
-                @endif
-
-                @hasSection('breadcrumb')
-                    <div class="breadcrumb">@yield('breadcrumb')</div>
                 @endif
 
                 @yield('content')

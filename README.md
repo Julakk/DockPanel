@@ -6,7 +6,7 @@
 
 > Self-hosted game server management panel. Terinspirasi dari Pterodactyl, dibangun dari nol pakai Laravel.
 
-![version](https://img.shields.io/badge/version-0.9.0-blue) ![laravel](https://img.shields.io/badge/Laravel-11-red) ![license](https://img.shields.io/badge/license-MIT-green)
+![version](https://img.shields.io/badge/version-0.10.0-blue) ![laravel](https://img.shields.io/badge/Laravel-11-red) ![license](https://img.shields.io/badge/license-MIT-green)
 
 Dikembangkan oleh **Julak Junior** ([@Julakk](https://github.com/Julakk)) — dicoding langsung dari HP via Termux. 🐧📱
 
@@ -27,7 +27,7 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 - **Panel** (repo ini): web UI, auth, database user/server/egg, kirim perintah ke node.
 - **Wings** ([Julakk/DockWings](https://github.com/Julakk/DockWings)): daemon yang jalan di tiap node/VPS, spawn Docker container per server game.
 
-> **Kompatibilitas:** Panel v0.9.0 butuh **DockWings v0.2.0+** buat nampilin status daemon dan versi di halaman Node.
+> **Kompatibilitas:** Panel v0.10.0 butuh **DockWings v0.2.0+** buat nampilin status daemon dan versi di halaman Node.
 
 ## Struktur Data Inti
 

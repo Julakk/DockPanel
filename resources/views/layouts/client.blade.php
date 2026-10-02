@@ -143,30 +143,33 @@
         .app-footer-version { background: var(--surface); border: 1px solid var(--border-light); color: var(--text-muted); padding: 0.15rem 0.55rem; border-radius: 999px; font-weight: 700; }
     </style>
     <link rel="stylesheet" href="{{ asset('css/dp-theme.css') }}?v={{ @filemtime(public_path('css/dp-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/dp-ptero.css') }}?v={{ @filemtime(public_path('css/dp-ptero.css')) }}">
 </head>
 <body>
-    <div class="client-topbar">
-        <div class="client-brand">
-            @include('partials.icon', ['name' => 'logo', 'size' => 20])
-            DockPanel
-        </div>
+    <nav class="client-topbar">
+        <a href="{{ route('client.index') }}" class="client-brand">DockPanel</a>
 
         <div class="client-icons">
-            <a href="{{ route('dashboard') }}" class="client-icon-btn {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="My Servers">
-                @include('partials.icon', ['name' => 'package', 'size' => 19])
+            <a href="{{ route('client.index') }}" class="client-icon-btn {{ request()->routeIs('client.*') ? 'active' : '' }}" title="Servers">
+                @include('partials.icon', ['name' => 'server', 'size' => 19])
             </a>
-            <a href="{{ route('account.edit') }}" class="client-icon-btn {{ request()->is('account*') ? 'active' : '' }}" title="Account Settings">
-                @include('partials.icon', ['name' => 'settings', 'size' => 19])
+            <a href="{{ route('account.edit') }}" class="client-icon-btn {{ request()->is('account*') ? 'active' : '' }}" title="Akun">
+                @include('partials.icon', ['name' => 'user', 'size' => 19])
             </a>
+            @if (auth()->user()->isRootAdmin())
+                <a href="{{ route('dashboard') }}" class="client-icon-btn" title="Admin">
+                    @include('partials.icon', ['name' => 'settings', 'size' => 19])
+                </a>
+            @endif
             <span class="client-username">{{ auth()->user()->name }}</span>
             <form method="POST" action="/logout">
                 @csrf
-                <button type="submit" class="client-icon-btn" title="Logout">
+                <button type="submit" class="client-icon-btn" title="Keluar">
                     @include('partials.icon', ['name' => 'logout', 'size' => 18])
                 </button>
             </form>
         </div>
-    </div>
+    </nav>
 
     <main>
         @if (session('success'))

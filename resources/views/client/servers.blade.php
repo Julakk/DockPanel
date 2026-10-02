@@ -1,21 +1,36 @@
 @extends('layouts.client')
 
-@section('title', 'My Servers - DockPanel')
+@section('title', 'Servers - DockPanel')
 
 @section('content')
-    <h2 style="margin-top:0;">Halo, {{ $user->name }} @include('partials.icon', ['name' => 'sparkle', 'size' => 22])</h2>
-    <p class="muted" style="margin-top:-0.6rem;">Ini daftar server yang kamu punya akses.</p>
+    @php($filter = $filter ?? 'mine')
+    @php($isAdmin = $isAdmin ?? false)
+    <div class="pt-filter">
+        <h2 style="margin:0 .75rem 0 0;">Servers</h2>
+        @if ($isAdmin)
+            <a href="{{ route('client.index', ['show' => 'mine']) }}" class="pt-pill {{ $filter === 'mine' ? 'on' : '' }}">Server saya</a>
+            <a href="{{ route('client.index', ['show' => 'others']) }}" class="pt-pill {{ $filter === 'others' ? 'on' : '' }}">Milik user lain</a>
+            <a href="{{ route('client.index', ['show' => 'all']) }}" class="pt-pill {{ $filter === 'all' ? 'on' : '' }}">Semua</a>
+        @endif
+        @if ($servers->isNotEmpty())
+            <input type="search" id="dp-server-filter" placeholder="Cari server...">
+        @endif
+    </div>
 
     @if ($servers->isEmpty())
         <div class="card">
             <div class="empty-state">
                 <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
-                <p>Kamu belum punya server. Hubungi admin buat dibuatin server baru.</p>
+                <p>
+                    @if ($isAdmin && $filter === 'mine')
+                        Belum ada server atas nama kamu. Pilih "Semua" buat lihat server semua user.
+                    @else
+                        Belum ada server di sini. Hubungi admin buat dibuatin server baru.
+                    @endif
+                </p>
             </div>
         </div>
     @else
-        <input type="search" id="dp-server-filter" placeholder="Cari server..." style="max-width:320px">
-
         @foreach ($servers as $server)
             <a href="{{ route('client.servers.show', $server) }}" class="server-card status-{{ $server->status }}-border" data-server-card data-name="{{ strtolower($server->name) }}" data-url="{{ route('client.servers.resources', $server) }}" style="text-decoration:none;color:inherit">
                 <div class="server-card-icon">
@@ -26,6 +41,10 @@
                     <div class="server-card-name">{{ $server->name }}</div>
                     <div class="server-card-sub">{{ $server->node->name }} / {{ $server->egg->name }}@if ($server->expires_at) · exp {{ $server->expires_at->format('d M Y') }}@endif</div>
                 </div>
+
+                @if ($server->primaryAllocation)
+                    <span class="pt-addr">{{ $server->primaryAllocation->ip }}:{{ $server->primaryAllocation->port }}</span>
+                @endif
 
                 <span class="status-badge status-{{ $server->suspended ? 'suspended' : $server->status }}" data-state style="margin-left:0.5rem;">{{ $server->suspended ? 'suspended' : $server->status }}</span>
 
@@ -77,7 +96,8 @@
             cards.forEach(refresh);
             setInterval(() => cards.forEach(refresh), 10000);
 
-            document.getElementById('dp-server-filter').addEventListener('input', e => {
+            const f = document.getElementById('dp-server-filter');
+            if (f) f.addEventListener('input', e => {
                 const q = e.target.value.trim().toLowerCase();
                 cards.forEach(c => { c.style.display = c.dataset.name.includes(q) ? '' : 'none'; });
             });
