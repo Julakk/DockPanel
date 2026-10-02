@@ -124,3 +124,21 @@ body .dp-console{background:#000!important;border:1px solid #222;border-radius:3
 .nd-red{background:#dd4b39}
 .nd-blue{background:#0073b7}
 @media (max-width:640px){.nd-grid{grid-template-columns:1fr}}
+
+/* === Overview / Servers / Users (gaya Pterodactyl) === */
+.nd-box-head{flex-wrap:wrap}
+.nd-tools{flex-wrap:wrap;gap:.4rem}
+.nd-box.nd-ok{border-top-color:#00a65a}
+.nd-sel{background:#27323f;border:1px solid #3a4756;color:#fff;padding:.3rem .4rem;font-size:.75rem;border-radius:2px;margin:0!important;width:auto!important}
+button.nd-search-btn{cursor:pointer}
+.nd-ovbtns{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.nd-ovbtns .nd-btn{flex:1;text-align:center;padding:.5rem .8rem;min-width:130px}
+.nd-btn-orange{background:#f39c12}
+.nd-btn-green{background:#00a65a}
+.nd-iconbtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:3px;background:#0073b7;color:#fff}
+.nd-iconbtn.round{border-radius:50%}
+.nd-foot{display:flex;justify-content:space-between;align-items:center;padding:.6rem .9rem;border-top:1px solid rgba(255,255,255,.07);font-size:.8rem}
+.nd-star{color:#f1c40f;margin-left:.25rem}
+.nd-wrap{overflow-x:auto}
+.nd-uuid{display:inline-block;max-width:150px;word-break:break-all}
+.nd-nowrap{white-space:nowrap}

@@ -18,7 +18,7 @@ class ServerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Server::with(['owner', 'node', 'egg']);
+        $query = Server::with(['owner', 'node', 'egg', 'primaryAllocation']);
 
         if ($q = trim((string) $request->query('q', ''))) {
             $query->where(function ($w) use ($q) {

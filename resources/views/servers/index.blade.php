@@ -7,74 +7,97 @@
 @endsection
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap:.5rem; flex-wrap:wrap;">
-        <h2 style="margin:0;">Servers <span class="muted">({{ $servers->total() }})</span></h2>
-        <a href="{{ route('servers.create') }}" class="btn btn-primary">+ Buat Server</a>
-    </div>
+    <h2 class="nd-title">Servers <small>All servers available on the system.</small></h2>
 
-    <form method="GET" action="{{ route('servers.index') }}" class="card" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:end;padding:1rem;">
-        <div style="flex:2;min-width:180px"><label>Cari (nama / ID / owner)</label><input type="search" name="q" value="{{ request('q') }}" style="margin:0"></div>
-        <div style="flex:1;min-width:130px"><label>Status</label>
-            <select name="status" style="margin:0">
-                <option value="">Semua</option>
-                @foreach (['running','installing','offline','suspended','install_failed'] as $st)
-                    <option value="{{ $st }}" @selected(request('status') === $st)>{{ $st }}</option>
-                @endforeach
-            </select>
+    <div class="nd-box">
+        <div class="nd-box-head">
+            <h3>Server List <span class="nd-mute" style="font-weight:400;font-size:.8rem;">({{ $servers->total() }})</span></h3>
+            <form method="GET" action="{{ route('servers.index') }}" class="nd-tools">
+                <select name="status" class="nd-sel" onchange="this.form.submit()">
+                    <option value="">All status</option>
+                    @foreach (['running', 'installing', 'offline', 'suspended', 'install_failed'] as $st)
+                        <option value="{{ $st }}" @selected(request('status') === $st)>{{ $st }}</option>
+                    @endforeach
+                </select>
+                <select name="node" class="nd-sel" onchange="this.form.submit()">
+                    <option value="">All nodes</option>
+                    @foreach ($nodes as $n)
+                        <option value="{{ $n->id }}" @selected((string) request('node') === (string) $n->id)>{{ $n->name }}</option>
+                    @endforeach
+                </select>
+                <div class="nd-search">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search Servers" autocomplete="off">
+                    <button type="submit" class="nd-search-btn" aria-label="Search"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></svg></button>
+                </div>
+                <a href="{{ route('servers.create') }}" class="nd-btn nd-btn-blue">Create New</a>
+            </form>
         </div>
-        <div style="flex:1;min-width:130px"><label>Node</label>
-            <select name="node" style="margin:0">
-                <option value="">Semua</option>
-                @foreach ($nodes as $n)
-                    <option value="{{ $n->id }}" @selected((string) request('node') === (string) $n->id)>{{ $n->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <button class="btn btn-primary" type="submit">Filter</button>
-        @if (request()->hasAny(['q','status','node']))<a href="{{ route('servers.index') }}" class="btn btn-secondary">Reset</a>@endif
-    </form>
 
-    @if ($servers->isEmpty())
-        <div class="card">
-            <div class="empty-state">
-                <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
-                <p>Tidak ada server yang cocok. Pastikan udah ada Node dan Egg sebelum bikin server.</p>
-                <a href="{{ route('servers.create') }}" class="btn btn-primary">+ Buat Server</a>
-            </div>
-        </div>
-    @else
-        @foreach ($servers as $server)
-            <div class="server-card status-{{ $server->status }}-border">
-                <div class="server-card-icon">
-                    @include('partials.icon', ['name' => 'package', 'size' => 18])
+        <div class="nd-box-body nd-flush">
+            @if ($servers->isEmpty())
+                <div class="empty-state">
+                    <div class="icon">@include('partials.icon', ['name' => 'package', 'size' => 40])</div>
+                    <p>Tidak ada server yang cocok. Pastikan udah ada Node dan Egg sebelum bikin server.</p>
+                </div>
+            @else
+                <div class="nd-wrap">
+                    <table class="nd-table">
+                        <thead>
+                            <tr>
+                                <th>Server Name</th>
+                                <th>UUID</th>
+                                <th>Owner</th>
+                                <th>Node</th>
+                                <th>Connection</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($servers as $server)
+                                @php($alloc = $server->primaryAllocation)
+                                <tr>
+                                    <td><a href="{{ route('servers.show', $server) }}">{{ $server->name }}</a></td>
+                                    <td><span class="nd-code nd-uuid">{{ $server->uuid ?? $server->uuid_short }}</span></td>
+                                    <td>
+                                        @if ($server->owner)
+                                            <a href="{{ route('users.edit', $server->owner) }}">{{ $server->owner->name }}</a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($server->node)
+                                            <a href="{{ route('nodes.show', $server->node) }}">{{ $server->node->name }}</a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="nd-nowrap">
+                                        @if ($alloc)
+                                            <span class="nd-code">{{ $alloc->ip }}:{{ $alloc->port }}</span>
+                                        @else
+                                            <span class="nd-mute">-</span>
+                                        @endif
+                                    </td>
+                                    <td><span class="status-badge status-{{ $server->suspended ? 'suspended' : $server->status }}">{{ $server->suspended ? 'suspended' : $server->status }}</span></td>
+                                    <td>
+                                        <a href="{{ route('servers.edit', $server) }}" class="nd-iconbtn" title="Manage"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3 17.7 6.3 21l6.3-6.3a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
 
-                <div>
-                    <div class="server-card-name">
-                        <a href="{{ route('servers.show', $server) }}">{{ $server->name }}</a>
-                        <span class="muted">#{{ $server->uuid_short }}</span>
+                @if ($servers->hasPages())
+                    <div class="nd-foot">
+                        @if ($servers->onFirstPage())<span class="nd-mute">&larr; Sebelumnya</span>@else<a class="nd-btn nd-btn-blue" href="{{ $servers->previousPageUrl() }}">&larr; Sebelumnya</a>@endif
+                        <span class="nd-mute">Halaman {{ $servers->currentPage() }} / {{ $servers->lastPage() }}</span>
+                        @if ($servers->hasMorePages())<a class="nd-btn nd-btn-blue" href="{{ $servers->nextPageUrl() }}">Berikutnya &rarr;</a>@else<span class="nd-mute">Berikutnya &rarr;</span>@endif
                     </div>
-                    <div class="server-card-sub">{{ $server->owner->name }} — {{ $server->node->name }} / {{ $server->egg->name }}</div>
-                </div>
-
-                <span class="status-badge status-{{ $server->suspended ? 'suspended' : $server->status }}" style="margin-left:0.5rem;">{{ $server->suspended ? 'suspended' : $server->status }}</span>
-
-                <div class="server-card-stats">
-                    <div class="stat"><div class="stat-label">Memory</div><div class="stat-value">{{ $server->memory ? $server->memory.' MB' : '∞' }}</div></div>
-                    <div class="stat"><div class="stat-label">Disk</div><div class="stat-value">{{ $server->disk ? $server->disk.' MB' : '∞' }}</div></div>
-                    <div class="stat"><div class="stat-label">CPU</div><div class="stat-value">{{ $server->cpu ? $server->cpu.'%' : '∞' }}</div></div>
-                </div>
-
-                <a href="{{ route('servers.edit', $server) }}" class="btn btn-secondary" style="margin-left:0.5rem;">Edit</a>
-            </div>
-        @endforeach
-
-        @if ($servers->hasPages())
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;">
-                @if ($servers->onFirstPage())<span class="muted">&larr; Sebelumnya</span>@else<a class="btn btn-secondary" href="{{ $servers->previousPageUrl() }}">&larr; Sebelumnya</a>@endif
-                <span class="muted">Halaman {{ $servers->currentPage() }} / {{ $servers->lastPage() }}</span>
-                @if ($servers->hasMorePages())<a class="btn btn-secondary" href="{{ $servers->nextPageUrl() }}">Berikutnya &rarr;</a>@else<span class="muted">Berikutnya &rarr;</span>@endif
-            </div>
-        @endif
-    @endif
+                @endif
+            @endif
+        </div>
+    </div>
 @endsection
