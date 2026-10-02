@@ -1,10 +1,12 @@
 <p align="center">
-  <img src="assets/logo.png" alt="DockPanel Logo" width="450">
+  <img src="assets/logo.png" alt="DockPanel Logo" width="120">
 </p>
 
-#  DockPanel
+# DockPanel
 
 > Self-hosted game server management panel. Terinspirasi dari Pterodactyl, dibangun dari nol pakai Laravel.
+
+![version](https://img.shields.io/badge/version-0.9.0-blue) ![laravel](https://img.shields.io/badge/Laravel-11-red) ![license](https://img.shields.io/badge/license-MIT-green)
 
 Dikembangkan oleh **Julak Junior** ([@Julakk](https://github.com/Julakk)) — dicoding langsung dari HP via Termux. 🐧📱
 
@@ -23,62 +25,83 @@ DockPanel punya 2 komponen terpisah, di repo yang berbeda:
 ```
 
 - **Panel** (repo ini): web UI, auth, database user/server/egg, kirim perintah ke node.
-- **Wings**: daemon yang beneran jalan di tiap node/VPS, spawn Docker container per server game. Repo terpisah: [Julakk/DockWings](https://github.com/Julakk/DockWings) — kontrol Docker, console WebSocket, file manager, dan SFTP udah ada; butuh VPS Linux buat dijalanin. Panel v0.9.0 cocok dipasangkan dengan DockWings v0.2.0+.
+- **Wings** ([Julakk/DockWings](https://github.com/Julakk/DockWings)): daemon yang jalan di tiap node/VPS, spawn Docker container per server game.
+
+> **Kompatibilitas:** Panel v0.9.0 butuh **DockWings v0.2.0+** buat nampilin status daemon dan versi di halaman Node.
 
 ## Struktur Data Inti
 
-| Tabel | Fungsi |
-|---|---|
-| `nodes` | Server fisik/VPS yang jalanin Wings |
-| `locations` | Kategorisasi Node berdasarkan lokasi fisik |
-| `nests` | Kategori game (Minecraft, SA-MP, FiveM, dst) |
-| `eggs` | Template docker image + startup command per game |
-| `egg_variables` | Variabel yang bisa diisi user per egg (ex: `SERVER_JARFILE`) |
-| `servers` | Instance server game milik user |
-| `server_variables` | Nilai variable egg yang di-set per server |
-| `allocations` | Kombinasi IP:port yang di-assign ke server |
-| `server_subusers` | Akses terbatas user lain ke satu server, dengan permission granular |
-| `server_databases` | Database yang di-provision buat server tertentu |
-| `database_hosts` | Host MySQL/MariaDB yang bisa dipakai server |
-| `mounts` | Mount point tambahan buat server |
-| `activity_logs` | Histori aktivitas user (login, ganti password, dst) |
-| `panel_settings` | Konfigurasi panel (company name, requirement 2FA, dll) |
+| Tabel              | Fungsi                                                              |
+| ------------------ | ------------------------------------------------------------------- |
+| `nodes`            | Server fisik/VPS yang jalanin Wings                                 |
+| `locations`        | Kategorisasi Node berdasarkan lokasi fisik                          |
+| `nests`            | Kategori game (Minecraft, SA-MP, FiveM, dst)                        |
+| `eggs`             | Template docker image + startup command per game                    |
+| `egg_variables`    | Variabel yang bisa diisi user per egg (ex: `SERVER_JARFILE`)        |
+| `servers`          | Instance server game milik user (termasuk masa aktif / expiry)      |
+| `server_variables` | Nilai variable egg yang di-set per server                           |
+| `allocations`      | Kombinasi IP:port yang di-assign ke server                          |
+| `server_subusers`  | Akses terbatas user lain ke satu server, dengan permission granular |
+| `server_databases` | Database yang di-provision buat server tertentu                     |
+| `database_hosts`   | Host MySQL/MariaDB yang bisa dipakai server                         |
+| `mounts`           | Mount point tambahan buat server                                    |
+| `activity_logs`    | Histori aktivitas user (login, ganti password, dst)                 |
+| `panel_settings`   | Konfigurasi panel (company name, requirement 2FA, dll)              |
 
-## Fitur yang Udah Jalan
+## Fitur
 
 **Auth & Keamanan**
+
 - 🔐 Login/logout, proteksi khusus admin (`root_admin` middleware)
 - 🔑 Forgot password — flow reset lengkap lewat email
-- 📱 Two-Factor Authentication beneran (TOTP, RFC 6238) — kompatibel Google Authenticator/Authy
+- 📱 Two-Factor Authentication (TOTP, RFC 6238) — kompatibel Google Authenticator/Authy
 - 📜 Activity Log — histori login, ganti password/email, enable/disable 2FA
 
 **Admin**
+
 - 🖥️ CRUD Node + Allocation Management (range IP:port, max 100 sekaligus)
+- 📡 Halaman detail Node nampilin **status daemon & versi DockWings** (`GET /api/system`, timeout 3 detik)
 - 📍 Locations — kategorisasi Node
 - 🌐 CRUD Nest + 🥚 CRUD Egg (import JSON kompatibel format Pterodactyl, manage variable)
-- 📦 CRUD Server — nyatuin Node + Nest/Egg + Allocation, assign Database Host & Mount, provisioning ke Wings
+- 📦 CRUD Server — nyatuin Node + Nest/Egg + Allocation, assign Database Host & Mount, **Provision ke Wings**
+- ⏳ **Masa aktif server** — set tanggal expired atau perpanjang X hari; suspend otomatis kalau expired dan kebuka lagi pas diperpanjang
 - 👥 CRUD Users + role admin
 - 🔧 Settings (company name, 2FA requirement, default language)
 - 🔗 Application API (token Sanctum)
 - 🗄️ Database Hosts + 📁 Mounts
 
 **Client Area (user biasa)**
+
 - 📋 My Servers — daftar server milik sendiri atau yang di-subuser-kan
+- 🎮 **Halaman server ala Pterodactyl** — breadcrumb, pill status, UUID & alamat, tombol power, tile CPU / Memory / Disk, dan tab Console / Files / Settings / Startup (`/client/servers/{server}`)
+- ⚡ **Power control** (start / restart / stop / kill) dan kirim command ke console, dengan akses owner, subuser, atau root admin
+- 📊 **Resource usage** CPU/Memory/Disk, polling tiap 5 detik lewat `ServerResourceService` (fallback ke mode mock kalau Wings belum aktif)
 - 👤 Account Settings, API Credentials personal, Two-Factor, Activity
 - 🤝 Subusers — admin bisa kasih akses server ke user lain dengan permission granular
-- 🖥️ Halaman detail server — tab Console, Files, Settings, Startup + tombol power dan kirim command
-- ⏳ Masa aktif server — admin set atau perpanjang expiry, server auto-suspend kalau lewat waktu, email pengingat H-3
+
+**Otomasi (Scheduler)**
+
+| Command                    | Fungsi                                      |
+| -------------------------- | ------------------------------------------- |
+| `servers:suspend-expired`  | Auto-suspend server yang sudah expired      |
+| `servers:notify-expiring`  | Kirim email pengingat H-3 sebelum expired   |
+
+Pastikan cron scheduler Laravel aktif:
+
+```
+* * * * * cd /var/www/dockpanel && php artisan schedule:run >> /dev/null 2>&1
+```
 
 **UI/UX**
-- 🎨 Sidebar navigasi ala Pterodactyl (Basic Administration / Management / Service Management), collapse jadi hamburger di HP, otomatis nyesuain menu berdasarkan role
-- 🖌️ Design system pakai CSS custom properties — warna, tipografi, hover/focus state konsisten di semua halaman
-- 📊 Resource bar CPU/Memory/Disk di halaman server (polling 5 detik), otomatis fallback ke mode mock kalau Wings belum aktif
+
+- 🎨 Sidebar navigasi ala Pterodactyl, collapse jadi hamburger di HP, menu otomatis menyesuaikan role
+- 🖌️ Design system pakai CSS custom properties — konsisten di semua halaman
+- 🏷️ Versi panel tampil di Overview dan footer (`config('app.version')`)
 
 **Infrastruktur**
-- ⚙️ CI otomatis (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit)
-- 🚀 One-command installer (`install.sh`) — mirip `pterodactyl-installer`, install Panel atau Node/Wings di VPS Ubuntu 24 tinggal `bash <(curl -s ...)`
 
-Semua fitur di atas (kecuali Wings) 100% bisa dites tanpa VPS — murni Laravel + database, nggak nyentuh Docker sama sekali.
+- ⚙️ CI otomatis (GitHub Actions) — install dependency, migrate, code style check (Pint), test (PHPUnit)
+- 🚀 One-command installer (`install.sh`) — mirip `pterodactyl-installer`, install Panel atau Node/Wings di VPS Ubuntu 24.04
 
 ## Alur Pemakaian
 
@@ -88,13 +111,14 @@ Semua fitur di atas (kecuali Wings) 100% bisa dites tanpa VPS — murni Laravel 
 4. Bikin **Nest** (kategori game) dan **Egg** (template startup), atau import Egg dari JSON
 5. Bikin **Server** — pilih owner, node, egg, allocation, resource limit
 6. Isi **Variable** server, assign **Database** & **Mount** kalau perlu, tambah **Subuser** kalau mau kasih akses ke user lain
-7. Klik **Provision ke Wings** — bakal gagal graceful sampai ada VPS dengan Wings aktif
+7. Klik **Provision ke Wings**
+8. Buka halaman server di client area buat kontrol power, console, dan pantau resource
 
 ## Setup Development (Termux)
 
 Database default development pakai **SQLite** (nggak perlu nyalain service MySQL manual tiap sesi):
 
-```bash
+```
 cp .env.example .env
 touch database/database.sqlite
 php artisan key:generate
@@ -102,45 +126,32 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-## Scheduler (Expiry Server)
-
-Auto-suspend dan email pengingat jalan lewat Laravel scheduler.
-
-Development di Termux (session terpisah):
-
-    php artisan schedule:work
-
-Produksi di VPS, tambahkan ke crontab:
-
-    * * * * * cd /var/www/dockpanel && php artisan schedule:run >> /dev/null 2>&1
-
-Command manual:
-
-    php artisan servers:suspend-expired
-    php artisan servers:notify-expiring --days=3
-
-Email pengingat butuh `MAIL_*` di `.env`. Pakai `MAIL_MAILER=log` buat ngetes, isinya masuk ke `storage/logs/laravel.log`.
-
 ## Install ke VPS Produksi
 
-```bash
+```
 bash <(curl -s https://raw.githubusercontent.com/Julakk/DockPanel/main/install.sh)
 ```
 
-Pilih opsi **1** buat install Panel, atau opsi **2** buat install Node/Wings di VPS Ubuntu 24 yang beda. Installer otomatis setup PHP, MariaDB, Nginx (buat Panel) atau Docker + Go (buat Wings).
+Pilih opsi **1** buat install Panel, atau opsi **2** buat install Node/Wings di VPS Ubuntu 24.04 yang beda. Installer otomatis setup PHP, MariaDB, Nginx (buat Panel) atau Docker + Go (buat Wings).
 
-## Testing Wings (Docker control)
+## Menghubungkan Panel ke Wings
 
-⚠️ **Docker nggak bisa jalan di Termux/Android.** Bagian ini WAJIB ditest di VPS/server Linux beneran.
+Saat bikin Node, atur **scheme** sesuai cara Wings melayani koneksi:
 
-Development flow yang disarankan:
+| Config Wings          | Scheme Node di Panel |
+| --------------------- | -------------------- |
+| default (tanpa SSL)   | `http`               |
+| `ssl` aktif (v0.2.0+) | `https`              |
+
+Scheme yang nggak cocok bikin error `cURL error 35 ... wrong version number` pas Provision. Panel sekarang nampilin petunjuk jelas (scheme salah, koneksi ditolak, atau timeout) di Provision dan halaman Node.
+
+## Testing
 
 ```
-Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
-                                              │
-                                              ▼
-                                   deploy ke VPS (Wings jalan di sini)
+php artisan test
 ```
+
+Test Panel (auth, admin, client area, expiry, TOTP, dll) jalan tanpa Docker. Buat tes end-to-end Panel ↔ Wings, jalanin DockWings di VPS Linux dan arahkan Node ke sana.
 
 ## Roadmap
 
@@ -152,15 +163,15 @@ Termux (nulis kode Panel) → git push → GitHub Actions (test otomatis)
 - [x] Client Area buat user biasa
 - [x] Subusers + Activity Log
 - [x] Redesign UI total — sidebar, design token, hover/focus state
-- [x] Skeleton repo `DockWings` (Go)
+- [x] DockWings (Go) + `DockerEnvironment` asli
 - [x] One-command installer script (Panel + Wings)
-- [x] Halaman detail server di client area + resource bar
-- [x] Masa aktif server + auto-suspend + email pengingat
-- [ ] `DockerEnvironment` asli di DockWings — **butuh VPS**
-- [ ] WebSocket console real-time — **butuh VPS**
-- [ ] File manager (proxy ke SFTP Wings) — **butuh VPS**
-- [ ] Testing `WingsService` ↔ DockWings end-to-end — **butuh VPS**
-- [ ] Billing/expiry integration (opsional, buat dipakai di Ahmad Store)
+- [x] Halaman server client area ala Pterodactyl (power, console, resource)
+- [x] Masa aktif server (auto-suspend + email pengingat)
+- [x] Status daemon & versi Wings di halaman Node
+- [x] WebSocket console real-time
+- [x] File manager (proxy ke SFTP Wings)
+- [x] Testing `WingsService` ↔ DockWings end-to-end
+- [ ] Billing/expiry integration lanjutan (opsional, buat dipakai di Ahmad Store)
 
 ## Kontribusi
 
