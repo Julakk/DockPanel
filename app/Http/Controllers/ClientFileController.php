@@ -73,6 +73,10 @@ class ClientFileController extends Controller
             return response()->json(['error' => 'Token node ditolak Wings. Cek daemon_token di node.'], 502);
         }
 
+        if ($status === 404 && str_contains((string) $message, 'daemon ini')) {
+            return response()->json(['error' => 'Server belum di-provision ke Wings. Minta admin klik Provision di halaman server.'], 409);
+        }
+
         return response()->json(
             ['error' => $message ?: 'Wings balikin error.'],
             $status >= 500 || $status < 400 ? 502 : $status,

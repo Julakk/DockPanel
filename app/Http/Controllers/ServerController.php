@@ -176,9 +176,12 @@ class ServerController extends Controller
     {
         try {
             $wings = new WingsService($server);
-            $wings->createServer();
+            $res = $wings->createServer();
 
-            $server->update(['status' => 'running']);
+            // Status ikut yang dilaporin Wings (biasanya offline sampai di-Start).
+            $status = $res['status'] ?? 'offline';
+            $allowed = ['installing', 'install_failed', 'suspended', 'restoring_backup', 'running', 'stopped', 'offline'];
+            $server->update(['status' => in_array($status, $allowed, true) ? $status : 'offline']);
 
             return back()->with('success', 'Server berhasil di-provision ke Wings.');
         } catch (\Throwable $e) {
