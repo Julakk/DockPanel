@@ -106,12 +106,12 @@ class ServerController extends Controller
     {
         $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'allocations', 'databases.databaseHost', 'mounts', 'subusers']);
 
-        return view('servers.show', compact('server'));
+        return $this->edit($server);
     }
 
     public function edit(Server $server)
     {
-        $server->load(['owner', 'node', 'egg', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts', 'subusers', 'allocations']);
+        $server->load(['owner', 'node', 'egg.nest', 'serverVariables.eggVariable', 'databases.databaseHost', 'mounts', 'subusers', 'allocations']);
         $users = User::orderBy('name')->get();
         $databaseHosts = DatabaseHost::orderBy('name')->get();
         $allMounts = Mount::orderBy('name')->get();
@@ -123,21 +123,21 @@ class ServerController extends Controller
             })
             ->orderBy('ip')->orderBy('port')->get();
 
-        return view('servers.edit', compact('server', 'users', 'databaseHosts', 'allMounts', 'availablePermissions', 'nodeAllocations'));
+        return view('servers.show', compact('server', 'users', 'databaseHosts', 'allMounts', 'availablePermissions', 'nodeAllocations'));
 
     }
 
     public function update(Request $request, Server $server)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'owner_id' => 'required|exists:users,id',
-            'memory' => 'required|integer|min:0',
-            'swap' => 'required|integer|min:0',
-            'disk' => 'required|integer|min:0',
-            'io' => 'required|integer|min:10|max:1000',
-            'cpu' => 'required|numeric|min:0',
+            'owner_id' => 'sometimes|required|exists:users,id',
+            'memory' => 'sometimes|required|integer|min:0',
+            'swap' => 'sometimes|required|integer|min:0',
+            'disk' => 'sometimes|required|integer|min:0',
+            'io' => 'sometimes|required|integer|min:10|max:1000',
+            'cpu' => 'sometimes|required|numeric|min:0',
         ]);
 
         $server->update($validated);
