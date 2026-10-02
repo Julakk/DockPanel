@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('root_admin')->group(function () {
         Route::resource('nodes', NodeController::class);
+        Route::get('nodes/{node}/status', [NodeController::class, 'status'])->name('nodes.status');
         Route::post('nodes/{node}/allocations', [AllocationController::class, 'store'])->name('nodes.allocations.store');
         Route::delete('nodes/{node}/allocations/{allocation}', [AllocationController::class, 'destroy'])->name('nodes.allocations.destroy');
 

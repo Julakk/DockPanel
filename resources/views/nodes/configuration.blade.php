@@ -9,6 +9,7 @@
 @endsection
 
 @section('content')
+    @include('nodes._tabs', ['active' => 'config'])
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
         <h2 style="margin:0;">Configuration — {{ $node->name }}</h2>
         <a href="{{ route('nodes.show', $node) }}" class="btn btn-secondary">&larr; Kembali</a>

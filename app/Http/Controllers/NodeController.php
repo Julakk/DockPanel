@@ -11,7 +11,7 @@ class NodeController extends Controller
 {
     public function index()
     {
-        $nodes = Node::withCount('servers')->orderBy('name')->get();
+        $nodes = Node::withCount('servers')->with('location')->orderBy('name')->get();
 
         return view('nodes.index', compact('nodes'));
     }
@@ -50,6 +50,16 @@ class NodeController extends Controller
         $wings = $node->daemonSystemInfo();
 
         return view('nodes.show', compact('node', 'wings'));
+    }
+
+    public function status(Node $node)
+    {
+        $wings = $node->daemonSystemInfo();
+
+        return response()->json([
+            'ok' => $wings['ok'],
+            'error' => $wings['error'] ?? null,
+        ]);
     }
 
     public function edit(Node $node)

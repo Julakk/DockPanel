@@ -8,46 +8,97 @@
 @endsection
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="margin:0;">{{ $node->name }}</h2>
-        <div style="display:flex;gap:.5rem;"><a href="{{ route("nodes.config", $node) }}" class="btn btn-secondary">Configuration</a><a href="{{ route("nodes.edit", $node) }}" class="btn btn-secondary">Edit</a></div>
-    </div>
+    @php
+        $memUsed = $node->memoryUsed();
+        $diskUsed = $node->diskUsed();
+        $memPct = $node->memory > 0 ? round($memUsed / $node->memory * 100) : 0;
+        $diskPct = $node->disk > 0 ? round($diskUsed / $node->disk * 100) : 0;
+        $tone = fn ($p) => $p >= 90 ? 'nd-red' : ($p >= 50 ? 'nd-orange' : 'nd-green');
+    @endphp
 
-    <div class="card">
-        <table>
-            <tr><th>FQDN</th><td>{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemon_listen }}</td></tr>
-            <tr>
-                <th>Daemon</th>
-                <td>
-                    @if ($wings['ok'])
-                        <span class="status-badge status-active">Online</span>
-                        <span class="muted">DockWings v{{ $wings['data']['version'] ?? '?' }}
-                            @if (! empty($wings['data']['architecture'])) · {{ $wings['data']['os'] ?? '' }}/{{ $wings['data']['architecture'] }} @endif
-                            @if (isset($wings['data']['cpu_count'])) · {{ $wings['data']['cpu_count'] }} CPU @endif
-                        </span>
-                    @else
-                        <span class="status-badge status-offline">Offline</span>
-                        <div class="muted" style="margin-top:.4rem;">{{ $wings['error'] }}</div>
-                    @endif
-                </td>
-            </tr>
-            <tr><th>Port SFTP</th><td>{{ $node->daemon_sftp }}</td></tr>
-            <tr><th>Memory</th><td>{{ $node->memoryUsed() }} / {{ number_format($node->memory) }} MB</td></tr>
-            <tr><th>Disk</th><td>{{ $node->diskUsed() }} / {{ number_format($node->disk) }} MB</td></tr>
-            <tr><th>Server Terpasang</th><td>{{ $node->servers_count }}</td></tr>
-            <tr><th>Location</th><td>{{ $node->location?->short_code ?? '-' }}</td></tr>
-            <tr><th>Publik</th><td>{{ $node->public ? 'Ya' : 'Tidak' }}</td></tr>
-            <tr>
-                <th>Status</th>
-                <td>
-                    @if ($node->maintenance_mode)
-                        <span class="status-badge status-maintenance">Maintenance</span>
-                    @else
-                        <span class="status-badge status-active">Aktif</span>
-                    @endif
-                </td>
-            </tr>
-        </table>
+    <h2 class="nd-title">{{ $node->name }} <small>A quick overview of your node.</small></h2>
+
+    @include('nodes._tabs', ['active' => 'about'])
+
+    <div class="nd-grid">
+        <div>
+            <div class="nd-box">
+                <div class="nd-box-head"><h3>Information</h3></div>
+                <div class="nd-box-body nd-flush">
+                    <table class="nd-table nd-kv">
+                        <tr>
+                            <td>Daemon Version</td>
+                            <td>
+                                @if ($wings['ok'])
+                                    <span class="nd-code">v{{ $wings['data']['version'] ?? '?' }}</span>
+                                @else
+                                    <span class="nd-bad">Offline</span>
+                                    <div class="nd-mute" style="margin-top:.3rem;">{{ $wings['error'] }}</div>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>System Information</td>
+                            <td>
+                                @if ($wings['ok'])
+                                    <span class="nd-code">{{ ucfirst($wings['data']['os'] ?? '?') }} ({{ $wings['data']['architecture'] ?? '?' }})</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Total CPU Threads</td>
+                            <td>{{ $wings['ok'] ? ($wings['data']['cpu_count'] ?? '?') : '-' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="nd-box nd-danger">
+                <div class="nd-box-head"><h3>Delete Node</h3></div>
+                <div class="nd-box-body">
+                    <p style="margin:0 0 .9rem;">Deleting a node is a irreversible action and will immediately remove this node from the panel. There must be no servers associated with this node in order to continue.</p>
+                    @error('delete')
+                        <p class="nd-bad" style="margin:0 0 .9rem;">{{ $message }}</p>
+                    @enderror
+                    <form method="POST" action="{{ route('nodes.destroy', $node) }}" onsubmit="return confirm('Hapus node {{ $node->name }}?');" style="text-align:right;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="nd-btn nd-btn-red">Yes, Delete This Node</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nd-box">
+            <div class="nd-box-head"><h3>At-a-Glance</h3></div>
+            <div class="nd-box-body">
+                <div class="nd-tile {{ $tone($diskPct) }}">
+                    <div class="ico"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+                    <div class="txt">
+                        <div class="lbl">Disk Space Allocated</div>
+                        <div class="num">{{ number_format($diskUsed) }} / {{ number_format($node->disk) }} MiB</div>
+                        <div class="bar"><i style="width:{{ min(100, $diskPct) }}%"></i></div>
+                    </div>
+                </div>
+                <div class="nd-tile {{ $tone($memPct) }}">
+                    <div class="ico"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1"/><path d="M7 10v4M10 10v4M13 10v4M16 10v4"/></svg></div>
+                    <div class="txt">
+                        <div class="lbl">Memory Allocated</div>
+                        <div class="num">{{ number_format($memUsed) }} / {{ number_format($node->memory) }} MiB</div>
+                        <div class="bar"><i style="width:{{ min(100, $memPct) }}%"></i></div>
+                    </div>
+                </div>
+                <div class="nd-tile nd-blue">
+                    <div class="ico"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></svg></div>
+                    <div class="txt">
+                        <div class="lbl">Total Servers</div>
+                        <div class="num">{{ $node->servers_count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     @if ($node->description)
@@ -56,7 +107,7 @@
         </div>
     @endif
 
-    <div class="card">
+    <div class="card" id="allocation">
         <h3 style="margin-top:0;">Allocations (IP:Port)</h3>
 
         @if ($node->allocations->isEmpty())
@@ -120,6 +171,4 @@
             <button type="submit" class="btn btn-primary">+ Tambah Allocation</button>
         </form>
     </div>
-
-    <a href="{{ route('nodes.index') }}" class="muted" style="text-decoration:none;">← Kembali ke daftar node</a>
 @endsection

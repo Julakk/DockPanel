@@ -8,6 +8,7 @@
 @endsection
 
 @section('content')
+    @include('nodes._tabs', ['active' => 'settings'])
     <h2>Edit Node: {{ $node->name }}</h2>
 
     <div class="card">
