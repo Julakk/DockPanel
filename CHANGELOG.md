@@ -2,6 +2,40 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.12.0] - 2026-10-03
+> "Overview, Servers, dan Users ikut berubah jadi satu bahasa sama halaman Node." 🐧
+
+### Changed
+
+- Overview: sekarang berisi box System Information (versi panel) dan empat tombol (Report Issue, Changelog, GitHub, DockWings). Kotak statistik, tabel node, server terbaru, dan aktivitas terbaru dihapus dari tampilan.
+- Servers: daftar jadi tabel gaya Pterodactyl dengan kolom Server Name, UUID, Owner, Node, Connection (IP:port dari primary allocation), badge status, dan tombol manage. Search, filter status, dan filter node pindah ke header box. Pagination tetap ada.
+- Users: daftar jadi tabel dengan kolom ID, Email (bintang buat admin), Name, 2FA, Servers Owned (link ke daftar server milik user itu), dan Can Access (jumlah server user lain yang bisa diakses sebagai subuser). Search jalan di sisi browser.
+- `ServerController@index` ikut eager-load `primaryAllocation`, dan `UserController@index` ikut menghitung `subuserOfServers`.
+- Versi panel jadi 0.12.0. Tetap butuh DockWings v0.2.0+.
+
+### Catatan
+
+- Kolom "Client Name" dan "Username" ala Pterodactyl digabung jadi satu kolom Name, karena model User cuma punya `name`.
+
+## [0.11.0] - 2026-10-03
+> "Halaman Node sekarang kayak Pterodactyl beneran." 🐧
+
+### Added
+
+- Daftar Node gaya Pterodactyl: kolom Name, Location, Memory, Disk, Servers, SSL, Public, kotak search, dan tombol Create New.
+- Ikon status daemon (hati) di daftar Node, dicek lewat AJAX per node (`GET /nodes/{node}/status`) supaya halaman nggak hang kalau Wings mati.
+- Halaman detail Node dengan tab About / Settings / Configuration / Allocation, box Information (versi daemon, OS/arsitektur, jumlah CPU thread), dan box Delete Node.
+- Kotak At-a-Glance: Disk Space Allocated, Memory Allocated, dan Total Servers. Warnanya berubah sesuai persentase alokasi.
+
+### Changed
+
+- Info FQDN, port SFTP, publik, dan maintenance dipindah dari halaman detail ke tab Settings.
+- Versi panel jadi 0.11.0. Tetap butuh DockWings v0.2.0+.
+
+### Catatan
+
+- Belum ada: tab Servers, versi kernel, dan "(Latest: …)" di Daemon Version.
+
 ## [0.10.0] - 2026-10-03
 
 > "Tampilan login, admin, dan client sekarang satu bahasa, mirip Pterodactyl." 🐧
