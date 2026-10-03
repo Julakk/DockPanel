@@ -2,6 +2,23 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.15.0] - 2026-10-03
+> "Network, Backups, dan detail Activity di halaman Server." 🐧
+
+### Added
+
+- Tab Backups di halaman Server: menampilkan pesan kalau limit backup 0, pembuatan backup menunggu Wings.
+- Tab Network: Notes per allocation, tombol Make Primary, dan lepas allocation yang bukan primary. Migration baru menambah kolom `notes` di tabel `allocations`.
+- Tab Settings: menampilkan username SFTP (`email.uuid_short`).
+- Tab Activity: menampilkan IP dan detail event (`action`, email, atau allocation).
+- Deskripsi server tampil di bawah judul halaman Server.
+
+### Catatan
+
+- Jalankan `php artisan migrate` setelah update.
+- Melepas allocation cuma mengubah data di Panel, DockWings belum menerapkan perubahan port ke container.
+- Versi panel jadi 0.15.0. Tetap butuh DockWings v0.2.0+.
+
 ## [0.14.0] - 2026-10-03
 > "Rilis keamanan: header, route storage, dan rate limit reset password." 🐧
 

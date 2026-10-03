@@ -40,6 +40,7 @@
         <div>
             <div class="dp-crumb"><a href="{{ route('client.index') }}">Servers</a> <span>/</span></div>
             <h1 class="dp-title">{{ $server->name }}</h1>
+            @if ($server->description)<div class="dp-muted">{{ $server->description }}</div>@endif
             <div class="dp-sub">
                 <span class="dp-pill" id="dp-state" data-state="unknown">memuat</span>
                 <code>{{ $server->uuid_short }}</code>
@@ -433,24 +434,47 @@
             <button class="dp-btn" type="submit">Tambah</button>
         </form>
 
-    @elseif ($tab === 'network')
+    @elseif ($tab === 'backups')
         <div class="dp-card">
-            <strong>Allocations</strong>
-            <table style="margin-top:.5rem">
-                <thead><tr><th>IP</th><th>Port</th><th></th></tr></thead>
-                <tbody>
-                    @forelse ($server->allocations as $a)
-                        <tr>
-                            <td>{{ $a->ip_alias ?: $a->ip }}</td>
-                            <td>{{ $a->port }}</td>
-                            <td>@if ($a->is_primary)<span class="status-badge status-active">Primary</span>@endif</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="3" class="dp-muted">Belum ada allocation.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+            @if ((int) ($server->backup_limit ?? 0) === 0)
+                <p class="dp-muted" style="margin:0;text-align:center">Backup tidak bisa dibuat untuk server ini karena limit backup diset 0.</p>
+            @else
+                <p class="dp-muted" style="margin:0;text-align:center">Limit backup: {{ (int) $server->backup_limit }}. Pembuatan backup menunggu Wings aktif.</p>
+            @endif
         </div>
+
+    @elseif ($tab === 'network')
+        @forelse ($server->allocations as $a)
+            <div class="dp-card" style="display:flex;gap:.75rem;align-items:flex-start;flex-wrap:wrap">
+                <div style="min-width:170px;padding-top:.35rem">
+                    <code>{{ $a->ip_alias ?: $a->ip }}</code> <code>{{ $a->port }}</code>
+                </div>
+                @if ($isManager)
+                    <form method="POST" action="{{ route('client.servers.allocations.notes', [$server, $a->id]) }}" style="flex:1;min-width:200px;display:flex;gap:.4rem">
+                        @csrf @method('PUT')
+                        <input class="dp-input" type="text" name="notes" value="{{ $a->notes }}" maxlength="255" placeholder="Notes">
+                        <button class="dp-btn" type="submit">Simpan</button>
+                    </form>
+                    @if ($a->is_primary)
+                        <span class="status-badge status-active" style="margin-top:.4rem">Primary</span>
+                    @else
+                        <form method="POST" action="{{ route('client.servers.allocations.primary', [$server, $a->id]) }}">
+                            @csrf @method('PUT')
+                            <button class="dp-btn" type="submit">Make Primary</button>
+                        </form>
+                        <form method="POST" action="{{ route('client.servers.allocations.destroy', [$server, $a->id]) }}" data-confirm="Lepas {{ $a->ip }}:{{ $a->port }} dari server ini?">
+                            @csrf @method('DELETE')
+                            <button class="dp-btn" type="submit">Hapus</button>
+                        </form>
+                    @endif
+                @else
+                    <div class="dp-muted" style="flex:1;padding-top:.35rem">{{ $a->notes }}</div>
+                    @if ($a->is_primary)<span class="status-badge status-active" style="margin-top:.4rem">Primary</span>@endif
+                @endif
+            </div>
+        @empty
+            <div class="dp-card dp-muted">Belum ada allocation.</div>
+        @endforelse
 
     @elseif ($tab === 'startup')
         <div class="dp-card">
@@ -487,6 +511,8 @@
                 <tr><td class="dp-muted">Disk</td><td>{{ $server->disk ? $server->disk.' MB' : 'Unlimited' }}</td></tr>
                 <tr><td class="dp-muted">CPU</td><td>{{ $server->cpu ? $server->cpu.'%' : 'Unlimited' }}</td></tr>
                 <tr><td class="dp-muted">SFTP</td><td><code>{{ $server->node->fqdn ?? '-' }}:{{ $server->node->daemon_sftp ?? '-' }}</code></td></tr>
+                <tr><td class="dp-muted">SFTP Username</td><td><code>{{ auth()->user()->email }}.{{ $server->uuid_short }}</code></td></tr>
+                <tr><td class="dp-muted">SFTP Password</td><td class="dp-muted">Sama dengan password akun Panel</td></tr>
             </table>
         </div>
         @if ($isManager)
@@ -513,8 +539,9 @@
                 <tbody>
                     @forelse ($activities as $a)
                         <tr>
-                            <td><code>{{ $a->event }}</code></td>
-                            <td>{{ $a->user->name ?? '-' }}</td>
+                            <td><code>{{ $a->event }}{{ ! empty($a->metadata['action']) ? '.'.$a->metadata['action'] : '' }}</code>
+                                <div class="dp-muted">{{ $a->metadata['email'] ?? $a->metadata['name'] ?? $a->metadata['allocation'] ?? '' }}</div></td>
+                            <td>{{ $a->user->name ?? '-' }}<div class="dp-muted">{{ $a->ip ?? '' }}</div></td>
                             <td class="dp-muted">{{ $a->created_at?->diffForHumans() }}</td>
                         </tr>
                     @empty

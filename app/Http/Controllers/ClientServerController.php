@@ -21,6 +21,7 @@ class ClientServerController extends Controller
         'databases' => ['Databases', 'database.view'],
         'schedules' => ['Schedules', null],
         'users' => ['Users', 'manage'],
+        'backups' => ['Backups', null],
         'network' => ['Network', null],
         'startup' => ['Startup', null],
         'settings' => ['Settings', null],
@@ -266,6 +267,54 @@ class ClientServerController extends Controller
         ActivityLog::record('server:startup', [], $server);
 
         return back()->with('success', 'Variable startup diupdate.');
+    }
+
+    public function makePrimary(Request $request, Server $server, $allocation)
+    {
+        $this->requireManager($request, $server);
+
+        $alloc = $server->allocations()->findOrFail($allocation);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($server, $alloc) {
+            \App\Models\Allocation::where('server_id', $server->id)->update(['is_primary' => false]);
+            $alloc->update(['is_primary' => true]);
+        });
+        ActivityLog::record('server:allocation.primary', ['allocation' => "{$alloc->ip}:{$alloc->port}"], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'network'])
+            ->with('success', 'Allocation primary diganti.');
+    }
+
+    public function updateAllocationNotes(Request $request, Server $server, $allocation)
+    {
+        $this->requireManager($request, $server);
+
+        $data = $request->validate(['notes' => ['nullable', 'string', 'max:255']]);
+        $alloc = $server->allocations()->findOrFail($allocation);
+        $alloc->update(['notes' => $data['notes'] ?? null]);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'network'])
+            ->with('success', 'Notes disimpan.');
+    }
+
+    public function destroyAllocation(Request $request, Server $server, $allocation)
+    {
+        $this->requireManager($request, $server);
+
+        $alloc = $server->allocations()->findOrFail($allocation);
+
+        if ($alloc->is_primary) {
+            return back()->with('error', 'Allocation primary nggak bisa dihapus. Jadikan allocation lain primary dulu.');
+        }
+
+        $alloc->update(['server_id' => null, 'is_primary' => false]);
+        ActivityLog::record('server:allocation.remove', ['allocation' => "{$alloc->ip}:{$alloc->port}"], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'network'])
+            ->with('success', 'Allocation dilepas dari server.');
     }
 
     public function addUser(Request $request, Server $server)

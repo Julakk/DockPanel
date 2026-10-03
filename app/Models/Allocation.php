@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Allocation extends Model
 {
-    protected $fillable = ['node_id', 'ip', 'ip_alias', 'port', 'server_id', 'is_primary'];
+    protected $fillable = ['node_id', 'ip', 'ip_alias', 'port', 'server_id', 'is_primary', 'notes'];
 
     protected function casts(): array
     {

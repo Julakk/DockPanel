@@ -14,6 +14,9 @@ Route::middleware('auth')->prefix('client/servers/{server}')->name('client.serve
     Route::put('startup', [ClientServerController::class, 'updateStartup'])->name('startup.update');
     Route::post('users', [ClientServerController::class, 'addUser'])->name('users.store');
     Route::delete('users/{user}', [ClientServerController::class, 'removeUser'])->name('users.destroy');
+    Route::put('allocations/{allocation}/primary', [ClientServerController::class, 'makePrimary'])->name('allocations.primary');
+    Route::put('allocations/{allocation}/notes', [ClientServerController::class, 'updateAllocationNotes'])->name('allocations.notes');
+    Route::delete('allocations/{allocation}', [ClientServerController::class, 'destroyAllocation'])->name('allocations.destroy');
 });
 
 Route::middleware('auth')->prefix('client/servers/{server}/files')->name('client.servers.files.')->group(function () {
