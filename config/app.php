@@ -22,5 +22,5 @@ return [
     | Update manual tiap rilis baru (samain sama CHANGELOG.md).
     | Dipakai di footer dan halaman Overview.
     */
-    'version' => '0.12.0',
+    'version' => '0.13.0',
 ];

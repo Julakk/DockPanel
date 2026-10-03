@@ -2,6 +2,33 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.13.0] - 2026-10-03
+> "Halaman Server sekarang bertab, kayak Pterodactyl." 🐧
+
+### Added
+
+- Halaman detail Server satu halaman bertab: About, Details, Build Configuration, Startup, Database, Mounts, Subusers, Manage, dan Delete. Tab terakhir yang dibuka diingat selama sesi, dan tombol kecil di ujung tab buka server sebagai user.
+- Tab About: tabel Information (ID, UUID, egg, CPU, memory, swap, disk, Block IO, koneksi utama, image, masa aktif) plus kartu Owner dan Node di kanan.
+- Tab Build Configuration: form resource (CPU, memory, swap, disk, Block IO) dan pengaturan allocation dipisah jadi dua box.
+- Tab Manage: kartu Suspend/Unsuspend dan Provision ke Wings. Reinstall, Install Status, dan Transfer tampil nonaktif dengan label "Belum tersedia".
+
+### Changed
+
+- `ServerController@show` sekarang merender view yang sama dengan `edit` (semua data tab dimuat sekali), jadi redirect dari form lain tetap mendarat di halaman yang benar.
+- Validasi `ServerController@update` pakai `sometimes|required`, supaya form Details (nama, owner, deskripsi) dan form Build Configuration (resource) bisa disimpan terpisah.
+- `DashboardController` nggak lagi menghitung statistik yang sudah nggak ditampilkan di Overview sejak 0.12.0, jadi lebih sedikit query tiap buka Overview.
+
+### Fixed
+
+- `ParseError` di halaman detail Server akibat `@if` inline yang menempel ke teks di kartu Suspend.
+
+### Catatan
+
+- Command startup dan Docker image tampil read-only; belum ada route buat mengubahnya.
+- `resources/views/servers/edit.blade.php` nggak dipakai lagi, sengaja nggak dihapus.
+- Form masa aktif (`servers.expiry.update`) belum punya tampilan di halaman Server.
+- Belum ada: Reinstall, Install Status, Transfer, Force Delete, CPU pinning, OOM Killer, limit fitur aplikasi, dan External Identifier.
+
 ## [0.12.0] - 2026-10-03
 > "Overview, Servers, dan Users ikut berubah jadi satu bahasa sama halaman Node." 🐧
 
