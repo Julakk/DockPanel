@@ -2,6 +2,25 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.14.0] - 2026-10-03
+> "Rilis keamanan: header, route storage, dan rate limit reset password." 🐧
+
+### Added
+
+- Middleware `SecurityHeaders` yang dipasang ke semua respons: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (kamera, mikrofon, lokasi dimatikan), dan `Strict-Transport-Security` (30 hari, hanya di HTTPS).
+
+### Changed
+
+- Route bawaan Laravel `storage/{path}` dimatikan (`'serve' => false` di disk lokal) karena DockPanel nggak memakainya.
+- `forgot-password` dan `reset-password` dibatasi 5 permintaan per menit (login dan 2FA sudah punya rate limit sendiri di controller).
+- Versi panel jadi 0.14.0. Tetap butuh DockWings v0.2.0+.
+
+### Catatan
+
+- Setelan production yang disarankan di `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=warning`, `SESSION_SECURE_COOKIE=true`, dan izin file `640` (bukan world-readable). Dengan `APP_DEBUG=true`, halaman error menampilkan stack trace, path server, dan query SQL.
+- HSTS sengaja dimulai 30 hari. Naikkan setelah sertifikat HTTPS terbukti stabil.
+- Belum ada Content-Security-Policy karena banyak halaman memakai `<script>` dan `style` inline.
+
 ## [0.13.0] - 2026-10-03
 > "Halaman Server sekarang bertab, kayak Pterodactyl." 🐧
 
