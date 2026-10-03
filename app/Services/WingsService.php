@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Server;
+use App\Services\Concerns\WingsBackups;
 use App\Services\Concerns\WingsFiles;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Http;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Http;
  */
 class WingsService
 {
-    use WingsFiles;
+    use WingsBackups, WingsFiles;
 
     protected string $baseUrl;
 
@@ -116,6 +117,19 @@ class WingsService
         ]);
 
         return $response->successful();
+    }
+
+    /**
+     * Kirim daftar allocation terbaru ke Wings supaya container dibuat ulang
+     * dengan port yang baru (butuh DockWings v0.4.1+). Balikin [status HTTP, data].
+     */
+    public function pushAllocations(): array
+    {
+        $r = $this->client()->timeout(120)->put("/api/servers/{$this->server->uuid}/allocations", [
+            'allocations' => $this->allocationsPayload(),
+        ]);
+
+        return [$r->status(), $r->json() ?? []];
     }
 
     public function delete(): bool

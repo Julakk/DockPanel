@@ -147,6 +147,10 @@
                         <input type="number" name="io" id="io" value="{{ old('io', $server->io) }}" required>
                         <div class="nd-hint">Nilai antara 10 dan 1000.</div>
 
+                        <label for="backup_limit">Backup Limit</label>
+                        <input type="number" name="backup_limit" id="backup_limit" min="0" max="100" value="{{ old('backup_limit', $server->backup_limit) }}" required>
+                        <div class="nd-hint">Jumlah maksimum backup. Isi 0 buat mematikan backup.</div>
+
                         <button type="submit" class="nd-btn nd-btn-blue">Update Build Configuration</button>
                     </form>
                 </div>

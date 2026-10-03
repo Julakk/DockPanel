@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServerDatabase extends Model
 {
-    protected $fillable = ['server_id', 'database_host_id', 'database', 'username', 'password'];
+    protected $fillable = ['server_id', 'database_host_id', 'database', 'username', 'password', 'remote'];
 
     protected $hidden = ['password'];
 

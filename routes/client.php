@@ -17,6 +17,10 @@ Route::middleware('auth')->prefix('client/servers/{server}')->name('client.serve
     Route::put('allocations/{allocation}/primary', [ClientServerController::class, 'makePrimary'])->name('allocations.primary');
     Route::put('allocations/{allocation}/notes', [ClientServerController::class, 'updateAllocationNotes'])->name('allocations.notes');
     Route::delete('allocations/{allocation}', [ClientServerController::class, 'destroyAllocation'])->name('allocations.destroy');
+    Route::post('backups', [ClientServerController::class, 'storeBackup'])->name('backups.store');
+    Route::get('backups/{backup}/download', [ClientServerController::class, 'downloadBackup'])->name('backups.download');
+    Route::delete('backups/{backup}', [ClientServerController::class, 'destroyBackup'])->name('backups.destroy');
+    Route::delete('databases/{database}', [ClientServerController::class, 'destroyDatabase'])->name('databases.destroy');
 });
 
 Route::middleware('auth')->prefix('client/servers/{server}/files')->name('client.servers.files.')->group(function () {

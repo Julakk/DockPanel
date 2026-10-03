@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AppliesAllocations;
 use App\Models\ActivityLog;
 use App\Models\Allocation;
 use App\Models\DatabaseHost;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 
 class ServerController extends Controller
 {
+    use AppliesAllocations;
+
     public function index(Request $request)
     {
         $query = Server::with(['owner', 'node', 'egg', 'primaryAllocation']);
@@ -138,6 +141,7 @@ class ServerController extends Controller
             'disk' => 'sometimes|required|integer|min:0',
             'io' => 'sometimes|required|integer|min:10|max:1000',
             'cpu' => 'sometimes|required|numeric|min:0',
+            'backup_limit' => 'sometimes|required|integer|min:0|max:100',
         ]);
 
         $server->update($validated);
@@ -239,7 +243,9 @@ class ServerController extends Controller
             }
         });
 
-        return back()->with('success', 'Allocation server diupdate.');
+        [$key, $message] = $this->allocationFlash($server, 'Allocation server diupdate.');
+
+        return back()->with($key, $message);
     }
 
     public function suspend(Server $server)

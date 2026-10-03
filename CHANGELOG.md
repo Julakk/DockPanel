@@ -2,6 +2,30 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.15.3] - 2026-10-04
+> "Backup jalan, port langsung diterapkan ke container, database bisa dihapus dari client area." 🐧
+
+### Added
+
+- Backup di halaman Server (tab Backups): buat (nama opsional), daftar dengan status, ukuran, dan checksum, download, dan hapus. Pembuatan jalan di background di Wings; halaman nyegerin status sendiri tiap 4 detik selama masih `creating`. Hanya owner dan admin yang bisa buat, download, dan hapus.
+- Kolom `backup_limit` di tabel `servers` (default 3) dan field "Backup Limit" di Build Configuration admin. Isi 0 buat mematikan backup.
+- Tabel `backups` dan model `Backup`.
+- Tab Databases: tombol Hapus buat owner dan admin, dan kolom "Connections from" (kolom baru `remote` di `server_databases`, default `%`).
+- Tes baru: `BackupTest`.
+
+### Changed
+
+- Make Primary, lepas allocation, dan form Allocation Management admin sekarang mengirim daftar allocation ke Wings (`PUT /api/servers/{uuid}/allocations`), jadi port mapping dan `SERVER_PORT` container ikut berubah. Server yang lagi jalan direstart sebentar. Kalau Wings gagal atau belum v0.4.1, perubahan tetap tersimpan di Panel dan pesan peringatan ditampilkan.
+- Versi panel jadi 0.15.3. Butuh DockWings v0.4.1+ buat backup dan perubahan port.
+
+### Catatan
+
+- Jalankan `php artisan migrate` setelah update.
+- Hapus database cuma menghapus catatan di Panel; `CREATE`/`DROP DATABASE` asli di host MySQL memang belum diimplementasikan (sama seperti saat database dibuat).
+- Restore backup belum ada. Arsip bisa di-download dan dibuka manual.
+- Backup server yang lagi jalan nggak dijamin konsisten.
+- Kolom `remote` baru informasi; belum dipakai buat membatasi akses user MySQL.
+
 ## [0.15.2] - 2026-10-03
 > "Perbaikan CI: gaya kode ClientServerController sesuai Pint." 🐧
 

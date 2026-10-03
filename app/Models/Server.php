@@ -12,7 +12,7 @@ class Server extends Model
         'owner_id', 'node_id', 'nest_id', 'egg_id',
         'memory', 'swap', 'disk', 'io', 'cpu', 'threads',
         'startup', 'image', 'skip_scripts', 'status',
-        'expires_at', 'suspension_reason', 'expiry_notified_at',
+        'expires_at', 'suspension_reason', 'expiry_notified_at', 'backup_limit',
     ];
 
     protected function casts(): array
@@ -83,6 +83,11 @@ class Server extends Model
     public function databases()
     {
         return $this->hasMany(ServerDatabase::class);
+    }
+
+    public function backups()
+    {
+        return $this->hasMany(Backup::class);
     }
 
     public function mounts()

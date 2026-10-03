@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AppliesAllocations;
 use App\Models\ActivityLog;
 use App\Models\Allocation;
+use App\Models\Backup;
+use App\Models\Node;
 use App\Models\Server;
+use App\Models\ServerDatabase;
 use App\Models\User;
 use App\Services\ServerResourceService;
 use App\Services\WingsService;
@@ -12,10 +16,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ClientServerController extends Controller
 {
+    use AppliesAllocations;
+
     /** key tab => [label, permission subuser yang dibutuhkan (null = semua yang punya akses)] */
     private const TABS = [
         'console' => ['Console', 'console.access'],
@@ -109,6 +116,11 @@ class ClientServerController extends Controller
         } elseif ($tab === 'startup') {
             $server->load('serverVariables.eggVariable');
             $data['isAdmin'] = (bool) ($request->user()->root_admin ?? false);
+        } elseif ($tab === 'backups') {
+            $backups = $this->syncedBackups($server);
+            $data['backups'] = $backups;
+            $data['backupLimit'] = (int) $server->backup_limit;
+            $data['backupUsed'] = $backups->whereIn('status', ['creating', 'completed'])->count();
         } elseif ($tab === 'activity') {
             $data['activities'] = ActivityLog::with('user')
                 ->where('server_id', $server->id)
@@ -282,10 +294,11 @@ class ClientServerController extends Controller
             $alloc->update(['is_primary' => true]);
         });
         ActivityLog::record('server:allocation.primary', ['allocation' => "{$alloc->ip}:{$alloc->port}"], $server);
+        [$key, $message] = $this->allocationFlash($server, 'Allocation primary diganti.');
 
         return redirect()
             ->route('client.servers.show', ['server' => $server, 'tab' => 'network'])
-            ->with('success', 'Allocation primary diganti.');
+            ->with($key, $message);
     }
 
     public function updateAllocationNotes(Request $request, Server $server, $allocation)
@@ -313,10 +326,199 @@ class ClientServerController extends Controller
 
         $alloc->update(['server_id' => null, 'is_primary' => false]);
         ActivityLog::record('server:allocation.remove', ['allocation' => "{$alloc->ip}:{$alloc->port}"], $server);
+        [$key, $message] = $this->allocationFlash($server, 'Allocation dilepas dari server.');
 
         return redirect()
             ->route('client.servers.show', ['server' => $server, 'tab' => 'network'])
-            ->with('success', 'Allocation dilepas dari server.');
+            ->with($key, $message);
+    }
+
+    private function wingsFor(Server $server): WingsService
+    {
+        $server->loadMissing('node');
+        abort_unless($server->node, 422, 'Node belum di-set buat server ini.');
+
+        return new WingsService($server);
+    }
+
+    /** Pesan error yang enak dibaca dari balasan Wings buat operasi backup. */
+    private function backupError(int $status, array $res): string
+    {
+        $error = $res['error'] ?? null;
+
+        if ($status === 404 && str_contains((string) $error, 'daemon ini')) {
+            return 'Server belum di-provision ke Wings. Minta admin klik Provision di halaman server.';
+        }
+        if ($status === 404 || $status === 405) {
+            return 'Wings belum mendukung backup (butuh DockWings v0.4.1+).';
+        }
+        if ($status === 401) {
+            return 'Token node ditolak Wings. Cek daemon_token di node.';
+        }
+
+        return $error ?: "Wings balikin HTTP {$status}.";
+    }
+
+    /** Daftar backup server; yang masih "creating" disinkronkan dulu dengan Wings. */
+    private function syncedBackups(Server $server)
+    {
+        $backups = $server->backups()->latest('id')->get();
+        $server->loadMissing('node');
+
+        if (! $server->node) {
+            return $backups;
+        }
+
+        foreach ($backups->where('status', 'creating') as $backup) {
+            try {
+                [$status, $res] = (new WingsService($server))->backupStatus($backup->uuid);
+            } catch (\Throwable $e) {
+                break; // Wings lagi nggak terjangkau, coba lagi di muat berikutnya
+            }
+
+            if ($status === 200) {
+                $new = in_array($res['status'] ?? null, Backup::STATUSES, true) ? $res['status'] : 'creating';
+                $backup->update([
+                    'status' => $new,
+                    'size' => (int) ($res['size'] ?? 0),
+                    'checksum' => $res['checksum'] ?? null,
+                    'error' => $res['error'] ?? null,
+                    'completed_at' => $res['completed_at'] ?? null,
+                ]);
+            } elseif ($status === 404) {
+                $backup->update(['status' => 'failed', 'error' => 'Backup hilang dari Wings (daemon restart?).']);
+            }
+        }
+
+        return $backups;
+    }
+
+    public function storeBackup(Request $request, Server $server)
+    {
+        $this->requireManager($request, $server);
+
+        $data = $request->validate(['name' => ['nullable', 'string', 'max:100']]);
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'backups']);
+
+        if ($server->suspended) {
+            return $back->with('error', 'Server lagi di-suspend.');
+        }
+
+        $limit = (int) $server->backup_limit;
+        if ($limit === 0) {
+            return $back->with('error', 'Backup tidak bisa dibuat karena limit backup diset 0.');
+        }
+        if ($server->backups()->whereIn('status', ['creating', 'completed'])->count() >= $limit) {
+            return $back->with('error', "Limit backup tercapai ({$limit}). Hapus backup lama dulu.");
+        }
+
+        $wings = $this->wingsFor($server);
+        $name = trim((string) ($data['name'] ?? ''));
+
+        $backup = $server->backups()->create([
+            'uuid' => (string) Str::uuid(),
+            'name' => $name !== '' ? $name : 'Backup '.now()->format('d M Y H:i'),
+            'status' => 'creating',
+        ]);
+
+        try {
+            [$status, $res] = $wings->createBackup($backup->uuid);
+            $error = $status === 202 ? null : $this->backupError($status, $res);
+        } catch (\Throwable $e) {
+            $error = 'Wings nggak bisa dihubungi: '.Node::explainWingsError($e->getMessage(), (string) $server->node->scheme);
+        }
+
+        if ($error !== null) {
+            $backup->update(['status' => 'failed', 'error' => $error]);
+
+            return $back->with('error', $error);
+        }
+
+        ActivityLog::record('server:backup.create', ['name' => $backup->name], $server);
+
+        return $back->with('success', 'Backup dibuat di background. Halaman ini nyegerin status otomatis.');
+    }
+
+    public function downloadBackup(Request $request, Server $server, Backup $backup)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $backup->server_id === (int) $server->id, 404);
+        abort_unless($backup->status === 'completed', 404);
+
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'backups']);
+
+        try {
+            $resp = $this->wingsFor($server)->downloadBackup($backup->uuid);
+        } catch (\Throwable $e) {
+            return $back->with('error', 'Wings nggak bisa dijangkau.');
+        }
+
+        if ($resp->status() !== 200) {
+            return $back->with('error', 'Backup nggak ketemu di Wings (HTTP '.$resp->status().').');
+        }
+
+        ActivityLog::record('server:backup.download', ['name' => $backup->name], $server);
+
+        $body = $resp->toPsrResponse()->getBody();
+        $file = (Str::slug($backup->name) ?: $backup->uuid).'.tar.gz';
+
+        return response()->streamDownload(function () use ($body) {
+            while (! $body->eof()) {
+                echo $body->read(8192);
+                flush();
+            }
+        }, $file, ['Content-Type' => 'application/gzip']);
+    }
+
+    public function destroyBackup(Request $request, Server $server, Backup $backup)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $backup->server_id === (int) $server->id, 404);
+
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'backups']);
+        $stale = $backup->created_at && $backup->created_at->lt(now()->subHour());
+
+        if ($backup->status === 'creating' && ! $stale) {
+            return $back->with('error', 'Backup masih diproses. Tunggu selesai dulu.');
+        }
+
+        $force = $backup->status !== 'completed';
+
+        try {
+            [$status, $res] = $this->wingsFor($server)->deleteBackup($backup->uuid);
+        } catch (\Throwable $e) {
+            if (! $force) {
+                return $back->with('error', 'Wings nggak bisa dijangkau, backup nggak dihapus.');
+            }
+            $status = 0;
+            $res = [];
+        }
+
+        if (! $force && ! in_array($status, [200, 404], true)) {
+            return $back->with('error', $this->backupError($status, $res));
+        }
+
+        $name = $backup->name;
+        $backup->delete();
+        ActivityLog::record('server:backup.delete', ['name' => $name], $server);
+
+        return $back->with('success', "Backup '{$name}' dihapus.");
+    }
+
+    public function destroyDatabase(Request $request, Server $server, ServerDatabase $database)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $database->server_id === (int) $server->id, 404);
+
+        // Sama seperti di sisi admin: DROP DATABASE asli di host belum ada,
+        // yang dihapus baru catatannya di Panel.
+        $name = $database->database;
+        $database->delete();
+        ActivityLog::record('server:database.delete', ['name' => $name], $server);
+
+        return redirect()
+            ->route('client.servers.show', ['server' => $server, 'tab' => 'databases'])
+            ->with('success', "Database '{$name}' dihapus.");
     }
 
     public function addUser(Request $request, Server $server)

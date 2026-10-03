@@ -385,8 +385,15 @@
                 <div style="min-width:140px;flex:1"><strong>{{ $db->database }}</strong><div class="dp-muted">Database</div></div>
                 <div style="min-width:160px;flex:1"><code>{{ $db->databaseHost->host ?? '-' }}:{{ $db->databaseHost->port ?? '' }}</code><div class="dp-muted">Endpoint</div></div>
                 <div style="min-width:140px;flex:1"><code>{{ $db->username }}</code><div class="dp-muted">Username</div></div>
+                <div style="min-width:100px;flex:1"><code>{{ $db->remote ?: "%" }}</code><div class="dp-muted">Connections from</div></div>
                 <button type="button" class="dp-btn" onclick="var e=document.getElementById('dbpw-{{ $db->id }}');e.style.display=e.style.display==='none'?'block':'none'">Password</button>
                 <div id="dbpw-{{ $db->id }}" style="display:none;width:100%"><code>{{ $db->password }}</code></div>
+                @if ($isManager)
+                    <form method="POST" action="{{ route('client.servers.databases.destroy', [$server, $db->id]) }}" data-confirm="Hapus database {{ $db->database }}?">
+                        @csrf @method('DELETE')
+                        <button class="dp-btn" type="submit">Hapus</button>
+                    </form>
+                @endif
             </div>
         @empty
             <div class="dp-card"><p class="dp-muted" style="margin:0">Server ini belum punya database. Minta admin buat provision.</p></div>
@@ -438,13 +445,57 @@
         </form>
 
     @elseif ($tab === 'backups')
-        <div class="dp-card">
-            @if ((int) ($server->backup_limit ?? 0) === 0)
-                <p class="dp-muted" style="margin:0;text-align:center">Backup tidak bisa dibuat untuk server ini karena limit backup diset 0.</p>
-            @else
-                <p class="dp-muted" style="margin:0;text-align:center">Limit backup: {{ (int) $server->backup_limit }}. Pembuatan backup menunggu Wings aktif.</p>
+        <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
+            <div>
+                <strong>{{ $backupUsed }} / {{ $backupLimit }}</strong>
+                <div class="dp-muted">Backup terpakai</div>
+            </div>
+            @if ($backupLimit === 0)
+                <span class="dp-muted">Backup tidak bisa dibuat untuk server ini karena limit backup diset 0.</span>
+            @elseif ($isManager && ! $server->suspended)
+                <form method="POST" action="{{ route('client.servers.backups.store', $server) }}" style="display:flex;gap:.4rem;flex:1;max-width:420px;min-width:220px">
+                    @csrf
+                    <input class="dp-input" type="text" name="name" maxlength="100" placeholder="Nama backup (opsional)">
+                    <button class="dp-btn" type="submit" @disabled($backupUsed >= $backupLimit)>Buat Backup</button>
+                </form>
             @endif
         </div>
+        @forelse ($backups as $b)
+            <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                <div style="min-width:180px;flex:2">
+                    <strong>{{ $b->name }}</strong>
+                    <div class="dp-muted">{{ $b->created_at?->diffForHumans() }}</div>
+                    @if ($b->status === 'failed' && $b->error)
+                        <div class="dp-muted">{{ $b->error }}</div>
+                    @endif
+                </div>
+                <div style="min-width:90px"><span class="status-badge {{ $b->badgeClass() }}">{{ $b->status }}</span></div>
+                <div style="min-width:80px;flex:1">
+                    @if ($b->status === 'completed')
+                        {{ $b->sizeForHumans() }}
+                    @else
+                        <span class="dp-muted">-</span>
+                    @endif
+                </div>
+                @if ($b->checksum)
+                    <div style="min-width:120px;flex:1"><code>{{ substr($b->checksum, 0, 12) }}</code><div class="dp-muted">SHA-256</div></div>
+                @endif
+                @if ($isManager)
+                    @if ($b->status === 'completed')
+                        <a class="dp-btn" href="{{ route('client.servers.backups.download', [$server, $b->id]) }}">Download</a>
+                    @endif
+                    <form method="POST" action="{{ route('client.servers.backups.destroy', [$server, $b->id]) }}" data-confirm="Hapus backup {{ $b->name }}?">
+                        @csrf @method('DELETE')
+                        <button class="dp-btn" type="submit">Hapus</button>
+                    </form>
+                @endif
+            </div>
+        @empty
+            <div class="dp-card dp-muted">Belum ada backup.</div>
+        @endforelse
+        @if ($backups->contains('status', 'creating'))
+            <script>setTimeout(function () { location.reload(); }, 4000);</script>
+        @endif
 
     @elseif ($tab === 'network')
         @forelse ($server->allocations as $a)
