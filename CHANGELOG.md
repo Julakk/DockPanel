@@ -2,6 +2,13 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.15.2] - 2026-10-03
+> "Perbaikan CI: gaya kode ClientServerController sesuai Pint." 🐧
+
+### Fixed
+
+- Pint (`fully_qualified_strict_types`) gagal di `ClientServerController`, sehingga CI v0.15.0 dan v0.15.1 merah. Gaya kode dirapikan otomatis oleh Pint, tidak ada perubahan perilaku.
+
 ## [0.15.1] - 2026-10-03
 > "Tab Databases lebih ringkas, kartu Address di halaman Server." 🐧
 

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\Allocation;
 use App\Models\Server;
 use App\Models\User;
 use App\Services\ServerResourceService;
 use App\Services\WingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -275,8 +277,8 @@ class ClientServerController extends Controller
 
         $alloc = $server->allocations()->findOrFail($allocation);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($server, $alloc) {
-            \App\Models\Allocation::where('server_id', $server->id)->update(['is_primary' => false]);
+        DB::transaction(function () use ($server, $alloc) {
+            Allocation::where('server_id', $server->id)->update(['is_primary' => false]);
             $alloc->update(['is_primary' => true]);
         });
         ActivityLog::record('server:allocation.primary', ['allocation' => "{$alloc->ip}:{$alloc->port}"], $server);
