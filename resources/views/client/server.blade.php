@@ -60,6 +60,10 @@
 
     <div class="dp-stats">
         <div class="dp-stat">
+            <div class="dp-stat-label">Address</div>
+            <div class="dp-stat-value">{{ $server->primaryAllocation ? (($server->primaryAllocation->ip_alias ?: $server->primaryAllocation->ip).':'.$server->primaryAllocation->port) : '-' }}</div>
+        </div>
+        <div class="dp-stat">
             <div class="dp-stat-label">CPU</div>
             <div class="dp-stat-value" id="dp-cpu-t">-</div>
             <div class="dp-bar"><span id="dp-cpu"></span></div>
@@ -376,21 +380,20 @@
         </script>
 
     @elseif ($tab === 'databases')
-        <div class="dp-card">
-            <strong>Databases</strong>
-            @forelse ($server->databases as $db)
-                <div style="border-top:1px solid rgba(127,127,127,.25);margin-top:.6rem;padding-top:.6rem">
-                    <table class="dp-table">
-                        <tr><td class="dp-muted">Host</td><td><code>{{ $db->databaseHost->host ?? '-' }}:{{ $db->databaseHost->port ?? '' }}</code></td></tr>
-                        <tr><td class="dp-muted">Database</td><td><code>{{ $db->database }}</code></td></tr>
-                        <tr><td class="dp-muted">Username</td><td><code>{{ $db->username }}</code></td></tr>
-                        <tr><td class="dp-muted">Password</td><td><details><summary style="cursor:pointer">Tampilkan</summary><code>{{ $db->password }}</code></details></td></tr>
-                    </table>
-                </div>
-            @empty
-                <p class="dp-muted" style="margin-bottom:0">Server ini belum punya database. Minta admin buat provision.</p>
-            @endforelse
-        </div>
+        @forelse ($server->databases as $db)
+            <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                <div style="min-width:140px;flex:1"><strong>{{ $db->database }}</strong><div class="dp-muted">Database</div></div>
+                <div style="min-width:160px;flex:1"><code>{{ $db->databaseHost->host ?? '-' }}:{{ $db->databaseHost->port ?? '' }}</code><div class="dp-muted">Endpoint</div></div>
+                <div style="min-width:140px;flex:1"><code>{{ $db->username }}</code><div class="dp-muted">Username</div></div>
+                <button type="button" class="dp-btn" onclick="var e=document.getElementById('dbpw-{{ $db->id }}');e.style.display=e.style.display==='none'?'block':'none'">Password</button>
+                <div id="dbpw-{{ $db->id }}" style="display:none;width:100%"><code>{{ $db->password }}</code></div>
+            </div>
+        @empty
+            <div class="dp-card"><p class="dp-muted" style="margin:0">Server ini belum punya database. Minta admin buat provision.</p></div>
+        @endforelse
+        @if ($server->databases->isNotEmpty())
+            <div class="dp-muted" style="text-align:right">{{ $server->databases->count() }} database dialokasikan ke server ini.</div>
+        @endif
 
     @elseif ($tab === 'schedules')
         @include('client.partials.schedules')

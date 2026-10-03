@@ -2,6 +2,18 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.15.1] - 2026-10-03
+> "Tab Databases lebih ringkas, kartu Address di halaman Server." 🐧
+
+### Changed
+
+- Tab Databases: satu kartu per database (nama, endpoint, username) dengan tombol Password yang membuka dan menutup password, plus jumlah database di server.
+- Kartu Address (IP:port allocation primary) di baris statistik halaman Server.
+
+### Catatan
+
+- Tombol hapus database dan kolom "connections from" belum ada. Versi panel jadi 0.15.1.
+
 ## [0.15.0] - 2026-10-03
 > "Network, Backups, dan detail Activity di halaman Server." 🐧
 
