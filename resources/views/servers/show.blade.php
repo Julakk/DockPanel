@@ -405,7 +405,7 @@
                 <div class="nd-box-head"><h3>{{ $server->suspended ? 'Unsuspend Server' : 'Suspend Server' }}</h3></div>
                 <div class="nd-box-body">
                     @if ($server->suspended)
-                        <p style="margin:0 0 .9rem;">Server lagi disuspend@if ($server->suspension_reason) ({{ $server->suspension_reason }})@endif. Aktifkan lagi supaya user bisa mengelolanya.</p>
+                        <p style="margin:0 0 .9rem;">Server lagi disuspend{{ $server->suspension_reason ? ' ('.$server->suspension_reason.')' : '' }}. Aktifkan lagi supaya user bisa mengelolanya.</p>
                         <form method="POST" action="{{ route('servers.unsuspend', $server) }}">
                             @csrf
                             <button type="submit" class="nd-btn nd-btn-orange">Unsuspend Server</button>
