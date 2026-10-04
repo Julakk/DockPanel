@@ -2,6 +2,29 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.16.0] - 2026-10-04
+> "Database beneran dibikin di MySQL, backup bisa di-restore, dan ada jalan ke phpMyAdmin." 🐧
+
+### Added
+
+- Restore backup (tab Backups, tombol Restore buat owner dan admin). Server harus mati; Wings ngecek, memverifikasi checksum arsip, mengekstrak ke folder sementara, lalu menukar folder server. Selama restore status server jadi `restoring_backup`: power action dimatiin dan halaman nyegerin diri sampai selesai atau gagal. Kalau gagal, file server nggak berubah.
+- `DatabaseProvisioner`: membuat database, user, dan grant MySQL beneran di Database Host, dan menghapusnya (`DROP DATABASE`, serta `DROP USER` kalau user nggak dipakai database lain). Dipakai oleh form admin dan tombol Hapus di client area. Kalau host nggak bisa dihubungi atau hak user host kurang, muncul pesan yang jelas dan database nggak dicatat.
+- Field "Connections From" di form Create Database admin. Nilainya dipakai beneran sebagai host akun MySQL (`'user'@'host'`), bukan sekadar informasi.
+- Perintah `php artisan databases:sync`: bikin database dan user MySQL buat semua database yang sudah tercatat tapi belum ada di host (idempoten).
+- Setelan `DB_PROVISION` (default `true`) dan `PHPMYADMIN_URL` (opsional, menampilkan tautan "Buka phpMyAdmin" di tab Databases).
+- Tes baru: `DatabaseProvisionerTest`, `RestoreAndDatabaseTest`.
+
+### Changed
+
+- Satu user MySQL per server dipakai semua database server itu di host yang sama, jadi database kedua memakai password yang sama dengan yang pertama (sebelumnya tiap database dapat password acak berbeda untuk user yang sama).
+- Versi panel jadi 0.16.0. Butuh DockWings v0.4.2+ buat restore.
+
+### Catatan
+
+- Database Host harus memakai user dengan hak `CREATE USER` di `*.*` dan `ALL PRIVILEGES ... WITH GRANT OPTION` di database berawalan `s` + 8 karakter + `_` (namespace database server Panel). Skrip `setup-dbadmin` menyiapkan user ini, bukan root.
+- Database yang tercatat sebelum 0.16.0 belum ada di MySQL. Jalankan `php artisan databases:sync` sekali setelah update.
+- Tes otomatis mematikan provisioning (`app.provision_databases=false`) karena CI nggak punya host MySQL buat dibikinin database.
+
 ## [0.15.3] - 2026-10-04
 > "Backup jalan, port langsung diterapkan ke container, database bisa dihapus dari client area." 🐧
 

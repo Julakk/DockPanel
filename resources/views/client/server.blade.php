@@ -400,6 +400,9 @@
         @endforelse
         @if ($server->databases->isNotEmpty())
             <div class="dp-muted" style="text-align:right">{{ $server->databases->count() }} database dialokasikan ke server ini.</div>
+            @if (config('app.phpmyadmin_url'))
+                <div style="text-align:right"><a href="{{ config('app.phpmyadmin_url') }}" target="_blank" rel="noopener">Buka phpMyAdmin</a></div>
+            @endif
         @endif
 
     @elseif ($tab === 'schedules')
@@ -445,6 +448,9 @@
         </form>
 
     @elseif ($tab === 'backups')
+        @if ($server->status === 'restoring_backup')
+            <div class="dp-card"><strong>Restore backup sedang berjalan.</strong> <span class="dp-muted">Server dikunci sampai selesai; halaman ini nyegerin sendiri.</span></div>
+        @endif
         <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
             <div>
                 <strong>{{ $backupUsed }} / {{ $backupLimit }}</strong>
@@ -483,6 +489,10 @@
                 @if ($isManager)
                     @if ($b->status === 'completed')
                         <a class="dp-btn" href="{{ route('client.servers.backups.download', [$server, $b->id]) }}">Download</a>
+                        <form method="POST" action="{{ route('client.servers.backups.restore', [$server, $b->id]) }}" data-confirm="Restore backup {{ $b->name }}? SEMUA file server saat ini akan diganti dengan isi backup ini. Server harus dalam keadaan mati.">
+                            @csrf
+                            <button class="dp-btn" type="submit" @disabled($server->status === 'restoring_backup')>Restore</button>
+                        </form>
                     @endif
                     <form method="POST" action="{{ route('client.servers.backups.destroy', [$server, $b->id]) }}" data-confirm="Hapus backup {{ $b->name }}?">
                         @csrf @method('DELETE')
@@ -493,7 +503,7 @@
         @empty
             <div class="dp-card dp-muted">Belum ada backup.</div>
         @endforelse
-        @if ($backups->contains('status', 'creating'))
+        @if ($backups->contains('status', 'creating') || $server->status === 'restoring_backup')
             <script>setTimeout(function () { location.reload(); }, 4000);</script>
         @endif
 

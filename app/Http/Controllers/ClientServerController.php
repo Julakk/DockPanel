@@ -10,6 +10,7 @@ use App\Models\Node;
 use App\Models\Server;
 use App\Models\ServerDatabase;
 use App\Models\User;
+use App\Services\DatabaseProvisioner;
 use App\Services\ServerResourceService;
 use App\Services\WingsService;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 
 class ClientServerController extends Controller
 {
@@ -107,6 +109,8 @@ class ClientServerController extends Controller
 
         $server->load(['node', 'egg', 'primaryAllocation', 'allocations']);
 
+        $this->syncRestoreState($server);
+
         $data = [];
         if ($tab === 'databases') {
             $server->load('databases.databaseHost');
@@ -181,6 +185,11 @@ class ClientServerController extends Controller
 
         if ($server->suspended) {
             return back()->with('error', 'Server lagi di-suspend, power action dimatiin.');
+        }
+
+        $this->syncRestoreState($server);
+        if ($server->status === 'restoring_backup') {
+            return back()->with('error', 'Restore backup lagi berjalan, power action dimatiin.');
         }
 
         try {
@@ -349,6 +358,9 @@ class ClientServerController extends Controller
         if ($status === 404 && str_contains((string) $error, 'daemon ini')) {
             return 'Server belum di-provision ke Wings. Minta admin klik Provision di halaman server.';
         }
+        if ($status === 404 && $error !== null) {
+            return $error;
+        }
         if ($status === 404 || $status === 405) {
             return 'Wings belum mendukung backup (butuh DockWings v0.4.1+).';
         }
@@ -505,13 +517,17 @@ class ClientServerController extends Controller
         return $back->with('success', "Backup '{$name}' dihapus.");
     }
 
-    public function destroyDatabase(Request $request, Server $server, ServerDatabase $database)
+    public function destroyDatabase(Request $request, Server $server, ServerDatabase $database, DatabaseProvisioner $provisioner)
     {
         $this->requireManager($request, $server);
         abort_unless((int) $database->server_id === (int) $server->id, 404);
 
-        // Sama seperti di sisi admin: DROP DATABASE asli di host belum ada,
-        // yang dihapus baru catatannya di Panel.
+        try {
+            $provisioner->drop($database->loadMissing('databaseHost'));
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
         $name = $database->database;
         $database->delete();
         ActivityLog::record('server:database.delete', ['name' => $name], $server);
@@ -519,6 +535,72 @@ class ClientServerController extends Controller
         return redirect()
             ->route('client.servers.show', ['server' => $server, 'tab' => 'databases'])
             ->with('success', "Database '{$name}' dihapus.");
+    }
+
+    /**
+     * Server yang lagi "restoring_backup": tanya Wings, lalu balikin ke "offline"
+     * kalau restore sudah selesai, gagal, atau statusnya hilang (daemon restart).
+     */
+    private function syncRestoreState(Server $server): void
+    {
+        if ($server->status !== 'restoring_backup' || ! $server->loadMissing('node')->node) {
+            return;
+        }
+
+        try {
+            [$status, $res] = (new WingsService($server))->restoreStatus();
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        $state = $res['status'] ?? null;
+        if ($status !== 200 || $state === 'restoring') {
+            return;
+        }
+
+        $server->update(['status' => 'offline']);
+
+        if ($state === 'completed') {
+            session()->flash('success', 'Restore selesai. File server sudah dikembalikan dari backup.');
+        } elseif ($state === 'failed') {
+            session()->flash('error', 'Restore gagal: '.($res['error'] ?? 'alasan nggak diketahui').'. File server nggak berubah.');
+        } else {
+            session()->flash('error', 'Status restore hilang (daemon restart?). Cek file server, lalu ulangi restore kalau perlu.');
+        }
+    }
+
+    public function restoreBackup(Request $request, Server $server, Backup $backup)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $backup->server_id === (int) $server->id, 404);
+        abort_unless($backup->status === 'completed', 404);
+
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'backups']);
+
+        if ($server->suspended) {
+            return $back->with('error', 'Server lagi di-suspend.');
+        }
+        if ($server->status === 'restoring_backup') {
+            return $back->with('error', 'Restore lain masih berjalan.');
+        }
+
+        try {
+            [$status, $res] = $this->wingsFor($server)->restoreBackup($backup->uuid);
+        } catch (\Throwable $e) {
+            return $back->with('error', 'Wings nggak bisa dihubungi: '.Node::explainWingsError($e->getMessage(), (string) $server->node->scheme));
+        }
+
+        if (($status === 404 && ! isset($res['error'])) || $status === 405) {
+            return $back->with('error', 'Wings belum mendukung restore (butuh DockWings v0.4.2+).');
+        }
+        if ($status !== 202) {
+            return $back->with('error', $this->backupError($status, $res));
+        }
+
+        $server->update(['status' => 'restoring_backup']);
+        ActivityLog::record('server:backup.restore', ['name' => $backup->name], $server);
+
+        return $back->with('success', 'Restore dimulai. Server dikunci sampai selesai.');
     }
 
     public function addUser(Request $request, Server $server)

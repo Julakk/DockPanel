@@ -288,6 +288,10 @@
                             <input type="text" name="database_name" id="database_name" placeholder="mygame_db" required>
                             <div class="nd-hint">Username dan password dibuat acak setelah form dikirim.</div>
 
+                            <label for="remote">Connections From</label>
+                            <input type="text" name="remote" id="remote" placeholder="%" maxlength="60">
+                            <div class="nd-hint">Host yang boleh login ke database ini. Kosong atau % = dari mana saja.</div>
+
                             <button type="submit" class="nd-btn nd-btn-green">Create Database</button>
                         </form>
                     @endif

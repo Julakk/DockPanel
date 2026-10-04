@@ -22,5 +22,14 @@ return [
     | Update manual tiap rilis baru (samain sama CHANGELOG.md).
     | Dipakai di footer dan halaman Overview.
     */
-    'version' => '0.15.3',
+    'version' => '0.16.0',
+
+    /*
+    | Bikin database + user MySQL beneran di Database Host. Matikan (false)
+    | kalau mau cuma nyatet database tanpa menyentuh host.
+    */
+    'provision_databases' => env('DB_PROVISION', true),
+
+    // URL phpMyAdmin (opsional); kalau diisi, tab Databases nampilin tautannya.
+    'phpmyadmin_url' => env('PHPMYADMIN_URL'),
 ];

@@ -20,6 +20,7 @@ Route::middleware('auth')->prefix('client/servers/{server}')->name('client.serve
     Route::post('backups', [ClientServerController::class, 'storeBackup'])->name('backups.store');
     Route::get('backups/{backup}/download', [ClientServerController::class, 'downloadBackup'])->name('backups.download');
     Route::delete('backups/{backup}', [ClientServerController::class, 'destroyBackup'])->name('backups.destroy');
+    Route::post('backups/{backup}/restore', [ClientServerController::class, 'restoreBackup'])->name('backups.restore');
     Route::delete('databases/{database}', [ClientServerController::class, 'destroyDatabase'])->name('databases.destroy');
 });
 

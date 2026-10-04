@@ -38,6 +38,21 @@ trait WingsBackups
         return [$r->status(), $r->json() ?? []];
     }
 
+    /** Mulai restore backup (butuh DockWings v0.4.2+). Server harus mati. */
+    public function restoreBackup(string $backupUuid): array
+    {
+        $r = $this->client()->timeout(15)->post($this->backupsPath("/{$backupUuid}/restore"));
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
+    public function restoreStatus(): array
+    {
+        $r = $this->client()->timeout(10)->get("/api/servers/{$this->server->uuid}/restore");
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
     /** Response mentah (stream) buat download. Pemanggil yang baca body-nya. */
     public function downloadBackup(string $backupUuid)
     {
