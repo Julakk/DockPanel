@@ -6,11 +6,13 @@ use App\Http\Controllers\Concerns\AppliesAllocations;
 use App\Models\ActivityLog;
 use App\Models\Allocation;
 use App\Models\Backup;
+use App\Models\DatabaseHost;
 use App\Models\Node;
 use App\Models\Server;
 use App\Models\ServerDatabase;
 use App\Models\User;
-use App\Services\DatabaseProvisioner;
+use App\Services\PhpMyAdminSignon;
+use App\Services\ServerDatabaseService;
 use App\Services\ServerResourceService;
 use App\Services\WingsService;
 use Illuminate\Http\JsonResponse;
@@ -517,19 +519,87 @@ class ClientServerController extends Controller
         return $back->with('success', "Backup '{$name}' dihapus.");
     }
 
-    public function destroyDatabase(Request $request, Server $server, ServerDatabase $database, DatabaseProvisioner $provisioner)
+    public function storeDatabase(Request $request, Server $server, ServerDatabaseService $databases)
+    {
+        $this->requireManager($request, $server);
+
+        $data = $request->validate([
+            'database_name' => ['required', 'string', 'max:48', 'regex:/^[a-zA-Z0-9_]+$/'],
+            'remote' => ['nullable', 'string', 'max:60', 'regex:/^[A-Za-z0-9._%:-]+$/'],
+        ]);
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'databases']);
+
+        $limit = $server->database_limit;
+        if ($limit !== null && (int) $limit === 0) {
+            return $back->with('error', 'Pembuatan database dimatikan untuk server ini. Hubungi admin.');
+        }
+        if ($limit !== null && $server->databases()->count() >= (int) $limit) {
+            return $back->with('error', "Limit database tercapai ({$limit}). Hapus yang lama dulu.");
+        }
+
+        $host = DatabaseHost::forServer($server);
+        if (! $host) {
+            return $back->with('error', 'Belum ada Database Host yang tersedia buat node server ini. Hubungi admin.');
+        }
+
+        try {
+            $database = $databases->create($server, $host, $data['database_name'], $data['remote'] ?? '%');
+        } catch (RuntimeException $e) {
+            return $back->with('error', $e->getMessage());
+        }
+
+        ActivityLog::record('server:database.create', ['name' => $database->database], $server);
+
+        return $back->with('success', "Database '{$database->database}' dibuat.");
+    }
+
+    public function rotateDatabasePassword(Request $request, Server $server, ServerDatabase $database, ServerDatabaseService $databases)
     {
         $this->requireManager($request, $server);
         abort_unless((int) $database->server_id === (int) $server->id, 404);
 
+        $back = redirect()->route('client.servers.show', ['server' => $server, 'tab' => 'databases']);
+
         try {
-            $provisioner->drop($database->loadMissing('databaseHost'));
+            $databases->rotatePassword($database);
+        } catch (RuntimeException $e) {
+            return $back->with('error', $e->getMessage());
+        }
+
+        ActivityLog::record('server:database.rotate', ['name' => $database->database], $server);
+
+        return $back->with('success', "Password database '{$database->database}' diganti. Update config game server kamu.");
+    }
+
+    public function openPhpMyAdmin(Request $request, Server $server, ServerDatabase $database, PhpMyAdminSignon $signon)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $database->server_id === (int) $server->id, 404);
+
+        if (! $signon->enabled()) {
+            return redirect()
+                ->route('client.servers.show', ['server' => $server, 'tab' => 'databases'])
+                ->with('error', 'phpMyAdmin belum dikonfigurasi. Hubungi admin.');
+        }
+
+        ActivityLog::record('server:database.phpmyadmin', ['name' => $database->database], $server);
+
+        return redirect()->away($signon->urlForDatabase($database));
+    }
+
+    public function destroyDatabase(Request $request, Server $server, ServerDatabase $database, ServerDatabaseService $databases)
+    {
+        $this->requireManager($request, $server);
+        abort_unless((int) $database->server_id === (int) $server->id, 404);
+
+        $name = $database->database;
+
+        try {
+            $databases->delete($database);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        $name = $database->database;
-        $database->delete();
         ActivityLog::record('server:database.delete', ['name' => $name], $server);
 
         return redirect()

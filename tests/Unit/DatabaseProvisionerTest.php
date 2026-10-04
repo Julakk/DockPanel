@@ -33,6 +33,13 @@ class DatabaseProvisionerTest extends TestCase
         $this->assertSame("REVOKE ALL PRIVILEGES ON `s1\\_db`.* FROM 'u1'@'%'", $shared[1]);
     }
 
+    public function test_rotate_statement_changes_only_the_password(): void
+    {
+        $sql = DatabaseProvisioner::rotateStatement($this->quote(), 'u1_abc', '%', 'baruPw');
+
+        $this->assertSame("ALTER USER 'u1_abc'@'%' IDENTIFIED BY 'baruPw'", $sql);
+    }
+
     public function test_unsafe_identifiers_are_rejected(): void
     {
         foreach ([

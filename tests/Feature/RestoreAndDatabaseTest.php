@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\DatabaseHost;
-use App\Models\ServerDatabase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -81,30 +79,5 @@ class RestoreAndDatabaseTest extends TestCase
         $this->actingAs($owner)->get("/client/servers/{$server->id}?tab=backups")->assertOk();
 
         $this->assertSame('offline', $server->fresh()->status);
-    }
-
-    public function test_second_database_reuses_the_server_mysql_password(): void
-    {
-        $admin = User::factory()->create(['root_admin' => true]);
-        $server = $this->makeServer($admin);
-        $host = DatabaseHost::create(['name' => 'Host', 'host' => '127.0.0.1', 'port' => 3306, 'username' => 'root', 'password' => 'secret']);
-
-        $this->actingAs($admin)->post("/servers/{$server->id}/databases", [
-            'database_host_id' => $host->id,
-            'database_name' => 'satu',
-            'remote' => '10.0.0.5',
-        ])->assertRedirect();
-        $this->actingAs($admin)->post("/servers/{$server->id}/databases", [
-            'database_host_id' => $host->id,
-            'database_name' => 'dua',
-            'remote' => '10.0.0.5',
-        ])->assertRedirect();
-
-        $first = ServerDatabase::where('database', 'like', '%_satu')->firstOrFail();
-        $second = ServerDatabase::where('database', 'like', '%_dua')->firstOrFail();
-
-        $this->assertSame('10.0.0.5', $first->remote);
-        $this->assertSame($first->username, $second->username);
-        $this->assertSame((string) $first->password, (string) $second->password);
     }
 }

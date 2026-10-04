@@ -37,6 +37,10 @@
                 </div>
             </div>
 
+            <label for="public_host">Alamat untuk Game Server (opsional)</label>
+            <input type="text" name="public_host" id="public_host" value="{{ old('public_host', $host->public_host) }}" placeholder="172.17.0.1">
+            <p class="muted" style="margin:.2rem 0 1rem;font-size:.85rem;">Alamat yang ditampilkan ke user buat konek dari dalam Docker. Kosong = sama dengan Host.</p>
+
             <label for="username">Username</label>
             <input type="text" name="username" id="username" value="{{ old('username', $host->username) }}" required>
 
@@ -56,6 +60,56 @@
                 <a href="{{ route('databases.index') }}" class="btn btn-secondary">Batal</a>
             </div>
         </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Koneksi</h3>
+        <form method="POST" action="{{ route('databases.test', $host) }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn btn-secondary">Tes Koneksi</button>
+        </form>
+        @if ($pmaEnabled)
+            <form method="POST" action="{{ route('databases.phpmyadmin', $host) }}" target="_blank" style="display:inline;">
+                @csrf
+                <button type="submit" class="btn btn-secondary">Buka phpMyAdmin</button>
+            </form>
+        @endif
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;">Databases di host ini ({{ $host->databases->count() }})</h3>
+        @if ($host->databases->isEmpty())
+            <p class="muted" style="margin:0;">Belum ada database.</p>
+        @else
+            <table>
+                <thead>
+                    <tr><th>Database</th><th>Server</th><th>Username</th><th>Connections From</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach ($host->databases as $db)
+                        <tr>
+                            <td>{{ $db->database }}</td>
+                            <td>
+                                @if ($db->server)
+                                    <a href="{{ route('servers.show', $db->server) }}">{{ $db->server->name }}</a>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="muted">{{ $db->username }}</td>
+                            <td class="muted">{{ $db->remote ?: '%' }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('servers.databases.destroy', [$db->server_id, $db]) }}" onsubmit="return confirm('Hapus database ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
     </div>
 
     <div class="card">

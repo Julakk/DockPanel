@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PhpMyAdminRedeemController;
 use App\Http\Controllers\Remote\SftpAuthController;
 use App\Http\Controllers\ServerPowerController;
 use App\Http\Middleware\AuthenticateNode;
@@ -22,3 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Dipanggil daemon Wings buat verifikasi login SFTP (auth: Bearer daemon_token node)
 Route::post('remote/sftp/auth', SftpAuthController::class)
     ->middleware(AuthenticateNode::class);
+
+// Dipanggil skrip signon phpMyAdmin buat nuker token sekali pakai (dijaga secret bersama)
+Route::post('pma/redeem', PhpMyAdminRedeemController::class)
+    ->middleware('throttle:30,1');

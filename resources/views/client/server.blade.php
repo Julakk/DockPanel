@@ -380,29 +380,57 @@
         </script>
 
     @elseif ($tab === 'databases')
+        <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
+            <div>
+                <strong>{{ $server->databases->count() }} / {{ $server->database_limit === null ? '∞' : $server->database_limit }}</strong>
+                <div class="dp-muted">Database terpakai</div>
+            </div>
+            @if ($isManager && ($server->database_limit === null || $server->databases->count() < (int) $server->database_limit))
+                <form method="POST" action="{{ route('client.servers.databases.store', $server) }}" style="display:flex;gap:.4rem;flex:1;max-width:520px;min-width:240px;flex-wrap:wrap">
+                    @csrf
+                    <input class="dp-input" type="text" name="database_name" maxlength="48" pattern="[a-zA-Z0-9_]+" placeholder="Nama database" required style="flex:2;min-width:140px">
+                    <input class="dp-input" type="text" name="remote" maxlength="60" placeholder="Connections from (%)" style="flex:1;min-width:120px">
+                    <button class="dp-btn" type="submit">Buat Database</button>
+                </form>
+            @elseif ($server->database_limit !== null && (int) $server->database_limit === 0)
+                <span class="dp-muted">Pembuatan database dimatikan untuk server ini.</span>
+            @endif
+        </div>
         @forelse ($server->databases as $db)
             <div class="dp-card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
                 <div style="min-width:140px;flex:1"><strong>{{ $db->database }}</strong><div class="dp-muted">Database</div></div>
-                <div style="min-width:160px;flex:1"><code>{{ $db->databaseHost->host ?? '-' }}:{{ $db->databaseHost->port ?? '' }}</code><div class="dp-muted">Endpoint</div></div>
+                <div style="min-width:160px;flex:1"><code>{{ $db->endpoint() }}</code><div class="dp-muted">Endpoint</div></div>
                 <div style="min-width:140px;flex:1"><code>{{ $db->username }}</code><div class="dp-muted">Username</div></div>
                 <div style="min-width:100px;flex:1"><code>{{ $db->remote ?: "%" }}</code><div class="dp-muted">Connections from</div></div>
-                <button type="button" class="dp-btn" onclick="var e=document.getElementById('dbpw-{{ $db->id }}');e.style.display=e.style.display==='none'?'block':'none'">Password</button>
-                <div id="dbpw-{{ $db->id }}" style="display:none;width:100%"><code>{{ $db->password }}</code></div>
+                <button type="button" class="dp-btn" onclick="var e=document.getElementById('dbd-{{ $db->id }}');e.style.display=e.style.display==='none'?'block':'none'">Detail</button>
                 @if ($isManager)
-                    <form method="POST" action="{{ route('client.servers.databases.destroy', [$server, $db->id]) }}" data-confirm="Hapus database {{ $db->database }}?">
+                    @if (config('app.phpmyadmin_url') && config('app.phpmyadmin_signon_secret'))
+                        <form method="POST" action="{{ route('client.servers.databases.phpmyadmin', [$server, $db->id]) }}" target="_blank">
+                            @csrf
+                            <button class="dp-btn" type="submit">phpMyAdmin</button>
+                        </form>
+                    @endif
+                    <form method="POST" action="{{ route('client.servers.databases.password', [$server, $db->id]) }}" data-confirm="Ganti password database {{ $db->database }}? Config game server yang pakai password lama harus diupdate.">
+                        @csrf
+                        <button class="dp-btn" type="submit">Rotate Password</button>
+                    </form>
+                    <form method="POST" action="{{ route('client.servers.databases.destroy', [$server, $db->id]) }}" data-confirm="Hapus database {{ $db->database }}? Semua datanya hilang.">
                         @csrf @method('DELETE')
                         <button class="dp-btn" type="submit">Hapus</button>
                     </form>
                 @endif
+                <div id="dbd-{{ $db->id }}" style="display:none;width:100%">
+                    <div class="dp-muted">Password</div>
+                    <code>{{ $db->password }}</code>
+                    <div class="dp-muted" style="margin-top:.5rem">JDBC</div>
+                    <code style="word-break:break-all">{{ $db->jdbcUrl() }}</code>
+                </div>
             </div>
         @empty
-            <div class="dp-card"><p class="dp-muted" style="margin:0">Server ini belum punya database. Minta admin buat provision.</p></div>
+            <div class="dp-card"><p class="dp-muted" style="margin:0">Server ini belum punya database.</p></div>
         @endforelse
         @if ($server->databases->isNotEmpty())
-            <div class="dp-muted" style="text-align:right">{{ $server->databases->count() }} database dialokasikan ke server ini.</div>
-            @if (config('app.phpmyadmin_url'))
-                <div style="text-align:right"><a href="{{ config('app.phpmyadmin_url') }}" target="_blank" rel="noopener">Buka phpMyAdmin</a></div>
-            @endif
+            <div class="dp-muted" style="text-align:right">Game server di Docker konek ke Endpoint di atas dengan username dan password database.</div>
         @endif
 
     @elseif ($tab === 'schedules')

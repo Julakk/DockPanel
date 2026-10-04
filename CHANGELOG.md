@@ -2,6 +2,32 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.17.0] - 2026-10-05
+> "Database dan phpMyAdmin sekarang mirip Pterodactyl: bikin sendiri, rotate password, dan masuk phpMyAdmin tanpa ngetik password." 🐧
+
+### Added
+
+- User (owner/admin server) bisa bikin database sendiri dari tab Databases, dengan limit per server (`database_limit`, default 2; kosong = tanpa batas, 0 = dimatikan). Host dipilih otomatis: yang terikat ke node server dulu, kalau nggak ada pakai host yang nggak terikat node. Admin tetap bisa bikin tanpa limit.
+- Tombol Rotate Password per database (`ALTER USER` di MySQL, password baru langsung tersimpan).
+- Panel detail per database: Endpoint, Connections From, Username, Password, dan JDBC string.
+- Tombol phpMyAdmin per database dengan single sign-on: Panel bikin token acak sekali pakai (berlaku 60 detik), skrip signon phpMyAdmin menukarnya ke Panel lewat `POST /api/pma/redeem` (dijaga secret bersama `PMA_SIGNON_SECRET`). Password nggak pernah lewat URL atau browser, dan user cuma melihat database miliknya sendiri. Admin punya tombol yang sama di halaman Database Host (masuk sebagai user host).
+- Halaman Database Host gaya Pterodactyl: kolom jumlah database dan linked node, daftar database per host (dengan tautan ke server), tombol Tes Koneksi.
+- Kolom `public_host` di Database Host: alamat yang ditampilkan ke user buat konek dari dalam Docker (mis. gateway bridge `172.17.0.1`). Kosong = pakai Host.
+- Field "Database Limit" di Build Configuration admin.
+- Tes baru: `DatabaseManagementTest`.
+
+### Changed
+
+- Setiap database baru punya user MySQL sendiri (`u{uuid_short}_{acak}`), jadi rotate password atau hapus satu database nggak ngaruh ke database lain. Database lama yang berbagi satu user tetap jalan; rotate password di salah satunya ikut memperbarui yang berbagi akun itu.
+- Database Host yang masih punya database nggak bisa dihapus (supaya nggak ada database yatim di MySQL).
+- Versi panel jadi 0.17.0.
+
+### Catatan
+
+- Jalankan `php artisan migrate` setelah update.
+- phpMyAdmin tanpa halaman login: setiap sesi lahir dari Panel. Jalankan skrip `setup-pma-sso` sekali (menghapus basic auth, memasang skrip signon, mengisi `PHPMYADMIN_URL` dan `PMA_SIGNON_SECRET` di `.env`).
+- Game server di Docker nggak bisa konek lewat `127.0.0.1` (itu container-nya sendiri). Jalankan skrip `setup-db-network` supaya MariaDB bisa dijangkau dari bridge Docker (tetap tertutup dari internet), lalu isi "Alamat untuk Game Server" di Database Host.
+
 ## [0.16.0] - 2026-10-04
 > "Database beneran dibikin di MySQL, backup bisa di-restore, dan ada jalan ke phpMyAdmin." 🐧
 

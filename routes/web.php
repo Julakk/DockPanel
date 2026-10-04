@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
         Route::resource('locations', LocationController::class)->except(['show']);
         Route::resource('databases', DatabaseHostController::class)->except(['show']);
+        Route::post('databases/{database}/test', [DatabaseHostController::class, 'test'])->name('databases.test');
+        Route::post('databases/{database}/phpmyadmin', [DatabaseHostController::class, 'phpmyadmin'])->name('databases.phpmyadmin');
         Route::resource('mounts', MountController::class)->except(['show']);
 
         Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');

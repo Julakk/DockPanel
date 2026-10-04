@@ -142,6 +142,7 @@ class ServerController extends Controller
             'io' => 'sometimes|required|integer|min:10|max:1000',
             'cpu' => 'sometimes|required|numeric|min:0',
             'backup_limit' => 'sometimes|required|integer|min:0|max:100',
+            'database_limit' => 'sometimes|nullable|integer|min:0|max:100',
         ]);
 
         $server->update($validated);

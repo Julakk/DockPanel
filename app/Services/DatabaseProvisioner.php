@@ -67,6 +67,34 @@ class DatabaseProvisioner
         });
     }
 
+    /** Ganti password akun MySQL milik database ini. */
+    public function rotatePassword(ServerDatabase $db, string $newPassword): void
+    {
+        if (! $this->enabled()) {
+            return;
+        }
+
+        $this->run($db->databaseHost, function (PDO $pdo) use ($db, $newPassword) {
+            $pdo->exec(self::rotateStatement(
+                fn (string $v) => $pdo->quote($v),
+                $db->username,
+                $this->remoteOf($db),
+                $newPassword,
+            ));
+        });
+    }
+
+    /** Tes login ke Database Host. Balikin versi server; lempar RuntimeException kalau gagal. */
+    public function ping(DatabaseHost $host): string
+    {
+        $version = '';
+        $this->run($host, function (PDO $pdo) use (&$version) {
+            $version = (string) $pdo->query('SELECT VERSION()')->fetchColumn();
+        });
+
+        return $version;
+    }
+
     /**
      * SQL buat bikin database + user. Murni string (nggak konek ke mana-mana),
      * jadi gampang dites. $quote = fungsi escape string (PDO::quote).
@@ -103,6 +131,13 @@ class DatabaseProvisioner
             : "DROP USER IF EXISTS {$u}";
 
         return $sql;
+    }
+
+    public static function rotateStatement(callable $quote, string $user, string $remote, string $password): string
+    {
+        self::assertSafe('x', $user, $remote);
+
+        return 'ALTER USER '.$quote($user).'@'.$quote($remote).' IDENTIFIED BY '.$quote($password);
     }
 
     private static function assertSafe(string $db, string $user, string $remote): void

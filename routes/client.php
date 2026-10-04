@@ -22,6 +22,9 @@ Route::middleware('auth')->prefix('client/servers/{server}')->name('client.serve
     Route::delete('backups/{backup}', [ClientServerController::class, 'destroyBackup'])->name('backups.destroy');
     Route::post('backups/{backup}/restore', [ClientServerController::class, 'restoreBackup'])->name('backups.restore');
     Route::delete('databases/{database}', [ClientServerController::class, 'destroyDatabase'])->name('databases.destroy');
+    Route::post('databases', [ClientServerController::class, 'storeDatabase'])->name('databases.store');
+    Route::post('databases/{database}/password', [ClientServerController::class, 'rotateDatabasePassword'])->name('databases.password');
+    Route::post('databases/{database}/phpmyadmin', [ClientServerController::class, 'openPhpMyAdmin'])->name('databases.phpmyadmin');
 });
 
 Route::middleware('auth')->prefix('client/servers/{server}/files')->name('client.servers.files.')->group(function () {

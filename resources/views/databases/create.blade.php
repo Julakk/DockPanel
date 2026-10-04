@@ -36,6 +36,10 @@
                 </div>
             </div>
 
+            <label for="public_host">Alamat untuk Game Server (opsional)</label>
+            <input type="text" name="public_host" id="public_host" value="{{ old('public_host') }}" placeholder="172.17.0.1">
+            <p class="muted" style="margin:.2rem 0 1rem;font-size:.85rem;">Alamat yang ditampilkan ke user buat konek dari dalam Docker. Kosong = sama dengan Host.</p>
+
             <label for="username">Username</label>
             <input type="text" name="username" id="username" value="{{ old('username') }}" required>
 

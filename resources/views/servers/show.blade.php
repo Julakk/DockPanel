@@ -151,6 +151,10 @@
                         <input type="number" name="backup_limit" id="backup_limit" min="0" max="100" value="{{ old('backup_limit', $server->backup_limit) }}" required>
                         <div class="nd-hint">Jumlah maksimum backup. Isi 0 buat mematikan backup.</div>
 
+                        <label for="database_limit">Database Limit</label>
+                        <input type="number" name="database_limit" id="database_limit" min="0" max="100" value="{{ old('database_limit', $server->database_limit) }}">
+                        <div class="nd-hint">Jumlah database yang boleh dibuat user sendiri. Kosong = tanpa batas, 0 = dimatikan (admin tetap bisa bikin).</div>
+
                         <button type="submit" class="nd-btn nd-btn-blue">Update Build Configuration</button>
                     </form>
                 </div>
