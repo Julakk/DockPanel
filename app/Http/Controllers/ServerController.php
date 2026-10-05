@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\AppliesAllocations;
+use App\Http\Controllers\Concerns\ManagesInstall;
 use App\Models\ActivityLog;
 use App\Models\Allocation;
 use App\Models\DatabaseHost;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 class ServerController extends Controller
 {
-    use \App\Http\Controllers\Concerns\ManagesInstall, AppliesAllocations;
+    use AppliesAllocations, ManagesInstall;
 
     public function index(Request $request)
     {

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Server;
 use App\Services\Concerns\WingsBackups;
 use App\Services\Concerns\WingsFiles;
+use App\Services\Concerns\WingsInstall;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Http;
 
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Http;
  */
 class WingsService
 {
-    use \App\Services\Concerns\WingsInstall, WingsBackups, WingsFiles;
+    use WingsBackups, WingsFiles, WingsInstall;
 
     protected string $baseUrl;
 
