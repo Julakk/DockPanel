@@ -41,6 +41,9 @@ class ServerResourceService
 
             $j = $response->json() ?? [];
 
+            ServerStatusSync::apply($server, (string) data_get($j, 'current_state', data_get($j, 'state', 'unknown')));
+            ServerStatusSync::syncInstall($server);
+
             return array_merge($base, [
                 'state' => data_get($j, 'current_state', data_get($j, 'state', 'unknown')),
                 'cpu_percent' => round((float) data_get($j, 'utilization.cpu_absolute', data_get($j, 'cpu_absolute', 0)), 1),

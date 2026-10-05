@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Http;
  */
 class WingsService
 {
-    use WingsBackups, WingsFiles;
+    use \App\Services\Concerns\WingsInstall, WingsBackups, WingsFiles;
 
     protected string $baseUrl;
 

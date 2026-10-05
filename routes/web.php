@@ -79,6 +79,9 @@ Route::middleware('auth')->group(function () {
         Route::post('servers/{server}/subusers', [ServerSubuserController::class, 'store'])->name('servers.subusers.store');
         Route::delete('servers/{server}/subusers/{user}', [ServerSubuserController::class, 'destroy'])->name('servers.subusers.destroy');
         Route::post('servers/{server}/provision', [ServerController::class, 'provision'])->name('servers.provision');
+        Route::post('servers/{server}/reinstall', [ServerController::class, 'reinstall'])->name('servers.reinstall');
+        Route::post('servers/{server}/install-sync', [ServerController::class, 'syncInstall'])->name('servers.install-sync');
+        Route::post('servers/{server}/install-status', [ServerController::class, 'setInstallStatus'])->name('servers.install-status');
         Route::resource('servers', ServerController::class);
 
         Route::resource('users', UserController::class)->except(['show']);

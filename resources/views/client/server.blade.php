@@ -499,6 +499,9 @@
                 <div style="min-width:180px;flex:2">
                     <strong>{{ $b->name }}</strong>
                     <div class="dp-muted">{{ $b->created_at?->diffForHumans() }}</div>
+                    @if ($b->status === 'completed' && (int) $b->changed_files > 0)
+                        <div class="dp-muted" title="Server lagi jalan waktu backup dibuat, jadi sebagian file berubah atau hilang selama dibaca.">&#9888; {{ $b->changed_files }} file berubah selama dibaca</div>
+                    @endif
                     @if ($b->status === 'failed' && $b->error)
                         <div class="dp-muted">{{ $b->error }}</div>
                     @endif

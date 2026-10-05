@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class ServerController extends Controller
 {
-    use AppliesAllocations;
+    use \App\Http\Controllers\Concerns\ManagesInstall, AppliesAllocations;
 
     public function index(Request $request)
     {

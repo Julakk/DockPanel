@@ -401,7 +401,18 @@
                 <div class="nd-box-head"><h3>Reinstall Server</h3></div>
                 <div class="nd-box-body">
                     <p style="margin:0 0 .9rem;">Install ulang server dengan script dari Egg. Data server bisa tertimpa.</p>
-                    <button type="button" class="nd-btn nd-btn-red" disabled>Belum tersedia</button>
+                    @if (in_array($server->status, ['installing', 'restoring_backup'], true))
+                        <p class="nd-hint" style="margin:0;">Server lagi {{ $server->status }}, tunggu selesai dulu.</p>
+                    @else
+                        <form method="POST" action="{{ route('servers.reinstall', $server) }}" onsubmit="return confirm('Reinstall server ini? File server bisa tertimpa oleh script install Egg. Server harus dalam keadaan mati.');">
+                            @csrf
+                            <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;font-weight:normal;">
+                                <input type="checkbox" name="confirm" value="1" required style="width:auto;">
+                                <span>Saya paham data server bisa tertimpa</span>
+                            </label>
+                            <button type="submit" class="nd-btn nd-btn-red">Reinstall Server</button>
+                        </form>
+                    @endif
                 </div>
             </div>
 
@@ -409,7 +420,23 @@
                 <div class="nd-box-head"><h3>Install Status</h3></div>
                 <div class="nd-box-body">
                     <p style="margin:0 0 .9rem;">Ubah status install server secara manual.</p>
-                    <button type="button" class="nd-btn nd-btn-blue" disabled>Belum tersedia</button>
+                    <p class="nd-hint" style="margin:0 0 .6rem;">Status sekarang: <span class="status-badge status-{{ $server->status }}">{{ $server->status }}</span></p>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                        <form method="POST" action="{{ route('servers.install-sync', $server) }}">
+                            @csrf
+                            <button type="submit" class="nd-btn nd-btn-blue">Cek dari Wings</button>
+                        </form>
+                        <form method="POST" action="{{ route('servers.install-status', $server) }}">
+                            @csrf
+                            <input type="hidden" name="status" value="offline">
+                            <button type="submit" class="nd-btn nd-btn-green">Tandai terinstall</button>
+                        </form>
+                        <form method="POST" action="{{ route('servers.install-status', $server) }}">
+                            @csrf
+                            <input type="hidden" name="status" value="install_failed">
+                            <button type="submit" class="nd-btn nd-btn-red">Tandai gagal</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
