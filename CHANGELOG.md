@@ -2,6 +2,21 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [Unreleased]
+> "Installer ikut zaman: ada menu update, mode production, dan Go yang cocok sama DockWings." 🐧
+
+### Added
+
+- Menu 3 (Update Panel) dan 4 (Update Wings) di `install.sh`. Update Wings build ke file sementara dulu dan otomatis rollback ke binary lama kalau service baru gagal start.
+- Cron scheduler Laravel dipasang otomatis di `/etc/cron.d/dockpanel` (sebelumnya harus manual, padahal suspend otomatis server expired bergantung padanya).
+
+### Changed
+
+- Instalasi Panel menulis `APP_ENV=production` dan `APP_DEBUG=false` (sebelumnya mewarisi `local` dan `true` dari `.env.example`), dan `.env` jadi `root:www-data` mode 640.
+- `APP_URL` pakai `https` hanya kalau SSL dipilih (sebelumnya selalu `https`).
+- Instalasi Wings memasang Go sesuai versi di `go.mod` DockWings (sebelumnya Go 1.22 tetap, padahal DockWings butuh lebih baru) dan mendukung arm64. Config Wings yang sudah ada nggak ditimpa tanpa konfirmasi, dan `backup_directory` ditulis eksplisit.
+- Binary Wings dipasang lewat `install` dari file sementara, jadi aman walau Wings lama sedang jalan.
+
 ## [0.17.0] - 2026-10-05
 > "Database dan phpMyAdmin sekarang mirip Pterodactyl: bikin sendiri, rotate password, dan masuk phpMyAdmin tanpa ngetik password." 🐧
 

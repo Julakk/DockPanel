@@ -132,7 +132,18 @@ php artisan serve
 bash <(curl -s https://raw.githubusercontent.com/Julakk/DockPanel/main/install.sh)
 ```
 
-Pilih opsi **1** buat install Panel, atau opsi **2** buat install Node/Wings di VPS Ubuntu 24.04 yang beda. Installer otomatis setup PHP, MariaDB, Nginx (buat Panel) atau Docker + Go (buat Wings).
+Menu installer:
+
+| Opsi | Fungsi |
+| ---- | ------ |
+| 1 | Install Panel: PHP 8.3, MariaDB, Nginx, `.env` mode production (`APP_DEBUG=false`), dan cron scheduler Laravel (`/etc/cron.d/dockpanel`) |
+| 2 | Install Node/Wings di VPS Ubuntu 24.04 yang beda: Docker, Go (versinya ngikutin `go.mod` DockWings, amd64 dan arm64), build, dan service systemd. Config lama nggak ditimpa tanpa konfirmasi |
+| 3 | Update Panel: `git pull --ff-only`, `composer install`, `migrate`, bersihin cache. Perubahan lokal yang belum di-commit diamankan ke `git stash` |
+| 4 | Update Wings: `git pull --ff-only`, build ke file sementara, ganti binary, restart. Kalau service baru gagal start, binary lama dikembalikan otomatis (`/usr/local/bin/dockwings.bak`) |
+
+Urutan update yang aman: Panel dulu (opsi 3), baru Wings di tiap node (opsi 4). Cek `CHANGELOG.md` buat versi Wings minimal yang dibutuhkan tiap rilis.
+
+> Installer belum menyiapkan Database Host (user MySQL buat fitur database), phpMyAdmin SSO, atau akses MariaDB dari jaringan Docker. Itu masih disetup manual setelah install.
 
 ## Menghubungkan Panel ke Wings
 
