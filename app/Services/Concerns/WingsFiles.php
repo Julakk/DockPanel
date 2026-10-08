@@ -94,6 +94,27 @@ trait WingsFiles
         return [$r->status(), $r->json() ?? []];
     }
 
+    public function compressFiles(array $paths, string $dest): array
+    {
+        $r = $this->client()->timeout(300)->post($this->filesPath('compress'), ['paths' => array_values($paths), 'dest' => $dest]);
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
+    public function chmodFile(string $path, bool $executable): array
+    {
+        $r = $this->client()->timeout(15)->post($this->filesPath('chmod'), ['path' => $path, 'executable' => $executable]);
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
+    public function pullFile(string $url, string $path): array
+    {
+        $r = $this->client()->timeout(300)->post($this->filesPath('pull'), ['url' => $url, 'path' => $path]);
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
     public function extractFile(string $path): array
     {
         $r = $this->client()->timeout(180)->post($this->filesPath('extract'), ['path' => $path]);

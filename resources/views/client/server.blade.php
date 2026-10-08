@@ -185,6 +185,7 @@
                 <button class="dp-btn" id="fm-refresh" type="button">Refresh</button>
                 <button class="dp-btn" id="fm-mkdir" type="button">Folder baru</button>
                 <button class="dp-btn" id="fm-upload" type="button">Upload</button>
+                <button class="dp-btn" id="fm-pull" type="button">Dari URL</button>
                 <input type="file" id="fm-file" multiple style="display:none">
             </div>
             <div class="dp-muted" id="fm-path" style="margin-bottom:.5rem;font-family:monospace">/</div>
@@ -214,6 +215,9 @@
                 mkdir: @json(route('client.servers.files.mkdir', $server)),
                 rename: @json(route('client.servers.files.rename', $server)),
                 extract: @json(route('client.servers.files.extract', $server)),
+                compress: @json(route('client.servers.files.compress', $server)),
+                chmod: @json(route('client.servers.files.chmod', $server)),
+                pull: @json(route('client.servers.files.pull', $server)),
                 del: @json(route('client.servers.files.delete', $server)),
             };
             const CSRF = @json(csrf_token());
@@ -322,6 +326,29 @@
                         }));
                         tdAct.appendChild(document.createTextNode(' '));
                     }
+                    if (!/\.(zip|tar|tar\.gz|tgz)$/i.test(e.name)) {
+                        tdAct.appendChild(btn('Zip', async () => {
+                            msg('Mengompres ' + e.name + '...');
+                            try {
+                                const r = await post(U.compress, { paths: [full], dest: full + '.zip' });
+                                await load(cwd);
+                                msg('Terkompres ke ' + e.name + '.zip' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
+                            } catch (x) { msg(x.message); }
+                        }));
+                        tdAct.appendChild(document.createTextNode(' '));
+                    }
+                    if (!e.is_dir) {
+                        tdAct.appendChild(btn('Izin', async () => {
+                            const m = (prompt('Izin file: 755 = executable, 644 = biasa', '755') || '').trim();
+                            if (m !== '755' && m !== '644') { if (m) msg('Pilih 755 atau 644.'); return; }
+                            try {
+                                await post(U.chmod, { path: full, executable: m === '755' });
+                                await load(cwd);
+                                msg('Izin ' + e.name + ' jadi ' + m + '.');
+                            } catch (x) { msg(x.message); }
+                        }));
+                        tdAct.appendChild(document.createTextNode(' '));
+                    }
                     tdAct.appendChild(btn('Rename', async () => {
                         const n = prompt('Nama baru:', e.name);
                         if (!n || n === e.name) return;
@@ -392,6 +419,21 @@
                     load(cwd);
                 } catch (e) { msg(e.message); }
                 ev.target.value = '';
+            });
+
+            $('fm-pull').addEventListener('click', async () => {
+                const u = (prompt('URL file (http/https):') || '').trim();
+                if (!u) return;
+                let name = '';
+                try { name = decodeURIComponent(new URL(u).pathname.split('/').pop() || ''); } catch (e) { msg('URL nggak valid.'); return; }
+                name = (prompt('Simpan sebagai:', name || 'download') || '').trim();
+                if (!name || name.indexOf('/') !== -1) return;
+                msg('Mendownload...');
+                try {
+                    const r = await post(U.pull, { url: u, path: join(cwd, name) });
+                    await load(cwd);
+                    msg('Terdownload: ' + name + (r && r.size != null ? ' (' + size(r.size) + ').' : '.'));
+                } catch (x) { msg(x.message); }
             });
 
             load('/');

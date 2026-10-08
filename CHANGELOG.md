@@ -2,6 +2,20 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.17.4] - 2026-10-08
+> "File manager makin lengkap: kompres, atur izin, dan download dari URL." 🐧
+
+### Added
+
+- Tombol **Zip** di tiap file/folder buat bikin arsip `.zip` di folder yang sama.
+- Tombol **Izin** buat jadikan file executable (755) atau biasa (644).
+- Tombol **Dari URL** di toolbar buat download file dari link http/https langsung ke server (maks 100 MB, IP publik saja).
+- Activity log: `server:file.compress`, `server:file.chmod`, `server:file.pull`.
+
+### Changed
+
+- Butuh DockWings v0.4.8+. Versi panel jadi 0.17.4.
+
 ## [0.17.3] - 2026-10-08
 > "Tombol Extract akhirnya muncul, dan tombol file manager lebih enak dipencet di HP." 🐧
 

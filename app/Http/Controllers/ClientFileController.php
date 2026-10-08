@@ -242,6 +242,46 @@ class ClientFileController extends Controller
         ));
     }
 
+    public function compress(Request $request, Server $server): JsonResponse|StreamedResponse
+    {
+        $wings = $this->wings($request, $server, 'files.write', true);
+        $data = $request->validate([
+            'paths' => ['required', 'array', 'min:1', 'max:100'],
+            'paths.*' => self::PATH_RULES,
+            'dest' => self::PATH_RULES,
+        ]);
+
+        return $this->call(fn () => $this->logIf(
+            $this->respond($wings->compressFiles($data['paths'], $data['dest'])),
+            $server, 'server:file.compress', ['paths' => $data['paths'], 'dest' => $data['dest']],
+        ));
+    }
+
+    public function chmod(Request $request, Server $server): JsonResponse|StreamedResponse
+    {
+        $wings = $this->wings($request, $server, 'files.write', true);
+        $data = $request->validate(['path' => self::PATH_RULES, 'executable' => ['required', 'boolean']]);
+
+        return $this->call(fn () => $this->logIf(
+            $this->respond($wings->chmodFile($data['path'], (bool) $data['executable'])),
+            $server, 'server:file.chmod', ['path' => $data['path'], 'executable' => (bool) $data['executable']],
+        ));
+    }
+
+    public function pull(Request $request, Server $server): JsonResponse|StreamedResponse
+    {
+        $wings = $this->wings($request, $server, 'files.write', true);
+        $data = $request->validate([
+            'url' => ['required', 'string', 'max:2048', 'regex:#^https?://#i'],
+            'path' => self::PATH_RULES,
+        ]);
+
+        return $this->call(fn () => $this->logIf(
+            $this->respond($wings->pullFile($data['url'], $data['path'])),
+            $server, 'server:file.pull', ['host' => parse_url($data['url'], PHP_URL_HOST), 'path' => $data['path']],
+        ));
+    }
+
     public function extract(Request $request, Server $server): JsonResponse|StreamedResponse
     {
         $wings = $this->wings($request, $server, 'files.write', true);
