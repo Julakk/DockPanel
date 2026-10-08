@@ -6,7 +6,7 @@
 
 > Self-hosted game server management panel. Terinspirasi dari Pterodactyl, dibangun dari nol pakai Laravel.
 
-![version](https://img.shields.io/badge/version-0.17.0-blue) ![laravel](https://img.shields.io/badge/Laravel-11-red) ![license](https://img.shields.io/badge/license-MIT-green)
+![version](https://img.shields.io/badge/version-0.17.1-blue) ![laravel](https://img.shields.io/badge/Laravel-11-red) ![license](https://img.shields.io/badge/license-MIT-green)
 
 Dikembangkan oleh **Julak Junior** ([@Julakk](https://github.com/Julakk)) — dicoding langsung dari HP via Termux. 🐧📱
 

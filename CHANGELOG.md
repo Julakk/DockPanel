@@ -2,7 +2,7 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
-## [Unreleased]
+## [0.17.1] - 2026-10-08
 > "Installer ikut zaman: ada menu update, mode production, dan Go yang cocok sama DockWings." 🐧
 
 ### Added
