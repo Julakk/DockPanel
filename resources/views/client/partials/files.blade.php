@@ -73,6 +73,7 @@
         upload: @json(route('client.servers.files.upload', $server)),
         mkdir: @json(route('client.servers.files.mkdir', $server)),
         rename: @json(route('client.servers.files.rename', $server)),
+        extract: @json(route('client.servers.files.extract', $server)),
         del: @json(route('client.servers.files.delete', $server))
     };
     var CSRF = @json(csrf_token());
@@ -203,6 +204,9 @@
                 tda.appendChild(dl);
             }
             if (WRITE) {
+                if (!e.is_dir && /\.(zip|tar|tar\.gz|tgz)$/i.test(e.name)) {
+                    tda.appendChild(btn('Extract', function () { extractArchive(e); }));
+                }
                 tda.appendChild(btn('Rename', function () { rename(e); }));
                 tda.appendChild(btn('Hapus', function () { delNames([e.name]); }));
             }
@@ -293,6 +297,17 @@
             await req(U.mkdir, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: join(cwd, n) }) });
             toast('Folder dibuat.');
         } catch (e) { toast(e.message, 'error'); }
+        busy(false);
+        await load(cwd);
+    }
+
+    async function extractArchive(e) {
+        if (!confirm('Ekstrak ' + e.name + ' ke folder ini? File dengan nama sama akan ditimpa.')) return;
+        busy(true);
+        try {
+            var d = await req(U.extract, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: join(cwd, e.name) }) });
+            toast('Terekstrak' + (d && d.files != null ? ' (' + d.files + ' file).' : '.'));
+        } catch (err) { toast(err.message, 'error'); }
         busy(false);
         await load(cwd);
     }

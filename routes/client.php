@@ -35,5 +35,6 @@ Route::middleware('auth')->prefix('client/servers/{server}/files')->name('client
     Route::post('upload', [ClientFileController::class, 'upload'])->name('upload');
     Route::post('mkdir', [ClientFileController::class, 'mkdir'])->name('mkdir');
     Route::post('rename', [ClientFileController::class, 'rename'])->name('rename');
+    Route::post('extract', [ClientFileController::class, 'extract'])->name('extract');
     Route::post('delete', [ClientFileController::class, 'delete'])->name('delete');
 });

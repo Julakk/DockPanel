@@ -94,6 +94,13 @@ trait WingsFiles
         return [$r->status(), $r->json() ?? []];
     }
 
+    public function extractFile(string $path): array
+    {
+        $r = $this->client()->timeout(180)->post($this->filesPath('extract'), ['path' => $path]);
+
+        return [$r->status(), $r->json() ?? []];
+    }
+
     public function deleteFiles(array $paths): array
     {
         $r = $this->client()->timeout(60)->post($this->filesPath('delete'), ['paths' => array_values($paths)]);

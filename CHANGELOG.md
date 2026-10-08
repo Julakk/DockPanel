@@ -2,6 +2,22 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.17.2] - 2026-10-08
+> "Zip yang diupload sekarang bisa langsung diekstrak dari panel." 🐧
+
+### Added
+
+- Tombol **Extract** di tab Files buat arsip `.zip`, `.tar`, `.tar.gz`, dan `.tgz`. Isinya diekstrak ke folder yang sama dengan arsipnya, dan dicatat di Activity (`server:file.extract`).
+- Route `client.servers.files.extract` dan `WingsService::extractFile()`.
+
+### Fixed
+
+- Upload file di atas 1 MB ditolak dengan Error 413 karena batas nginx. Sekarang batas upload nginx dan PHP 256 MB (batas per file dari Wings tetap 100 MB).
+
+### Changed
+
+- Versi panel jadi 0.17.2. Tombol Extract butuh DockWings v0.4.6+. `.rar` belum didukung.
+
 ## [0.17.1] - 2026-10-08
 > "Installer ikut zaman: ada menu update, mode production, dan Go yang cocok sama DockWings." 🐧
 

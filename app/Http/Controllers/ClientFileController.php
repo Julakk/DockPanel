@@ -242,6 +242,17 @@ class ClientFileController extends Controller
         ));
     }
 
+    public function extract(Request $request, Server $server): JsonResponse|StreamedResponse
+    {
+        $wings = $this->wings($request, $server, 'files.write', true);
+        $data = $request->validate(['path' => self::PATH_RULES]);
+
+        return $this->call(fn () => $this->logIf(
+            $this->respond($wings->extractFile($data['path'])),
+            $server, 'server:file.extract', ['path' => $data['path']],
+        ));
+    }
+
     public function rename(Request $request, Server $server): JsonResponse|StreamedResponse
     {
         $wings = $this->wings($request, $server, 'files.write', true);
