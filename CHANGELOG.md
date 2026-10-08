@@ -2,6 +2,18 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.17.3] - 2026-10-08
+> "Tombol Extract akhirnya muncul, dan tombol file manager lebih enak dipencet di HP." 🐧
+
+### Fixed
+
+- Tombol **Extract** di v0.17.2 nggak pernah tampil karena dipasang di partial `files.blade.php` yang nggak dipakai halaman server. Sekarang dipasang di `client/server.blade.php`.
+
+### Changed
+
+- Tombol aksi file manager: area sentuh lebih besar, **Hapus** merah, **Extract** biru, dan kolom aksi bisa turun baris di layar sempit.
+- Versi panel jadi 0.17.3.
+
 ## [0.17.2] - 2026-10-08
 > "Zip yang diupload sekarang bisa langsung diekstrak dari panel." 🐧
 

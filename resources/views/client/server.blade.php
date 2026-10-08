@@ -213,6 +213,7 @@
                 upload: @json(route('client.servers.files.upload', $server)),
                 mkdir: @json(route('client.servers.files.mkdir', $server)),
                 rename: @json(route('client.servers.files.rename', $server)),
+                extract: @json(route('client.servers.files.extract', $server)),
                 del: @json(route('client.servers.files.delete', $server)),
             };
             const CSRF = @json(csrf_token());
@@ -264,7 +265,12 @@
                 const b = document.createElement('button');
                 b.className = 'dp-btn';
                 b.type = 'button';
-                b.style.padding = '.2rem .5rem';
+                b.style.padding = '.4rem .8rem';
+                b.style.margin = '.15rem .2rem .15rem 0';
+                b.style.minHeight = '34px';
+                b.style.fontWeight = '600';
+                if (label === 'Hapus') { b.style.background = '#c0392b'; b.style.borderColor = '#c0392b'; b.style.color = '#fff'; }
+                if (label === 'Extract') { b.style.background = '#2f81c7'; b.style.borderColor = '#2f81c7'; b.style.color = '#fff'; }
                 b.textContent = label;
                 b.addEventListener('click', fn);
                 return b;
@@ -298,9 +304,22 @@
                     tdSize.textContent = e.is_dir ? '' : size(e.size);
 
                     const tdAct = document.createElement('td');
-                    tdAct.style.whiteSpace = 'nowrap';
+                    tdAct.style.whiteSpace = 'normal';
+                    tdAct.style.textAlign = 'right';
                     if (!e.is_dir) {
                         tdAct.appendChild(btn('Unduh', () => { location.href = q(U.download, { path: full }); }));
+                        tdAct.appendChild(document.createTextNode(' '));
+                    }
+                    if (!e.is_dir && /\.(zip|tar|tar\.gz|tgz)$/i.test(e.name)) {
+                        tdAct.appendChild(btn('Extract', async () => {
+                            if (!confirm('Ekstrak ' + e.name + ' ke folder ini? File dengan nama sama akan ditimpa.')) return;
+                            msg('Mengekstrak ' + e.name + '...');
+                            try {
+                                const r = await post(U.extract, { path: full });
+                                await load(cwd);
+                                msg('Terekstrak' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
+                            } catch (x) { msg(x.message); }
+                        }));
                         tdAct.appendChild(document.createTextNode(' '));
                     }
                     tdAct.appendChild(btn('Rename', async () => {
