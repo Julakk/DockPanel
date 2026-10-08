@@ -2,6 +2,19 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.18.0] - 2026-10-09
+> "Tampilan file manager dan HUD server dirombak, lebih mirip panel yang biasa dipakai." 🐧
+
+### Changed
+
+- File manager: breadcrumb bisa diklik, checkbox per baris + pilih semua, bar aksi massal (Zip, Hapus), ikon folder/file, ukuran dalam KiB/MiB/GiB, tanggal modifikasi, dan satu tombol menu per baris (Rename, Zip, Extract, Izin, Unduh, Hapus).
+- HUD server: palet slate, kartu statistik 2 kolom di HP dan 4 kolom di layar lebar, tab bisa digeser horizontal dengan garis bawah aktif, console lebih tinggi dengan kolom command menempel di bawahnya.
+- Versi panel jadi 0.18.0.
+
+### Added
+
+- Tombol **New File** di file manager.
+
 ## [0.17.4] - 2026-10-08
 > "File manager makin lengkap: kompres, atur izin, dan download dari URL." 🐧
 

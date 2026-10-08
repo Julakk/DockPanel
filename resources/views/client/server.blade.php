@@ -29,6 +29,42 @@
 .dp-perms{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.3rem;margin:.5rem 0}
 .dp-perms label{display:flex;align-items:center;gap:.4rem;margin:0}
 .dp-perms input{width:auto;margin:0}
+
+/* ===== v0.18.0 tampilan ala Pterodactyl (hapus blok ini buat balik ke gaya lama) ===== */
+body{background:#2d3948}
+.dp-wrap{--hud-card:#374556;--hud-row:#3f4e61;--hud-line:#4a5a6e;--hud-mute:#9fb0c4;--hud-blue:#2563eb;--hud-grey:#5b6b7e;--hud-teal:#2aa5c4}
+.dp-wrap .dp-card{background:var(--hud-card);border-color:var(--hud-line);border-radius:8px}
+.dp-wrap .dp-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1rem}
+@media(min-width:720px){.dp-wrap .dp-stats{grid-template-columns:repeat(4,1fr)}}
+.dp-wrap .dp-stat{background:var(--hud-card);border:1px solid var(--hud-line);border-top:3px solid var(--hud-teal);border-radius:8px;padding:.7rem .8rem}
+.dp-wrap .dp-stat-label{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--hud-mute)}
+.dp-wrap .dp-stat-value{font-size:1.05rem;font-weight:600;word-break:break-all}
+.dp-wrap .dp-tabs{flex-wrap:nowrap;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--hud-line);margin-bottom:1rem}
+.dp-wrap .dp-tabs::-webkit-scrollbar{display:none}
+.dp-wrap .dp-tabs a{flex:0 0 auto;border:0;border-radius:0;border-bottom:2px solid transparent;padding:.7rem .9rem;color:var(--hud-mute);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+.dp-wrap .dp-tabs a.active{background:transparent;color:inherit;border-bottom-color:var(--hud-teal)}
+.dp-wrap .dp-console{min-height:46vh;max-height:60vh;overflow:auto;border-radius:6px 6px 0 0;line-height:1.35}
+#dp-console-form{margin:0!important;padding:.4rem;background:#0b0d0f;border-radius:0 0 6px 6px;border-top:1px solid #1d232a}
+#dp-console-form .dp-input{border:0;background:transparent;font-family:monospace}
+#fm .dp-btn{border-radius:4px;padding:.5rem .9rem;min-height:36px;font-weight:600;font-size:.82rem;background:var(--hud-grey);border-color:transparent;color:#fff}
+#fm-upload,#fm-newfile{background:var(--hud-blue)!important}
+#fm table{width:100%;border-collapse:collapse}
+#fm tbody tr{background:var(--hud-row);border-bottom:1px solid var(--hud-line)}
+#fm tbody tr:hover{background:#465770}
+#fm td{padding:.55rem .5rem;vertical-align:middle;font-size:.85rem}
+.fm-ico{display:inline-block;width:1.5rem;text-align:center}
+.fm-name{color:inherit;text-decoration:none;word-break:break-all}
+.fm-meta{text-align:right;white-space:nowrap;color:var(--hud-mute);font-size:.76rem;line-height:1.35}
+#fm .fm-dots{background:transparent;border:0;font-size:1.3rem;line-height:1;padding:.2rem .6rem;min-height:0}
+.fm-menu{position:absolute;z-index:60;min-width:160px;background:#2a3544;border:1px solid var(--hud-line,#4a5a6e);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:.25rem}
+.fm-menu button{display:block;width:100%;text-align:left;padding:.6rem .8rem;border:0;background:transparent;color:inherit;cursor:pointer;font-size:.85rem;border-radius:4px}
+.fm-menu button:hover{background:#3b4a5c}
+.fm-menu .fm-danger{color:#ff8a80}
+.fm-crumb{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.85rem;margin:.3rem 0 .6rem}
+.fm-crumb a{color:inherit;text-decoration:none;opacity:.75}
+.fm-crumb a:last-of-type{opacity:1;font-weight:600}
+.fm-bulk{display:none;gap:.5rem;align-items:center;padding:.5rem .6rem;margin-bottom:.5rem;background:#2a3544;border:1px solid var(--hud-line,#4a5a6e);border-radius:6px}
+
 </style>
 
 <div class="dp-wrap">
@@ -186,6 +222,7 @@
                 <button class="dp-btn" id="fm-mkdir" type="button">Folder baru</button>
                 <button class="dp-btn" id="fm-upload" type="button">Upload</button>
                 <button class="dp-btn" id="fm-pull" type="button">Dari URL</button>
+                <button class="dp-btn" id="fm-newfile" type="button">New File</button>
                 <input type="file" id="fm-file" multiple style="display:none">
             </div>
             <div class="dp-muted" id="fm-path" style="margin-bottom:.5rem;font-family:monospace">/</div>
@@ -228,7 +265,7 @@
             const join = (d, n) => (d === '/' ? '' : d.replace(/\/$/, '')) + '/' + n;
             const parent = (d) => d === '/' ? '/' : (d.replace(/\/$/, '').split('/').slice(0, -1).join('/') || '/');
             const q = (u, o) => u + '?' + new URLSearchParams(o).toString();
-            const size = (n) => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+            const size = (n) => n < 1024 ? n + ' Bytes' : n < 1048576 ? (n / 1024).toFixed(2) + ' KiB' : n < 1073741824 ? (n / 1048576).toFixed(2) + ' MiB' : (n / 1073741824).toFixed(2) + ' GiB';
 
             function msg(t) {
                 const el = $('fm-msg');
@@ -257,7 +294,7 @@
                 try {
                     const d = await api(q(U.list, { path: path }));
                     cwd = path;
-                    $('fm-path').textContent = cwd;
+                    renderCrumb();
                     render(d.entries || []);
                 } catch (e) {
                     msg(e.message);
@@ -280,91 +317,219 @@
                 return b;
             }
 
+            const selected = new Set();
+            let currentEntries = [];
+            let menuEl = null;
+            const ARCH = /\.(zip|tar|tar\.gz|tgz)$/i;
+
+            const fmtDate = (s) => {
+                if (!s) return '';
+                const d = new Date(s);
+                if (isNaN(d)) return '';
+                return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            };
+
+            function closeMenu() {
+                if (menuEl) { menuEl.remove(); menuEl = null; }
+            }
+            document.addEventListener('click', closeMenu);
+
+            function openMenu(ev, items) {
+                ev.stopPropagation();
+                closeMenu();
+                const m = document.createElement('div');
+                m.className = 'fm-menu';
+                items.forEach((it) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.textContent = it.label;
+                    if (it.danger) b.className = 'fm-danger';
+                    b.addEventListener('click', (e2) => { e2.stopPropagation(); closeMenu(); it.fn(); });
+                    m.appendChild(b);
+                });
+                document.body.appendChild(m);
+                const r = ev.currentTarget.getBoundingClientRect();
+                const w = m.offsetWidth;
+                m.style.top = (r.bottom + window.scrollY + 4) + 'px';
+                m.style.left = Math.max(8, Math.min(r.right + window.scrollX - w, window.innerWidth - w - 8)) + 'px';
+                menuEl = m;
+            }
+
+            function syncChecks() {
+                $('fm-list').querySelectorAll('input.fm-chk').forEach((c) => { c.checked = selected.has(c.dataset.name); });
+            }
+
+            function updateBulk() {
+                const n = selected.size;
+                const bar = $('fm-bulk');
+                if (bar) {
+                    bar.style.display = n ? 'flex' : 'none';
+                    $('fm-bulk-n').textContent = n + ' dipilih';
+                }
+                const all = $('fm-all');
+                if (all) {
+                    all.checked = n > 0 && n === currentEntries.length;
+                    all.indeterminate = n > 0 && n < currentEntries.length;
+                }
+            }
+
+            function renderCrumb() {
+                const el = $('fm-path');
+                el.innerHTML = '';
+                el.className = 'fm-crumb';
+                el.style.fontFamily = 'inherit';
+                const all = document.createElement('input');
+                all.type = 'checkbox';
+                all.id = 'fm-all';
+                all.title = 'Pilih semua';
+                all.addEventListener('change', () => {
+                    selected.clear();
+                    if (all.checked) currentEntries.forEach((x) => selected.add(x.name));
+                    syncChecks();
+                    updateBulk();
+                });
+                el.appendChild(all);
+                const sep = () => el.appendChild(document.createTextNode('/'));
+                const link = (label, path) => {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = label;
+                    a.addEventListener('click', (ev) => { ev.preventDefault(); load(path); });
+                    return a;
+                };
+                sep();
+                el.appendChild(document.createTextNode('home'));
+                sep();
+                el.appendChild(link('container', '/'));
+                let acc = '';
+                cwd.split('/').filter(Boolean).forEach((p) => {
+                    acc += '/' + p;
+                    sep();
+                    el.appendChild(link(p, acc));
+                });
+                sep();
+            }
+
+            async function doRename(e, full) {
+                const n = (prompt('Nama baru:', e.name) || '').trim();
+                if (!n || n === e.name) return;
+                try { await post(U.rename, { from: full, to: join(cwd, n) }); load(cwd); } catch (x) { msg(x.message); }
+            }
+
+            async function doDelete(e, full) {
+                if (!confirm('Hapus ' + e.name + '?')) return;
+                try { await post(U.del, { paths: [full] }); load(cwd); } catch (x) { msg(x.message); }
+            }
+
+            async function doZip(e, full) {
+                msg('Mengompres ' + e.name + '...');
+                try {
+                    const r = await post(U.compress, { paths: [full], dest: full + '.zip' });
+                    await load(cwd);
+                    msg('Terkompres ke ' + e.name + '.zip' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
+                } catch (x) { msg(x.message); }
+            }
+
+            async function doExtract(e, full) {
+                if (!confirm('Ekstrak ' + e.name + ' ke folder ini? File dengan nama sama akan ditimpa.')) return;
+                msg('Mengekstrak ' + e.name + '...');
+                try {
+                    const r = await post(U.extract, { path: full });
+                    await load(cwd);
+                    msg('Terekstrak' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
+                } catch (x) { msg(x.message); }
+            }
+
+            async function doChmod(e, full) {
+                const m = (prompt('Izin file: 755 = executable, 644 = biasa', '755') || '').trim();
+                if (m !== '755' && m !== '644') { if (m) msg('Pilih 755 atau 644.'); return; }
+                try {
+                    await post(U.chmod, { path: full, executable: m === '755' });
+                    await load(cwd);
+                    msg('Izin ' + e.name + ' jadi ' + m + '.');
+                } catch (x) { msg(x.message); }
+            }
+
+            function buildItems(e, full) {
+                const it = [{ label: 'Rename', fn: () => doRename(e, full) }];
+                if (!ARCH.test(e.name)) it.push({ label: 'Zip', fn: () => doZip(e, full) });
+                if (!e.is_dir && ARCH.test(e.name)) it.push({ label: 'Extract', fn: () => doExtract(e, full) });
+                if (!e.is_dir) it.push({ label: 'Izin (755 / 644)', fn: () => doChmod(e, full) });
+                if (!e.is_dir) it.push({ label: 'Unduh', fn: () => { location.href = q(U.download, { path: full }); } });
+                it.push({ label: 'Hapus', danger: true, fn: () => doDelete(e, full) });
+                return it;
+            }
+
             function render(entries) {
+                selected.clear();
+                currentEntries = entries.slice();
                 const tb = $('fm-list');
                 tb.innerHTML = '';
                 entries.sort((a, b) => (b.is_dir - a.is_dir) || a.name.localeCompare(b.name));
                 if (!entries.length) {
-                    tb.innerHTML = '<tr><td class="dp-muted">Folder kosong.</td></tr>';
+                    tb.innerHTML = '<tr><td class="dp-muted" style="padding:1rem">Folder kosong.</td></tr>';
+                    updateBulk();
                     return;
                 }
                 entries.forEach((e) => {
-                    const tr = document.createElement('tr');
                     const full = join(cwd, e.name);
+                    const tr = document.createElement('tr');
 
-                    const tdName = document.createElement('td');
+                    const tdC = document.createElement('td');
+                    tdC.style.width = '1%';
+                    const chk = document.createElement('input');
+                    chk.type = 'checkbox';
+                    chk.className = 'fm-chk';
+                    chk.dataset.name = e.name;
+                    chk.addEventListener('change', () => {
+                        if (chk.checked) selected.add(e.name); else selected.delete(e.name);
+                        updateBulk();
+                    });
+                    tdC.appendChild(chk);
+
+                    const tdN = document.createElement('td');
+                    const ico = document.createElement('span');
+                    ico.className = 'fm-ico';
+                    ico.textContent = e.is_dir ? '\uD83D\uDCC1' : '\uD83D\uDCC4';
                     const a = document.createElement('a');
                     a.href = '#';
-                    a.style.color = 'inherit';
-                    a.textContent = (e.is_dir ? '[dir] ' : '') + e.name;
+                    a.className = 'fm-name';
+                    a.textContent = e.name;
                     a.addEventListener('click', (ev) => {
                         ev.preventDefault();
-                        e.is_dir ? load(full) : openFile(full);
+                        if (e.is_dir) load(full); else openFile(full);
                     });
-                    tdName.appendChild(a);
+                    tdN.appendChild(ico);
+                    tdN.appendChild(a);
 
-                    const tdSize = document.createElement('td');
-                    tdSize.className = 'dp-muted';
-                    tdSize.textContent = e.is_dir ? '' : size(e.size);
-
-                    const tdAct = document.createElement('td');
-                    tdAct.style.whiteSpace = 'normal';
-                    tdAct.style.textAlign = 'right';
+                    const tdM = document.createElement('td');
+                    tdM.className = 'fm-meta';
                     if (!e.is_dir) {
-                        tdAct.appendChild(btn('Unduh', () => { location.href = q(U.download, { path: full }); }));
-                        tdAct.appendChild(document.createTextNode(' '));
+                        const sz = document.createElement('div');
+                        sz.textContent = size(e.size);
+                        tdM.appendChild(sz);
                     }
-                    if (!e.is_dir && /\.(zip|tar|tar\.gz|tgz)$/i.test(e.name)) {
-                        tdAct.appendChild(btn('Extract', async () => {
-                            if (!confirm('Ekstrak ' + e.name + ' ke folder ini? File dengan nama sama akan ditimpa.')) return;
-                            msg('Mengekstrak ' + e.name + '...');
-                            try {
-                                const r = await post(U.extract, { path: full });
-                                await load(cwd);
-                                msg('Terekstrak' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
-                            } catch (x) { msg(x.message); }
-                        }));
-                        tdAct.appendChild(document.createTextNode(' '));
-                    }
-                    if (!/\.(zip|tar|tar\.gz|tgz)$/i.test(e.name)) {
-                        tdAct.appendChild(btn('Zip', async () => {
-                            msg('Mengompres ' + e.name + '...');
-                            try {
-                                const r = await post(U.compress, { paths: [full], dest: full + '.zip' });
-                                await load(cwd);
-                                msg('Terkompres ke ' + e.name + '.zip' + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
-                            } catch (x) { msg(x.message); }
-                        }));
-                        tdAct.appendChild(document.createTextNode(' '));
-                    }
-                    if (!e.is_dir) {
-                        tdAct.appendChild(btn('Izin', async () => {
-                            const m = (prompt('Izin file: 755 = executable, 644 = biasa', '755') || '').trim();
-                            if (m !== '755' && m !== '644') { if (m) msg('Pilih 755 atau 644.'); return; }
-                            try {
-                                await post(U.chmod, { path: full, executable: m === '755' });
-                                await load(cwd);
-                                msg('Izin ' + e.name + ' jadi ' + m + '.');
-                            } catch (x) { msg(x.message); }
-                        }));
-                        tdAct.appendChild(document.createTextNode(' '));
-                    }
-                    tdAct.appendChild(btn('Rename', async () => {
-                        const n = prompt('Nama baru:', e.name);
-                        if (!n || n === e.name) return;
-                        try { await post(U.rename, { from: full, to: join(cwd, n) }); load(cwd); } catch (x) { msg(x.message); }
-                    }));
-                    tdAct.appendChild(document.createTextNode(' '));
-                    tdAct.appendChild(btn('Hapus', async () => {
-                        if (!confirm('Hapus ' + e.name + '?')) return;
-                        try { await post(U.del, { paths: [full] }); load(cwd); } catch (x) { msg(x.message); }
-                    }));
+                    const dt = document.createElement('div');
+                    dt.textContent = fmtDate(e.modified);
+                    tdM.appendChild(dt);
 
-                    tr.appendChild(tdName);
-                    tr.appendChild(tdSize);
-                    tr.appendChild(tdAct);
+                    const tdA = document.createElement('td');
+                    tdA.style.width = '1%';
+                    const dots = document.createElement('button');
+                    dots.type = 'button';
+                    dots.className = 'dp-btn fm-dots';
+                    dots.textContent = '\u22EF';
+                    dots.setAttribute('aria-label', 'Aksi untuk ' + e.name);
+                    dots.addEventListener('click', (ev) => openMenu(ev, buildItems(e, full)));
+                    tdA.appendChild(dots);
+
+                    tr.appendChild(tdC);
+                    tr.appendChild(tdN);
+                    tr.appendChild(tdM);
+                    tr.appendChild(tdA);
                     tb.appendChild(tr);
                 });
+                updateBulk();
             }
 
             async function openFile(path) {
@@ -435,6 +600,61 @@
                     msg('Terdownload: ' + name + (r && r.size != null ? ' (' + size(r.size) + ').' : '.'));
                 } catch (x) { msg(x.message); }
             });
+
+            $('fm-newfile').addEventListener('click', () => {
+                const n = (prompt('Nama file baru:') || '').trim();
+                if (!n || n.indexOf('/') !== -1) return;
+                editing = join(cwd, n);
+                $('fm-ed-name').textContent = editing;
+                $('fm-ed-text').value = '';
+                $('fm-editor').style.display = 'block';
+                $('fm-editor').scrollIntoView({ behavior: 'smooth' });
+                msg('File dibuat setelah lu klik Simpan.');
+            });
+
+            (function () {
+                const tbl = $('fm-list').closest('table') || $('fm-list').parentNode;
+                const bar = document.createElement('div');
+                bar.id = 'fm-bulk';
+                bar.className = 'fm-bulk';
+                const n = document.createElement('strong');
+                n.id = 'fm-bulk-n';
+                const bz = document.createElement('button');
+                bz.type = 'button';
+                bz.className = 'dp-btn';
+                bz.textContent = 'Zip';
+                bz.addEventListener('click', async () => {
+                    const names = Array.from(selected);
+                    if (!names.length) return;
+                    let name = (prompt('Nama arsip:', 'arsip.zip') || '').trim();
+                    if (!name) return;
+                    if (!/\.zip$/i.test(name)) name += '.zip';
+                    if (name.indexOf('/') !== -1) { msg('Nama arsip nggak boleh pakai /.'); return; }
+                    msg('Mengompres ' + names.length + ' item...');
+                    try {
+                        const r = await post(U.compress, { paths: names.map((x) => join(cwd, x)), dest: join(cwd, name) });
+                        await load(cwd);
+                        msg('Terkompres ke ' + name + (r && r.files != null ? ' (' + r.files + ' file).' : '.'));
+                    } catch (x) { msg(x.message); }
+                });
+                const bd = document.createElement('button');
+                bd.type = 'button';
+                bd.className = 'dp-btn';
+                bd.style.background = '#c0392b';
+                bd.textContent = 'Hapus';
+                bd.addEventListener('click', async () => {
+                    const names = Array.from(selected);
+                    if (!names.length || !confirm('Hapus ' + names.length + ' item? Aksi ini tidak bisa dibatalkan.')) return;
+                    try {
+                        await post(U.del, { paths: names.map((x) => join(cwd, x)) });
+                        await load(cwd);
+                    } catch (x) { msg(x.message); }
+                });
+                bar.appendChild(n);
+                bar.appendChild(bz);
+                bar.appendChild(bd);
+                tbl.parentNode.insertBefore(bar, tbl);
+            })();
 
             load('/');
         })();
