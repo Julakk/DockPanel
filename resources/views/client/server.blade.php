@@ -29,6 +29,8 @@
 .dp-perms{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.3rem;margin:.5rem 0}
 .dp-perms label{display:flex;align-items:center;gap:.4rem;margin:0}
 .dp-perms input{width:auto;margin:0}
+.dp-spark{display:block;width:100%;height:30px;margin-top:.35rem;color:#2aa5c4}
+#dp-hist-up,#dp-hist-down{min-width:38px;padding-left:.5rem;padding-right:.5rem}
 
 /* ===== v0.18.0 tampilan ala Pterodactyl (hapus blok ini buat balik ke gaya lama) ===== */
 body{background:#2d3948}
@@ -157,6 +159,8 @@ body{background:#2d3948}
             <div class="dp-console" id="dp-console-log">Menyambungkan ke Wings...</div>
             <form id="dp-console-form" style="margin-top:.75rem;display:flex;gap:.5rem">
                 <input class="dp-input" type="text" id="dp-console-cmd" maxlength="255" placeholder="Ketik command, mis. say halo" @disabled($server->suspended)>
+                <button class="dp-btn" type="button" id="dp-hist-up" title="Command sebelumnya" @disabled($server->suspended)>&uarr;</button>
+                <button class="dp-btn" type="button" id="dp-hist-down" title="Command berikutnya" @disabled($server->suspended)>&darr;</button>
                 <button class="dp-btn" type="submit" @disabled($server->suspended)>Kirim</button>
             </form>
             <div class="dp-muted" id="dp-console-status" style="margin-top:.4rem"></div>
@@ -169,6 +173,31 @@ body{background:#2d3948}
             const form = document.getElementById('dp-console-form');
             const input = document.getElementById('dp-console-cmd');
             let ws = null;
+            const hk = 'dp-hist-' + @json($server->uuid);
+            let hist = [], hi = -1, draft = '';
+            try { hist = JSON.parse(localStorage.getItem(hk) || '[]').filter((x) => typeof x === 'string').slice(-50); } catch (e) {}
+            function pushHist(c) {
+                if (hist[hist.length - 1] !== c) hist.push(c);
+                hist = hist.slice(-50);
+                hi = -1;
+                draft = '';
+                try { localStorage.setItem(hk, JSON.stringify(hist)); } catch (e) {}
+            }
+            function histUp() {
+                if (!hist.length) return;
+                if (hi === -1) { draft = input.value; hi = hist.length - 1; } else if (hi > 0) { hi--; }
+                input.value = hist[hi];
+            }
+            function histDown() {
+                if (hi === -1) return;
+                if (hi < hist.length - 1) { hi++; input.value = hist[hi]; } else { hi = -1; input.value = draft; }
+            }
+            input.addEventListener('keydown', (ev) => {
+                if (ev.key === 'ArrowUp') { ev.preventDefault(); histUp(); }
+                else if (ev.key === 'ArrowDown') { ev.preventDefault(); histDown(); }
+            });
+            document.getElementById('dp-hist-up').addEventListener('click', () => { histUp(); input.focus(); });
+            document.getElementById('dp-hist-down').addEventListener('click', () => { histDown(); input.focus(); });
 
             function append(line) {
                 logEl.textContent += (logEl.textContent === 'Menyambungkan ke Wings...' ? '' : '\n') + line;
@@ -205,6 +234,7 @@ body{background:#2d3948}
                 if (!cmd) return;
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(cmd);
+                    pushHist(cmd);
                     append('> ' + cmd);
                     input.value = '';
                 } else {
@@ -940,6 +970,31 @@ body{background:#2d3948}
         document.getElementById('dp-' + id).style.width = p + '%';
         document.getElementById('dp-' + id + '-t').textContent = t;
     };
+    const HIST_N = 60;
+    const hkey = 'dp-spark-' + @json($server->uuid);
+    let hist = { cpu: [], mem: [] };
+    try {
+        const s0 = JSON.parse(sessionStorage.getItem(hkey) || 'null');
+        if (s0 && Array.isArray(s0.cpu) && Array.isArray(s0.mem)) hist = { cpu: s0.cpu.slice(-HIST_N), mem: s0.mem.slice(-HIST_N) };
+    } catch (e) {}
+    function spark(id, vals) {
+        const bar = document.getElementById('dp-' + id).parentNode;
+        let svg = document.getElementById('dp-' + id + '-g');
+        if (!svg) {
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.id = 'dp-' + id + '-g';
+            svg.setAttribute('class', 'dp-spark');
+            svg.setAttribute('viewBox', '0 0 120 30');
+            svg.setAttribute('preserveAspectRatio', 'none');
+            bar.parentNode.insertBefore(svg, bar.nextSibling);
+        }
+        if (vals.length < 2) { svg.innerHTML = ''; return; }
+        const step = 120 / (HIST_N - 1);
+        const x0 = 120 - (vals.length - 1) * step;
+        const pts = vals.map((v, i) => (x0 + i * step).toFixed(1) + ',' + (29 - Math.max(0, Math.min(100, v)) * 0.28).toFixed(1));
+        svg.innerHTML = '<polygon points="' + x0.toFixed(1) + ',29 ' + pts.join(' ') + ' 120,29" fill="currentColor" opacity=".18"></polygon>'
+            + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></polyline>';
+    }
     async function tick() {
         try {
             const r = await fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
@@ -950,6 +1005,13 @@ body{background:#2d3948}
                 mb(d.memory_bytes) + ' / ' + (d.memory_limit_bytes ? mb(d.memory_limit_bytes) : '∞'));
             set('disk', pct(d.disk_bytes, d.disk_limit_bytes),
                 mb(d.disk_bytes) + ' / ' + (d.disk_limit_bytes ? mb(d.disk_limit_bytes) : '∞'));
+            hist.cpu.push(Math.min(100, d.cpu_percent));
+            hist.mem.push(pct(d.memory_bytes, d.memory_limit_bytes));
+            hist.cpu = hist.cpu.slice(-HIST_N);
+            hist.mem = hist.mem.slice(-HIST_N);
+            spark('cpu', hist.cpu);
+            spark('mem', hist.mem);
+            try { sessionStorage.setItem(hkey, JSON.stringify(hist)); } catch (e) {}
             const st = document.getElementById('dp-state');
             st.textContent = d.state;
             st.dataset.state = d.state;
@@ -957,6 +1019,8 @@ body{background:#2d3948}
         } catch (e) {}
     }
     tick();
+    spark('cpu', hist.cpu);
+    spark('mem', hist.mem);
     setInterval(tick, 5000);
 })();
 </script>

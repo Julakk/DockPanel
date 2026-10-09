@@ -22,7 +22,7 @@ return [
     | Update manual tiap rilis baru (samain sama CHANGELOG.md).
     | Dipakai di footer dan halaman Overview.
     */
-    'version' => '0.18.1',
+    'version' => '0.18.2',
 
     /*
     | Bikin database + user MySQL beneran di Database Host. Matikan (false)

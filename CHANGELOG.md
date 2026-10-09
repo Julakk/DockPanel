@@ -2,6 +2,18 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.18.2] - 2026-10-09
+> "Grafik mini CPU/RAM dan riwayat command di console." 🐧
+
+### Added
+
+- Grafik mini CPU dan memory (60 titik terakhir, sekitar 5 menit) di kartu HUD. Riwayat grafik tetap ada waktu pindah tab, dan hilang kalau browser ditutup.
+- Riwayat command console: panah atas/bawah, atau tombol ↑ dan ↓ di samping Kirim (buat HP). Disimpan per server, maksimal 50 command.
+
+### Changed
+
+- Versi panel jadi 0.18.2.
+
 ## [0.18.1] - 2026-10-09
 > "Node baru langsung siap pakai SFTP." 🐧
 
