@@ -947,7 +947,31 @@ body{background:#2d3948}
                 <tbody>
                     @forelse ($activities as $a)
                         <tr>
-                            <td><code>{{ $a->event }}{{ ! empty($a->metadata['action']) ? '.'.$a->metadata['action'] : '' }}</code>
+                            <td>@php
+                                $ev = $a->event . (! empty($a->metadata['action']) ? '.' . $a->metadata['action'] : '');
+                                $ic = match (true) {
+                                    str_contains($ev, 'power.start') => '▶️',
+                                    str_contains($ev, 'power.stop') => '⏹️',
+                                    str_contains($ev, 'power.restart') => '🔄',
+                                    str_contains($ev, 'power.kill') => '💀',
+                                    str_contains($ev, 'backup.create') => '💾',
+                                    str_contains($ev, 'backup.restore') => '♻️',
+                                    str_contains($ev, 'backup.delete') => '🗑️',
+                                    str_contains($ev, 'file.upload') => '⬆️',
+                                    str_contains($ev, 'file.delete') => '🗑️',
+                                    str_contains($ev, 'file.write') => '✏️',
+                                    str_contains($ev, 'file.extract') => '📦',
+                                    str_contains($ev, 'file.chmod') => '🔒',
+                                    str_contains($ev, 'file.') => '📄',
+                                    str_contains($ev, 'reinstall') => '🔧',
+                                    str_contains($ev, 'install-status') => '⚙️',
+                                    str_contains($ev, 'database') => '🗄️',
+                                    str_contains($ev, 'subuser') => '👥',
+                                    str_contains($ev, 'allocation') => '🌐',
+                                    default => '📋',
+                                };
+                            @endphp
+                            <span style="margin-right:.35rem">{{ $ic }}</span><code>{{ $ev }}</code>
                                 <div class="dp-muted">{{ $a->metadata['email'] ?? $a->metadata['name'] ?? $a->metadata['allocation'] ?? '' }}</div></td>
                             <td>{{ $a->user->name ?? '-' }}<div class="dp-muted">{{ $a->ip ?? '' }}</div></td>
                             <td class="dp-muted">{{ $a->created_at?->diffForHumans() }}</td>
