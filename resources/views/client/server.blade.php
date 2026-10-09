@@ -63,6 +63,8 @@ body{background:#2d3948}
 .fm-crumb{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;font-size:.85rem;margin:.3rem 0 .6rem}
 .fm-crumb a{color:inherit;text-decoration:none;opacity:.75}
 .fm-crumb a:last-of-type{opacity:1;font-weight:600}
+#fm input[type=checkbox]{width:auto!important;min-width:0;margin:0 .35rem 0 0;display:inline-block;flex:0 0 auto}
+#fm-all{margin-right:.5rem!important}
 .fm-bulk{display:none;gap:.5rem;align-items:center;padding:.5rem .6rem;margin-bottom:.5rem;background:#2a3544;border:1px solid var(--hud-line,#4a5a6e);border-radius:6px}
 
 </style>
