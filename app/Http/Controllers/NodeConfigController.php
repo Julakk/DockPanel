@@ -14,6 +14,8 @@ class NodeConfigController extends Controller
             'auth_token' => $node->daemon_token,
             'docker_socket' => '/var/run/docker.sock',
             'data_directory' => '/var/lib/dockwings/servers',
+            'backup_directory' => '/var/lib/dockwings/backups',
+            'panel_url' => rtrim((string) config('app.url'), '/'),
         ];
 
         return view('nodes.configuration', [

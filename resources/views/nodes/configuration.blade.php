@@ -19,7 +19,12 @@
         <p class="muted" style="margin-top:0;">
             Simpan sebagai <code>/etc/dockwings/config.json</code> di VPS node, lalu restart
             <code>systemctl restart dockwings</code>. Isinya termasuk token rahasia — jangan dibagikan.
+            Port API (<code>{{ $node->daemon_listen }}</code>) dan SFTP (<code>{{ $node->daemon_sftp }}</code>) harus dibuka di firewall node.
+            <code>panel_url</code> diisi dari <code>APP_URL</code> Panel dan dipakai Wings buat verifikasi login SFTP.
         </p>
+        @if (! str_starts_with((string) config('app.url'), 'https://'))
+            <p style="color:#f59e0b;margin-top:0;">APP_URL Panel bukan https, jadi login SFTP bakal gagal kalau Panel mengalihkan http ke https. Ubah <code>panel_url</code> ke alamat https sebelum disimpan.</p>
+        @endif
         <pre id="dp-node-config" style="background:var(--bg);border:1px solid var(--border);padding:1rem;border-radius:var(--radius);overflow-x:auto;margin:0 0 1rem;">{{ $json }}</pre>
         <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('dp-node-config').textContent).then(()=>this.textContent='Tersalin ✓')">Salin config</button>
     </div>

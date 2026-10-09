@@ -362,6 +362,15 @@ install_wings() {
     read -rp "Port buat Wings API [8080]: " WINGS_PORT
     WINGS_PORT=${WINGS_PORT:-8080}
     read -rp "Port buat SFTP [2022]: " SFTP_PORT
+    read -rp "URL Panel buat verifikasi login SFTP (ex: https://panel.ahmadstore.id, kosongin = SFTP nonaktif): " PANEL_URL_INPUT
+    PANEL_URL_INPUT="${PANEL_URL_INPUT%/}"
+    if [ -n "$PANEL_URL_INPUT" ] && ! echo "$PANEL_URL_INPUT" | grep -qE '^https?://[A-Za-z0-9._:/-]+$'; then
+        print_warn "URL Panel nggak valid, SFTP dinonaktifkan."
+        PANEL_URL_INPUT=""
+    fi
+    if [ -n "$PANEL_URL_INPUT" ] && [ "${PANEL_URL_INPUT#https://}" = "$PANEL_URL_INPUT" ]; then
+        print_warn "URL Panel bukan https. Login SFTP gagal kalau Panel mengalihkan http ke https."
+    fi
     SFTP_PORT=${SFTP_PORT:-2022}
 
     print_info "Install dependency dasar..."
@@ -412,12 +421,18 @@ install_wings() {
   "auth_token": "${DAEMON_TOKEN}",
   "docker_socket": "/var/run/docker.sock",
   "data_directory": "/var/lib/dockwings/servers",
-  "backup_directory": "/var/lib/dockwings/backups"
+  "backup_directory": "/var/lib/dockwings/backups",
+  "panel_url": "${PANEL_URL_INPUT}"
 }
 CONFIG
         chmod 600 "$DOCKWINGS_CONF"
     else
         print_info "Config lama dipertahankan."
+    fi
+
+    if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then
+        ufw allow "${WINGS_PORT:-8080}/tcp" >/dev/null 2>&1 && print_info "Port ${WINGS_PORT:-8080}/tcp dibuka di ufw."
+        ufw allow "${SFTP_PORT:-2022}/tcp" >/dev/null 2>&1 && print_info "Port ${SFTP_PORT:-2022}/tcp dibuka di ufw."
     fi
 
     print_info "Setup systemd service..."

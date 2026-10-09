@@ -2,6 +2,19 @@
 
 Semua perubahan penting di project ini dicatat di sini.
 
+## [0.18.1] - 2026-10-09
+> "Node baru langsung siap pakai SFTP." 🐧
+
+### Added
+
+- Halaman Configuration node menampilkan `panel_url` (dari `APP_URL`) dan `backup_directory`, plus peringatan kalau `APP_URL` bukan https.
+- Installer Wings menanyakan URL Panel dan menulisnya ke `config.json` (kosong = SFTP nonaktif).
+- Installer Wings membuka port API dan SFTP di ufw kalau ufw aktif.
+
+### Changed
+
+- Butuh DockWings v0.5.0+ buat SFTP. Versi panel jadi 0.18.1.
+
 ## [0.18.0] - 2026-10-09
 > "Tampilan file manager dan HUD server dirombak, lebih mirip panel yang biasa dipakai." 🐧
 
