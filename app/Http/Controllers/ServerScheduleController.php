@@ -16,9 +16,10 @@ class ServerScheduleController extends Controller
     {
         $user = $request->user();
 
+        // Schedule jalan sebagai sistem (bisa kirim command / power), jadi
+        // cuma admin & owner. Subuser nggak boleh nembus izin console/control.
         $ok = (bool) ($user->root_admin ?? false)
-            || (int) $server->owner_id === (int) $user->id
-            || $server->subusers()->where('users.id', $user->id)->exists();
+            || (int) $server->owner_id === (int) $user->id;
 
         abort_unless($ok, 403);
     }

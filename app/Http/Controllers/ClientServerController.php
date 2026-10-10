@@ -157,7 +157,7 @@ class ClientServerController extends Controller
      */
     public function consoleToken(Request $request, Server $server): JsonResponse
     {
-        $this->authorizeAccess($request, $server);
+        abort_unless($this->can($request, $server, 'console.access'), 403);
 
         if (! $server->node) {
             return response()->json(['error' => 'Node belum di-set buat server ini.'], 422);
