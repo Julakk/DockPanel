@@ -33,7 +33,7 @@ return new class extends Migration
                 // Udah terenkripsi (migrasi pernah jalan sebagian): pakai apa adanya.
                 $plain = Crypt::decryptString($raw);
                 $encrypted = $raw;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $plain = $raw;
                 $encrypted = Crypt::encryptString($raw);
             }
@@ -50,7 +50,7 @@ return new class extends Migration
         foreach (DB::table('nodes')->whereNotNull('daemon_token')->get() as $node) {
             try {
                 $plain = Crypt::decryptString((string) $node->daemon_token);
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 continue;
             }
 
