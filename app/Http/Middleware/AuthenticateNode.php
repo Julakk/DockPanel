@@ -18,7 +18,7 @@ class AuthenticateNode
         $token = $request->bearerToken();
 
         $node = (is_string($token) && $token !== '')
-            ? Node::where('daemon_token', $token)->first()
+            ? Node::where('daemon_token_hash', hash('sha256', $token))->first()
             : null;
 
         // hash_equals karena collation MariaDB biasanya case-insensitive

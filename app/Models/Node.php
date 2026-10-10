@@ -18,7 +18,7 @@ class Node extends Model
         'daemon_listen', 'daemon_sftp', 'daemon_token',
     ];
 
-    protected $hidden = ['daemon_token'];
+    protected $hidden = ['daemon_token', 'daemon_token_hash'];
 
     protected function casts(): array
     {
@@ -26,6 +26,7 @@ class Node extends Model
             'public' => 'boolean',
             'behind_proxy' => 'boolean',
             'maintenance_mode' => 'boolean',
+            'daemon_token' => 'encrypted',
         ];
     }
 
@@ -33,6 +34,15 @@ class Node extends Model
     {
         static::creating(function (Node $node) {
             $node->uuid = (string) Str::uuid();
+        });
+
+        // Token tersimpan terenkripsi, jadi nggak bisa di-query langsung.
+        // AuthenticateNode nyari node lewat sha256 token ini.
+        static::saving(function (Node $node) {
+            if ($node->isDirty('daemon_token')) {
+                $token = $node->daemon_token;
+                $node->daemon_token_hash = $token === null ? null : hash('sha256', $token);
+            }
         });
     }
 
