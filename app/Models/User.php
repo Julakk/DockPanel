@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected function casts(): array
@@ -34,6 +35,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'root_admin' => 'boolean',
             'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_last_step' => 'integer',
             'two_factor_enabled_at' => 'datetime',
         ];
     }

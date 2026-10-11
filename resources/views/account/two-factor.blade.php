@@ -30,6 +30,27 @@
             </h3>
             <p class="muted">Akun kamu udah dilindungi 2FA. Kalau mau matiin, konfirmasi password dulu.</p>
 
+            @if (session('recovery_codes'))
+                <div style="background:#0f172a; border:1px solid #f97316; padding:0.8rem; border-radius:6px; margin:1rem 0;">
+                    <p style="margin-top:0;"><strong>Simpan recovery code ini sekarang.</strong> Cuma ditampilin sekali. Tiap kode bisa dipakai satu kali buat login kalau authenticator app nggak bisa diakses.</p>
+                    <div style="font-family:monospace; font-size:1rem; letter-spacing:0.05em; display:grid; grid-template-columns:repeat(auto-fit, minmax(9rem, 1fr)); gap:0.4rem;">
+                        @foreach (session('recovery_codes') as $recoveryCode)
+                            <span>{{ $recoveryCode }}</span>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                @php($codesLeft = count($user->two_factor_recovery_codes ?? []))
+                <p class="muted">Recovery code tersisa: {{ $codesLeft }}@if ($codesLeft === 0). Bikin sekarang biar nggak kekunci kalau HP hilang.@endif</p>
+            @endif
+
+            <form method="POST" action="{{ route('account.two-factor.recovery-codes') }}" style="margin-bottom:1rem;">
+                @csrf
+                <label for="regen_password">Password</label>
+                <input type="password" name="password" id="regen_password" required>
+                <button type="submit" class="btn btn-primary">Bikin ulang recovery code</button>
+            </form>
+
             <form method="POST" action="{{ route('account.two-factor.disable') }}">
                 @csrf
                 @method('DELETE')
