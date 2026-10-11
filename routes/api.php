@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\PhpMyAdminRedeemController;
 use App\Http\Controllers\Remote\SftpAuthController;
 use App\Http\Controllers\ServerPowerController;
@@ -26,4 +27,8 @@ Route::post('remote/sftp/auth', SftpAuthController::class)
 
 // Dipanggil skrip signon phpMyAdmin buat nuker token sekali pakai (dijaga secret bersama)
 Route::post('pma/redeem', PhpMyAdminRedeemController::class)
+    ->middleware('throttle:30,1');
+
+// Laporan pelanggaran Content-Security-Policy dari browser (dicatat ke log)
+Route::post('csp-report', CspReportController::class)
     ->middleware('throttle:30,1');
