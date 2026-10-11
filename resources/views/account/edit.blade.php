@@ -62,9 +62,13 @@
 
             <div class="card">
                 <h3 style="margin-top:0;">Two-Step Verification</h3>
-                <p class="muted">Kamu belum mengaktifkan two-step verification untuk akun ini.</p>
-                <button type="button" class="btn btn-secondary" disabled title="Belum diimplementasi">Enable Two-Step</button>
-                <p class="muted" style="margin-top:0.6rem;">🚧 Fitur ini masih dalam pengembangan.</p>
+                @if (auth()->user()->hasTwoFactorEnabled())
+                    <p class="muted">Two-step verification <strong style="color:#22c55e;">aktif</strong> untuk akun ini.</p>
+                    <a href="{{ route('account.two-factor.show') }}" class="btn btn-secondary">Kelola Two-Step</a>
+                @else
+                    <p class="muted">Kamu belum mengaktifkan two-step verification untuk akun ini.</p>
+                    <a href="{{ route('account.two-factor.show') }}" class="btn btn-primary">Enable Two-Step</a>
+                @endif
             </div>
         </div>
     </div>
