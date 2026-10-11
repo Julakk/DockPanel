@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(prepend: [
             HandleCors::class,
+        ]);
+
+        // Ganti/reset password otomatis nendang sesi lain (HP/browser lain).
+        $middleware->web(append: [
+            AuthenticateSession::class,
         ]);
 
         $middleware->alias([
