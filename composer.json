@@ -2,7 +2,7 @@
     "name": "julakk/dockpanel",
     "type": "project",
     "description": "DockPanel - self-hosted game server management panel (Pterodactyl-like), Panel side built in Laravel.",
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^11.0|^12.0",
