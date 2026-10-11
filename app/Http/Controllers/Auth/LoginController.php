@@ -84,11 +84,20 @@ class LoginController extends Controller
 
         $user = User::findOrFail($userId);
 
-        if (! $twoFactor->verify($user->two_factor_secret, $request->input('code'))) {
+        $code = (string) $request->input('code');
+        $accepted = $twoFactor->consume($user, $code);
+        $usedRecovery = false;
+
+        if (! $accepted) {
+            $usedRecovery = $twoFactor->useRecoveryCode($user, $code);
+            $accepted = $usedRecovery;
+        }
+
+        if (! $accepted) {
             RateLimiter::hit($key, self::DECAY_SECONDS);
 
             throw ValidationException::withMessages([
-                'code' => 'Kode 2FA salah.',
+                'code' => 'Kode 2FA atau recovery code salah.',
             ]);
         }
 
@@ -101,7 +110,15 @@ class LoginController extends Controller
         $request->session()->regenerate();
         ActivityLog::record('auth:success');
 
-        return redirect()->intended('/dashboard');
+        $redirect = redirect()->intended('/dashboard');
+
+        if ($usedRecovery) {
+            ActivityLog::record('auth:2fa-recovery-used');
+            $left = count($user->fresh()->two_factor_recovery_codes ?? []);
+            $redirect->with('success', "Login pakai recovery code. Sisa {$left} kode, bikin ulang di Account > Two-Factor.");
+        }
+
+        return $redirect;
     }
 
     public function destroy(Request $request)

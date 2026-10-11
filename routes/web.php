@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('account/two-factor', [AccountController::class, 'twoFactorShow'])->name('account.two-factor.show');
     Route::post('account/two-factor', [AccountController::class, 'twoFactorEnable'])->name('account.two-factor.enable');
     Route::delete('account/two-factor', [AccountController::class, 'twoFactorDisable'])->name('account.two-factor.disable');
+    Route::post('account/two-factor/recovery-codes', [AccountController::class, 'twoFactorRegenerateRecoveryCodes'])->name('account.two-factor.recovery-codes');
 
     Route::get('account/activity', [AccountController::class, 'activity'])->name('account.activity');
 

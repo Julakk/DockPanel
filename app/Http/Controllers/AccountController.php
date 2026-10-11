@@ -84,16 +84,22 @@ class AccountController extends Controller
 
         $user = auth()->user();
 
-        if (! $twoFactor->verify($user->two_factor_secret, $request->input('code'))) {
+        if (! $twoFactor->consume($user, $request->input('code'))) {
             throw ValidationException::withMessages([
                 'code' => 'Kode nggak valid. Cek lagi authenticator app kamu.',
             ]);
         }
 
-        $user->update(['two_factor_enabled_at' => now()]);
+        $codes = $twoFactor->generateRecoveryCodes();
+        $user->forceFill([
+            'two_factor_enabled_at' => now(),
+            'two_factor_recovery_codes' => array_map([$twoFactor, 'hashRecoveryCode'], $codes),
+        ])->save();
         ActivityLog::record('account:2fa-enabled');
 
-        return redirect()->route('account.two-factor.show')->with('success', 'Two-factor authentication aktif.');
+        return redirect()->route('account.two-factor.show')
+            ->with('success', 'Two-factor authentication aktif. Simpan recovery code di bawah, cuma ditampilin sekali.')
+            ->with('recovery_codes', $codes);
     }
 
     public function twoFactorDisable(Request $request)
@@ -108,10 +114,40 @@ class AccountController extends Controller
             ]);
         }
 
-        $user->update(['two_factor_secret' => null, 'two_factor_enabled_at' => null]);
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_enabled_at' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_last_step' => null,
+        ])->save();
         ActivityLog::record('account:2fa-disabled');
 
         return redirect()->route('account.two-factor.show')->with('success', 'Two-factor authentication dimatiin.');
+    }
+
+    public function twoFactorRegenerateRecoveryCodes(Request $request, TwoFactorService $twoFactor)
+    {
+        $request->validate(['password' => 'required|string']);
+
+        $user = auth()->user();
+
+        abort_unless($user->hasTwoFactorEnabled(), 404);
+
+        if (! Hash::check($request->input('password'), $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Password salah.',
+            ]);
+        }
+
+        $codes = $twoFactor->generateRecoveryCodes();
+        $user->forceFill([
+            'two_factor_recovery_codes' => array_map([$twoFactor, 'hashRecoveryCode'], $codes),
+        ])->save();
+        ActivityLog::record('account:2fa-recovery-regenerated');
+
+        return redirect()->route('account.two-factor.show')
+            ->with('success', 'Recovery code baru dibuat, yang lama udah nggak berlaku.')
+            ->with('recovery_codes', $codes);
     }
 
     public function activity()
