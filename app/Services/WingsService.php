@@ -51,7 +51,7 @@ class WingsService
      */
     protected function envVariables(): array
     {
-        $vars = [];
+        $vars = ['SERVER_MEMORY' => (string) $this->server->memory];
 
         foreach ($this->server->serverVariables()->with('eggVariable')->get() as $sv) {
             $vars[$sv->eggVariable->env_variable] = $sv->variable_value ?? $sv->eggVariable->default_value ?? '';

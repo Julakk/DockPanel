@@ -62,6 +62,14 @@ class Egg extends Model
             );
         }
 
+        // Variabel bawaan Pterodactyl dibiarkan jadi env shell (kayak entrypoint yolks):
+        // {{SERVER_PORT}} -> ${SERVER_PORT}. DockWings nyuntik SERVER_IP/SERVER_PORT dari allocation.
+        $command = preg_replace_callback(
+            '/\{\{(SERVER_MEMORY|SERVER_IP|SERVER_PORT)\}\}/',
+            fn ($m) => '${'.$m[1].'}',
+            $command
+        );
+
         return $command;
     }
 }
