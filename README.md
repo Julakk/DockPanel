@@ -10,6 +10,8 @@
 
 Dikembangkan oleh **Julak Junior** ([@Julakk](https://github.com/Julakk)) — dicoding langsung dari HP via Termux. 🐧📱
 
+**Dokumentasi:** https://julakk.github.io/docs/
+
 ---
 
 ## Arsitektur
