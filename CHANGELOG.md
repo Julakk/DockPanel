@@ -28,7 +28,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Grafik mini CPU dan memory (60 titik terakhir, sekitar 5 menit) di kartu HUD. Riwayat grafik tetap ada waktu pindah tab, dan hilang kalau browser ditutup.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Riwayat command console: panah atas/bawah, atau tombol ↑ dan ↓ di samping Kirim (buat HP). Disimpan per server, maksimal 50 command.
 
 ### Changed
@@ -41,7 +40,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Halaman Configuration node menampilkan `panel_url` (dari `APP_URL`) dan `backup_directory`, plus peringatan kalau `APP_URL` bukan https.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Installer Wings menanyakan URL Panel dan menulisnya ke `config.json` (kosong = SFTP nonaktif).
 - Installer Wings membuka port API dan SFTP di ufw kalau ufw aktif.
 
@@ -61,7 +59,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Tombol **New File** di file manager.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 
 ## [0.17.4] - 2026-10-08
 > "File manager makin lengkap: kompres, atur izin, dan download dari URL." 🐧
@@ -69,7 +66,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Tombol **Zip** di tiap file/folder buat bikin arsip `.zip` di folder yang sama.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Tombol **Izin** buat jadikan file executable (755) atau biasa (644).
 - Tombol **Dari URL** di toolbar buat download file dari link http/https langsung ke server (maks 100 MB, IP publik saja).
 - Activity log: `server:file.compress`, `server:file.chmod`, `server:file.pull`.
@@ -96,7 +92,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Tombol **Extract** di tab Files buat arsip `.zip`, `.tar`, `.tar.gz`, dan `.tgz`. Isinya diekstrak ke folder yang sama dengan arsipnya, dan dicatat di Activity (`server:file.extract`).
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Route `client.servers.files.extract` dan `WingsService::extractFile()`.
 
 ### Fixed
@@ -113,7 +108,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Menu 3 (Update Panel) dan 4 (Update Wings) di `install.sh`. Update Wings build ke file sementara dulu dan otomatis rollback ke binary lama kalau service baru gagal start.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Cron scheduler Laravel dipasang otomatis di `/etc/cron.d/dockpanel` (sebelumnya harus manual, padahal suspend otomatis server expired bergantung padanya).
 
 ### Changed
@@ -129,7 +123,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - User (owner/admin server) bisa bikin database sendiri dari tab Databases, dengan limit per server (`database_limit`, default 2; kosong = tanpa batas, 0 = dimatikan). Host dipilih otomatis: yang terikat ke node server dulu, kalau nggak ada pakai host yang nggak terikat node. Admin tetap bisa bikin tanpa limit.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Tombol Rotate Password per database (`ALTER USER` di MySQL, password baru langsung tersimpan).
 - Panel detail per database: Endpoint, Connections From, Username, Password, dan JDBC string.
 - Tombol phpMyAdmin per database dengan single sign-on: Panel bikin token acak sekali pakai (berlaku 60 detik), skrip signon phpMyAdmin menukarnya ke Panel lewat `POST /api/pma/redeem` (dijaga secret bersama `PMA_SIGNON_SECRET`). Password nggak pernah lewat URL atau browser, dan user cuma melihat database miliknya sendiri. Admin punya tombol yang sama di halaman Database Host (masuk sebagai user host).
@@ -156,7 +149,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Restore backup (tab Backups, tombol Restore buat owner dan admin). Server harus mati; Wings ngecek, memverifikasi checksum arsip, mengekstrak ke folder sementara, lalu menukar folder server. Selama restore status server jadi `restoring_backup`: power action dimatiin dan halaman nyegerin diri sampai selesai atau gagal. Kalau gagal, file server nggak berubah.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - `DatabaseProvisioner`: membuat database, user, dan grant MySQL beneran di Database Host, dan menghapusnya (`DROP DATABASE`, serta `DROP USER` kalau user nggak dipakai database lain). Dipakai oleh form admin dan tombol Hapus di client area. Kalau host nggak bisa dihubungi atau hak user host kurang, muncul pesan yang jelas dan database nggak dicatat.
 - Field "Connections From" di form Create Database admin. Nilainya dipakai beneran sebagai host akun MySQL (`'user'@'host'`), bukan sekadar informasi.
 - Perintah `php artisan databases:sync`: bikin database dan user MySQL buat semua database yang sudah tercatat tapi belum ada di host (idempoten).
@@ -180,7 +172,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Backup di halaman Server (tab Backups): buat (nama opsional), daftar dengan status, ukuran, dan checksum, download, dan hapus. Pembuatan jalan di background di Wings; halaman nyegerin status sendiri tiap 4 detik selama masih `creating`. Hanya owner dan admin yang bisa buat, download, dan hapus.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Kolom `backup_limit` di tabel `servers` (default 3) dan field "Backup Limit" di Build Configuration admin. Isi 0 buat mematikan backup.
 - Tabel `backups` dan model `Backup`.
 - Tab Databases: tombol Hapus buat owner dan admin, dan kolom "Connections from" (kolom baru `remote` di `server_databases`, default `%`).
@@ -224,7 +215,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Tab Backups di halaman Server: menampilkan pesan kalau limit backup 0, pembuatan backup menunggu Wings.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Tab Network: Notes per allocation, tombol Make Primary, dan lepas allocation yang bukan primary. Migration baru menambah kolom `notes` di tabel `allocations`.
 - Tab Settings: menampilkan username SFTP (`email.uuid_short`).
 - Tab Activity: menampilkan IP dan detail event (`action`, email, atau allocation).
@@ -242,7 +232,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Middleware `SecurityHeaders` yang dipasang ke semua respons: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (kamera, mikrofon, lokasi dimatikan), dan `Strict-Transport-Security` (30 hari, hanya di HTTPS).
-- Tab Aktivitas server menampilkan ikon per jenis event.
 
 ### Changed
 
@@ -262,7 +251,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Halaman detail Server satu halaman bertab: About, Details, Build Configuration, Startup, Database, Mounts, Subusers, Manage, dan Delete. Tab terakhir yang dibuka diingat selama sesi, dan tombol kecil di ujung tab buka server sebagai user.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Tab About: tabel Information (ID, UUID, egg, CPU, memory, swap, disk, Block IO, koneksi utama, image, masa aktif) plus kartu Owner dan Node di kanan.
 - Tab Build Configuration: form resource (CPU, memory, swap, disk, Block IO) dan pengaturan allocation dipisah jadi dua box.
 - Tab Manage: kartu Suspend/Unsuspend dan Provision ke Wings. Reinstall, Install Status, dan Transfer tampil nonaktif dengan label "Belum tersedia".
@@ -305,7 +293,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 
 - Daftar Node gaya Pterodactyl: kolom Name, Location, Memory, Disk, Servers, SSL, Public, kotak search, dan tombol Create New.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Ikon status daemon (hati) di daftar Node, dicek lewat AJAX per node (`GET /nodes/{node}/status`) supaya halaman nggak hang kalau Wings mati.
 - Halaman detail Node dengan tab About / Settings / Configuration / Allocation, box Information (versi daemon, OS/arsitektur, jumlah CPU thread), dan box Delete Node.
 - Kotak At-a-Glance: Disk Space Allocated, Memory Allocated, dan Total Servers. Warnanya berubah sesuai persentase alokasi.
@@ -326,7 +313,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 - Halaman login gaya Pterodactyl (judul + kartu "Login to Continue", label mengambang, tombol tampilkan password, checkbox "Ingat saya"). Halaman 2FA ikut disamain lewat layout baru `layouts/auth`.
 - Batas percobaan login: maksimal 5 kali per menit per kombinasi email + IP, berlaku juga buat kode 2FA.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Admin panel: header atas dengan ikon, sidebar bisa di-collapse (pilihan disimpan di browser), kartu bergaya box AdminLTE, dan dashboard dengan kotak statistik berwarna + System Information.
 - Client area: navbar atas ala Pterodactyl, daftar server di `/client` (route `client.index`) lengkap dengan alamat IP:port dan kotak pencarian, tab bar dan tombol power berwarna di halaman server.
 - Admin bisa lihat server miliknya, milik user lain, atau semua lewat filter di daftar server, dan punya ikon pintas ke panel admin di navbar client.
@@ -346,7 +332,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 - Halaman server (client area) dirombak ala Pterodactyl: judul + breadcrumb, pill status server, kode UUID dan alamat, tombol power di kanan, lalu tile CPU / Memory / Disk. Tab dan console tetap, console lebih tinggi.
 - Halaman detail Node nampilin status daemon dan versi DockWings (`GET /api/system`), mirip halaman node Pterodactyl. Timeout 3 detik biar halaman nggak hang kalau Wings mati.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Pesan error koneksi ke Wings sekarang ngasih petunjuk (scheme https/http nggak cocok, koneksi ditolak, timeout), dipakai di Provision dan halaman Node.
 
 ### Fixed
@@ -360,7 +345,6 @@ Semua perubahan penting di project ini dicatat di sini.
 ### Added
 - Halaman detail server di client area (`/client/servers/{server}`) dengan tab Console, Files, Settings, Startup.
 - Tombol power (start/restart/stop/kill) dan kirim command dari client area, dengan akses owner, subuser, atau root admin.
-- Tab Aktivitas server menampilkan ikon per jenis event.
 - Resource bar CPU/Memory/Disk (polling 5 detik) lewat `ServerResourceService`; fallback ke mode mock kalau Wings belum aktif.
 - Masa aktif server: kolom `expires_at`, `suspension_reason`, `expiry_notified_at`.
 - Command `servers:suspend-expired` (auto-suspend) dan `servers:notify-expiring` (email pengingat H-3), dijadwalkan lewat scheduler.
