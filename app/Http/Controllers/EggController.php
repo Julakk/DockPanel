@@ -6,7 +6,8 @@ use App\Models\Egg;
 use App\Models\EggVariable;
 use App\Models\Nest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Services\EggImporter;
+use InvalidArgumentException;
 
 class EggController extends Controller
 {
@@ -116,53 +117,24 @@ class EggController extends Controller
         return view('eggs.import', compact('nests'));
     }
 
-    public function import(Request $request)
+    public function import(Request $request, EggImporter $importer)
     {
         $request->validate([
             'nest_id' => 'required|exists:nests,id',
-            'egg_json' => 'required|file',
+            'egg_json' => 'required|file|max:512',
         ]);
 
-        $content = file_get_contents($request->file('egg_json')->getRealPath());
-        $data = json_decode($content, true);
+        $data = json_decode(file_get_contents($request->file('egg_json')->getRealPath()), true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($data)) {
             return back()->withErrors(['egg_json' => 'File JSON nggak valid: '.json_last_error_msg()]);
         }
 
-        if (empty($data['name']) || empty($data['startup'])) {
-            return back()->withErrors(['egg_json' => 'JSON harus punya field "name" dan "startup" minimal.']);
+        try {
+            $egg = $importer->import($data, (int) $request->input('nest_id'));
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors(['egg_json' => $e->getMessage()]);
         }
-
-        $egg = DB::transaction(function () use ($data, $request) {
-            $egg = Egg::create([
-                'nest_id' => $request->input('nest_id'),
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'docker_image' => $data['docker_image'] ?? ($data['docker_images'][0] ?? 'alpine:3.4'),
-                'docker_images' => $data['docker_images'] ?? null,
-                'startup' => $data['startup'],
-                'config_files' => $data['config_files'] ?? null,
-                'config_startup' => $data['config']['startup'] ?? null,
-                'config_stop' => $data['config']['stop'] ?? null,
-                'script_container' => $data['scripts']['installation']['container'] ?? 'alpine:3.4',
-                'script_install' => $data['scripts']['installation']['script'] ?? null,
-            ]);
-
-            foreach ($data['variables'] ?? [] as $var) {
-                $egg->variables()->create([
-                    'name' => $var['name'] ?? $var['env_variable'],
-                    'env_variable' => $var['env_variable'],
-                    'description' => $var['description'] ?? null,
-                    'default_value' => $var['default_value'] ?? null,
-                    'user_viewable' => $var['user_viewable'] ?? true,
-                    'user_editable' => $var['user_editable'] ?? true,
-                    'rules' => $var['rules'] ?? 'nullable|string',
-                ]);
-            }
-
-            return $egg;
-        });
 
         return redirect()->route('eggs.edit', $egg)->with('success', "Egg '{$egg->name}' berhasil diimport dari JSON.");
     }
