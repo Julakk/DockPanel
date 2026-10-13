@@ -273,11 +273,37 @@ class ServerController extends Controller
         return back()->with('success', "Server '{$server->name}' diaktifkan lagi.");
     }
 
-    public function destroy(Server $server)
+    public function destroy(Request $request, Server $server)
     {
         $name = $server->name;
-        $server->delete();
+        $uuid = $server->uuid;
+        $purge = $request->boolean('purge');
+        $force = $request->boolean('force');
+        $note = '';
 
-        return redirect()->route('servers.index')->with('success', "Server '{$name}' dihapus.");
+        if (! $force) {
+            try {
+                [$status, $res] = (new WingsService($server->loadMissing('node')))->delete($purge);
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Wings nggak bisa dijangkau, server nggak dihapus. Kalau node memang sudah mati, centang "Paksa hapus".');
+            }
+
+            if (! in_array($status, [200, 404], true)) {
+                $detail = $res['error'] ?? null;
+
+                return back()->with('error', "Wings menolak menghapus server (HTTP {$status})".($detail ? ": {$detail}" : '.').' Server nggak dihapus dari panel.');
+            }
+
+            if ($status === 404) {
+                $note = ' Catatan: node nggak mengenal server ini, cek folder datanya di node kalau perlu.';
+            } elseif ($purge && ! array_key_exists('purged', $res)) {
+                $note = ' Catatan: Wings di node ini belum mendukung hapus data (butuh v0.5.4+), folder data server masih ada di node.';
+            }
+        }
+
+        $server->delete();
+        ActivityLog::record('server:delete', ['name' => $name, 'uuid' => $uuid, 'purge' => $purge, 'forced' => $force]);
+
+        return redirect()->route('servers.index')->with('success', "Server '{$name}' dihapus.".$note);
     }
 }

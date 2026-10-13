@@ -487,10 +487,18 @@
             <div class="nd-box-head"><h3>Delete Server</h3></div>
             <div class="nd-box-body">
                 <p style="margin:0 0 .6rem;">Aksi ini menghapus server dari panel.</p>
-                <p class="nd-bad" style="margin:0 0 .9rem;font-size:.8rem;">Menghapus server tidak bisa dibatalkan. Semua data server dan akses user ke server ini ikut hilang.</p>
+                <p class="nd-bad" style="margin:0 0 .9rem;font-size:.8rem;">Menghapus server tidak bisa dibatalkan. Container di node ikut dihapus. Data server di node hanya dihapus kalau kotak di bawah dicentang.</p>
                 <form method="POST" action="{{ route('servers.destroy', $server) }}" onsubmit="return confirm('Yakin hapus server ini permanen?');">
                     @csrf
                     @method('DELETE')
+                    <label style="display:flex;gap:.5rem;align-items:flex-start;margin:0 0 .6rem;font-size:.85rem;">
+                        <input type="checkbox" name="purge" value="1" checked>
+                        <span>Hapus juga data server di node (file game, tidak bisa dikembalikan)</span>
+                    </label>
+                    <label style="display:flex;gap:.5rem;align-items:flex-start;margin:0 0 .9rem;font-size:.85rem;">
+                        <input type="checkbox" name="force" value="1">
+                        <span>Paksa hapus dari panel walau node tidak terjangkau (data di node tidak ikut terhapus)</span>
+                    </label>
                     <button type="submit" class="nd-btn nd-btn-red">Delete This Server</button>
                 </form>
             </div>

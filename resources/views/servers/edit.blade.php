@@ -253,7 +253,15 @@
         <form method="POST" action="{{ route('servers.destroy', $server) }}" onsubmit="return confirm('Yakin hapus server ini?');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger">Hapus Server</button>
+            <label style="display:flex;gap:.5rem;align-items:flex-start;margin:0 0 .6rem;font-size:.85rem;">
+                        <input type="checkbox" name="purge" value="1" checked>
+                        <span>Hapus juga data server di node (file game, tidak bisa dikembalikan)</span>
+                    </label>
+                    <label style="display:flex;gap:.5rem;align-items:flex-start;margin:0 0 .9rem;font-size:.85rem;">
+                        <input type="checkbox" name="force" value="1">
+                        <span>Paksa hapus dari panel walau node tidak terjangkau (data di node tidak ikut terhapus)</span>
+                    </label>
+                    <button type="submit" class="btn btn-danger">Hapus Server</button>
         </form>
     </div>
 

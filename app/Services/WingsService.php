@@ -133,9 +133,17 @@ class WingsService
         return [$r->status(), $r->json() ?? []];
     }
 
-    public function delete(): bool
+    /**
+     * Hapus server di node. $purge = true ikut menghapus folder data
+     * (butuh DockWings v0.5.4+, Wings lama mengabaikannya).
+     * Balikin [status HTTP, data].
+     */
+    public function delete(bool $purge = false): array
     {
-        return $this->client()->delete("/api/servers/{$this->server->uuid}")->successful();
+        $path = "/api/servers/{$this->server->uuid}".($purge ? '?purge=1' : '');
+        $r = $this->client()->timeout(30)->delete($path);
+
+        return [$r->status(), $r->json() ?? []];
     }
 
     /**
